@@ -97,8 +97,8 @@ Le projet est conçu pour être déployé en **1 clic sans aucune configuration 
 
 ```mermaid
 flowchart LR
-    Clone["1. Cloner le repo Git"] --> Install["2. Lancer Installer_Prerequis.bat"]
-    Install --> Run["3. Lancer Lancer_DemoHub.bat"]
+    Clone["1. Cloner le repo Git"] --> Install["2. Exécuter Installer_Prerequis.ps1"]
+    Install --> Run["3. Exécuter Lancer_DemoHub.ps1"]
     Run --> Enjoy["🎉 Démo Prête !"]
 ```
 
@@ -110,7 +110,11 @@ cd CopilotPlusDemoHub
 ```
 
 ### Étape 2 : Lancer l'Installateur Automatique
-Faites un clic droit sur [`Installer_Prerequis.bat`](Installer_Prerequis.bat) > **Exécuter en tant qu'administrateur** (ou double-clic).
+Dans PowerShell, lancez simplement :
+```powershell
+.\Installer_Prerequis.ps1
+```
+*(Ou double-cliquez sur `Installer_Prerequis.bat` depuis l'Explorateur Windows)*
 
 Le script prend tout en charge automatiquement et séquentiellement :
 1. ✅ **Activation des chemins longs Windows** (`LongPathsEnabled`) pour PyTorch et OpenVINO.
@@ -122,16 +126,20 @@ Le script prend tout en charge automatiquement et séquentiellement :
 7. ✅ **Diagnostic de santé automatique** (`scripts/verify_installation.py`) validant les 39 points de contrôle.
 
 ### Étape 3 : Lancer la Démonstration
-Double-cliquez sur [`Lancer_DemoHub.bat`](Lancer_DemoHub.bat) pour lancer l'application avec préchauffage matériel instantané.
+Dans PowerShell :
+```powershell
+.\Lancer_DemoHub.ps1
+```
+*(Ou double-cliquez sur `Lancer_DemoHub.bat`)*
 
 ---
 
 ## 📦 Distribution Alternative (Binaire "Prêt à l'emploi" via GitHub Releases)
 
 Pour les collègues qui ne souhaitent pas installer Git ni compiler le code :
-1. Sur la machine de référence, lancez [`Creer_Package_Release.bat`](Creer_Package_Release.bat) pour créer une archive autonome dans `Releases/`.
+1. Sur la machine de référence, lancez `.\Creer_Package_Release.ps1` (ou double-cliquez sur `Creer_Package_Release.bat`) pour créer une archive autonome dans `Releases/`.
 2. Déposez cette archive dans l'onglet **Releases** de votre dépôt GitHub.
-3. Vos collègues n'ont qu'à télécharger l'archive ZIP, la décompresser et double-cliquer sur `Lancer_DemoHub.bat`.
+3. Vos collègues n'ont qu'à télécharger l'archive ZIP, la décompresser et exécuter `.\Lancer_DemoHub.ps1`.
 
 ---
 
@@ -164,10 +172,11 @@ Pour les collègues qui ne souhaitent pas installer Git ni compiler le code :
 │   ├── creer_package_release.ps1 # Empaqueteur pour GitHub Releases
 │   └── optimize_with_olive.py # Script d'optimisation Microsoft Olive
 ├── *.py                     # Microservices Python autonomes (Vision, Eraser, Whisper, Speaker, OCR, Avatar)
-├── Installer_Prerequis.bat  # Script d'installation automatisée en 1 clic (Winget + Pip + Modèles)
-├── Lancer_DemoHub.bat       # Script de lancement avec préchauffage matériel NPU/GPU
-├── Compiler_DemoHub.bat     # Script de compilation .NET 8
-├── Creer_Package_Release.bat# Générateur d'archive zip pour distribution
+├── Installer_Prerequis.ps1  # Script PowerShell d'installation automatisée en 1 clic (Winget + Pip + Modèles)
+├── Lancer_DemoHub.ps1       # Script PowerShell de démarrage avec préchauffage matériel NPU/GPU
+├── Compiler_DemoHub.ps1     # Script PowerShell de compilation .NET 8
+├── Creer_Package_Release.ps1# Script PowerShell de génération d'archive zip pour distribution
+├── *.bat                    # Wrappers de compatibilité pour exécution directe par double-clic
 ├── requirements.txt         # Dépendances Python (OpenVINO, PyTorch, PyMuPDF, Ultralytics, etc.)
 ├── GUIDE_INSTALLATION.md    # Manuel technique exhaustif et résolution des incidents
 └── README.md                # Cette documentation

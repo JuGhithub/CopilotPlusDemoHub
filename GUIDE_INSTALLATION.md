@@ -27,8 +27,12 @@ Ce guide détaille l'intégralité des prérequis matériels, logiciels, modèle
 
 Si vous clonez le dépôt Git ou copiez le dossier du projet sur un nouveau PC :
 
-1. Ouvrez le dossier du projet dans l'Explorateur Windows.
-2. Faites un clic droit sur [`Installer_Prerequis.bat`](Installer_Prerequis.bat) et choisissez **Exécuter en tant qu'administrateur** (ou double-clic).
+1. Ouvrez le dossier du projet dans un terminal **PowerShell** (ou l'Explorateur Windows).
+2. Lancez le script PowerShell d'installation :
+   ```powershell
+   .\Installer_Prerequis.ps1
+   ```
+   *(Ou double-cliquez sur `Installer_Prerequis.bat`)*
 3. Le script effectue automatiquement et séquentiellement toutes les étapes :
    - Activation du support des chemins longs Windows (`LongPathsEnabled`) pour PyTorch et OpenVINO.
    - Vérification et installation de **.NET 8.0 SDK** (via `winget`).
@@ -39,7 +43,11 @@ Si vous clonez le dépôt Git ou copiez le dossier du projet sur un nouveau PC :
    - **Téléchargement automatique de 100% des modèles d'IA locaux** (`models/`) via [`scripts/download_models.py`](scripts/download_models.py) : Whisper (STT Tiny & Base OpenVINO), Biométrie vocale VoxCeleb (ONNX), Vision YOLOv8s-World, Segmentation YOLOv8n-Seg et Studio Avatar LCM DreamShaper.
    - Compilation initiale de l'application WPF `DemoHub.exe` en mode Release.
    - **Diagnostic de santé automatique** via `scripts\verify_installation.py`.
-4. Une fois terminé, double-cliquez sur [`Lancer_DemoHub.bat`](Lancer_DemoHub.bat) pour démarrer l'application.
+4. Une fois terminé, lancez la démo :
+   ```powershell
+   .\Lancer_DemoHub.ps1
+   ```
+   *(Ou double-cliquez sur `Lancer_DemoHub.bat`)*
 
 ---
 
