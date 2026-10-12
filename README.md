@@ -22,7 +22,7 @@ Le **Demo Hub** regroupe plusieurs cas d'usage métiers concrets illustrant la p
 
 ## ⚡ Guide Rapide de Prise en Main (Pour vos collègues)
 
-### Option A : Déploiement Développeur (Recommandé)
+### Option A : Déploiement en 1 Clic depuis GitHub (Recommandé)
 
 1. **Cloner le dépôt Git :**
    ```powershell
@@ -30,21 +30,18 @@ Le **Demo Hub** regroupe plusieurs cas d'usage métiers concrets illustrant la p
    cd CopilotPlusDemoHub
    ```
 
-2. **Placer le dossier des modèles `models/` :**
-   - Téléchargez l'archive `models.zip` depuis l'onglet **Releases** de ce dépôt (ou récupérez-la sur le partage d'équipe / OneDrive).
-   - Décompressez-la à la racine du projet dans un dossier nommé `models/`.
+2. **Lancer l'installateur tout-en-un :**
+   - Faites un clic droit sur [`Installer_Prerequis.bat`](Installer_Prerequis.bat) > **Exécuter en tant qu'administrateur** (ou double-clic).
+   - Le script effectue de manière 100% autonome :
+     - ✅ L'activation des chemins longs Windows (`LongPathsEnabled`).
+     - ✅ L'installation des socles **.NET 8.0 SDK** et **Python 3.12** via `winget`.
+     - ✅ L'installation des bibliothèques Python d'IA (`requirements.txt`).
+     - ✅ L'installation du service **Microsoft Foundry Local CLI** et le téléchargement des variantes **Phi-4-mini** (NPU, GPU, CPU).
+     - ✅ Le **téléchargement et l'export automatique de tous les modèles locaux** (`models/`) : Whisper Speech-to-Text, biométrie vocale VoxCeleb, vision YOLOv8s-World, gomme magique YOLOv8n-Seg et studio Avatar LCM DreamShaper.
+     - ✅ La compilation de l'application WPF en mode Release haute performance.
+     - ✅ Un audit complet de validation matérielle (`scripts/verify_installation.py`).
 
-3. **Installer les prérequis en 1 clic :**
-   - Faites un clic droit sur [`Installer_Prerequis.bat`](Installer_Prerequis.bat) > **Exécuter en tant qu'administrateur**.
-   - Le script configure automatiquement :
-     - Le support des chemins longs Windows (`LongPathsEnabled`).
-     - Le **SDK .NET 8.0** et **Python 3.12** via `winget`.
-     - Les dépendances Python (`requirements.txt`).
-     - Le service **Microsoft Foundry Local CLI** et le modèle Phi-4.
-     - La compilation initiale de l'application WPF.
-     - Un diagnostic complet de conformité (`scripts/verify_installation.py`).
-
-4. **Lancer la démonstration :**
+3. **Lancer la démonstration :**
    - Double-cliquez sur [`Lancer_DemoHub.bat`](Lancer_DemoHub.bat).
 
 ---

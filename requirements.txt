@@ -34,4 +34,5 @@ olive-ai>=0.13.0
 pywin32>=306
 psutil>=5.9.0
 tqdm>=4.66.0
+huggingface-hub>=0.23.0
 

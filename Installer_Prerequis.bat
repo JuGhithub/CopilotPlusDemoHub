@@ -11,7 +11,7 @@ echo.
 :: -------------------------------------------------------------------
 :: 0. Verification des droits et activation des chemins longs (LongPaths)
 :: -------------------------------------------------------------------
-echo [0/6] Optimisation du systeme de fichiers Windows...
+echo [0/7] Optimisation du systeme de fichiers Windows...
 reg query "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v LongPathsEnabled 2>nul | find "0x1" >nul
 if %ERRORLEVEL% equ 0 (
     echo   [OK] Support des chemins longs de fichiers deja active.
@@ -32,7 +32,7 @@ if %ERRORLEVEL% equ 0 (
 :: -------------------------------------------------------------------
 :CHECK_WINGET
 echo.
-echo [1/6] Verification du gestionnaire de paquets winget...
+echo [1/7] Verification du gestionnaire de paquets winget...
 where winget >nul 2>&1
 if %ERRORLEVEL% equ 0 (
     echo   [OK] Gestionnaire winget detecte.
@@ -50,7 +50,7 @@ exit /b 1
 :: -------------------------------------------------------------------
 :CHECK_DOTNET
 echo.
-echo [2/6] Verification de .NET 8.0 SDK...
+echo [2/7] Verification de .NET 8.0 SDK...
 dotnet --version >nul 2>&1
 if %ERRORLEVEL% equ 0 goto :DOTNET_OK
 
@@ -72,7 +72,7 @@ for /f "tokens=*" %%V in ('dotnet --version 2^>nul') do (
 :: -------------------------------------------------------------------
 :CHECK_PYTHON
 echo.
-echo [3/6] Verification de Python 3.12...
+echo [3/7] Verification de Python 3.12...
 python --version >nul 2>&1
 if %ERRORLEVEL% equ 0 goto :PYTHON_OK
 
@@ -103,7 +103,7 @@ exit /b 0
 :: -------------------------------------------------------------------
 :INSTALL_PIP
 echo.
-echo [4/6] Installation des bibliotheques d'IA Python [requirements.txt]...
+echo [4/7] Installation des bibliotheques d'IA Python [requirements.txt]...
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 if %ERRORLEVEL% neq 0 (
@@ -117,19 +117,19 @@ if %ERRORLEVEL% neq 0 (
 :: -------------------------------------------------------------------
 :CHECK_FOUNDRY
 echo.
-echo [5/6] Verification de Microsoft Foundry Local CLI...
+echo [5/7] Verification de Microsoft Foundry Local CLI et modeles LLM...
 set "PATH=%LOCALAPPDATA%\Microsoft\WindowsApps;!PATH!"
 where foundry >nul 2>&1
 if %ERRORLEVEL% equ 0 (
     echo   [OK] Microsoft Foundry Local CLI est deja installe.
-    goto :DOWNLOAD_MODELS
+    goto :DOWNLOAD_FOUNDRY_MODELS
 )
 
 echo   Installation de Microsoft Foundry Local via winget...
 winget install Microsoft.FoundryLocal --accept-source-agreements --accept-package-agreements
 set "PATH=%LOCALAPPDATA%\Microsoft\WindowsApps;!PATH!"
 
-:DOWNLOAD_MODELS
+:DOWNLOAD_FOUNDRY_MODELS
 echo.
 echo   Mise en cache des modeles d'IA Phi-4 pour Foundry Local...
 echo   - Telechargement du modele NPU [Intel AI Boost]...
@@ -140,11 +140,24 @@ echo   - Telechargement du modele CPU [Generique]...
 call foundry model download Phi-4-mini-instruct-generic-cpu
 
 :: -------------------------------------------------------------------
-:: 6. Compilation du projet et diagnostic final
+:: 6. Telechargement des modeles d'IA locaux (Whisper, Biometrie, Vision, Diffusion)
+:: -------------------------------------------------------------------
+:DOWNLOAD_LOCAL_MODELS
+echo.
+echo [6/7] Initialisation et telechargement de tous les modeles d'IA locaux [models/]...
+python scripts\download_models.py
+if %ERRORLEVEL% neq 0 (
+    echo   [!] Avertissement lors du telechargement des modeles locaux.
+) else (
+    echo   [OK] Modeles locaux prets pour l'inference.
+)
+
+:: -------------------------------------------------------------------
+:: 7. Compilation du projet et diagnostic final
 :: -------------------------------------------------------------------
 :BUILD_PROJECT
 echo.
-echo [6/6] Compilation de l'application en mode Release...
+echo [7/7] Compilation de l'application en mode Release...
 taskkill /F /IM DemoHub.exe >nul 2>&1
 dotnet build DemoHub\DemoHub.csproj -c Release
 if %ERRORLEVEL% neq 0 (

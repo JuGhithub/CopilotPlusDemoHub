@@ -25,7 +25,7 @@ Ce guide détaille l'intégralité des prérequis matériels, logiciels, modèle
 
 ## 2. ⚡ Méthode 1 : Installation Automatique en 1 Clic (Recommandée)
 
-Si vous copiez le dossier complet du projet sur le nouveau PC :
+Si vous clonez le dépôt Git ou copiez le dossier du projet sur un nouveau PC :
 
 1. Ouvrez le dossier du projet dans l'Explorateur Windows.
 2. Faites un clic droit sur [`Installer_Prerequis.bat`](Installer_Prerequis.bat) et choisissez **Exécuter en tant qu'administrateur** (ou double-clic).
@@ -36,6 +36,7 @@ Si vous copiez le dossier complet du projet sur le nouveau PC :
    - Mise à jour de `pip` et installation de toutes les dépendances d'IA listées dans `requirements.txt` (OpenVINO, PyMuPDF, Torch, YOLO, Olive, etc.).
    - Installation de **Microsoft Foundry Local CLI** (via `winget`).
    - Téléchargement et mise en cache des variantes du modèle **Phi-4-mini** (NPU, GPU, CPU).
+   - **Téléchargement automatique de 100% des modèles d'IA locaux** (`models/`) via [`scripts/download_models.py`](scripts/download_models.py) : Whisper (STT Tiny & Base OpenVINO), Biométrie vocale VoxCeleb (ONNX), Vision YOLOv8s-World, Segmentation YOLOv8n-Seg et Studio Avatar LCM DreamShaper.
    - Compilation initiale de l'application WPF `DemoHub.exe` en mode Release.
    - **Diagnostic de santé automatique** via `scripts\verify_installation.py`.
 4. Une fois terminé, double-cliquez sur [`Lancer_DemoHub.bat`](Lancer_DemoHub.bat) pour démarrer l'application.
