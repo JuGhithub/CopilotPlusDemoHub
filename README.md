@@ -105,7 +105,7 @@ flowchart LR
 ### Étape 1 : Cloner le dépôt Git
 Ouvrez un terminal **PowerShell** :
 ```powershell
-git clone https://github.com/<VOTRE_ORGANISATION_OU_PSEUDO>/CopilotPlusDemoHub.git
+git clone https://github.com/JuGhithub/CopilotPlusDemoHub.git
 cd CopilotPlusDemoHub
 ```
 
