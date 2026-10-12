@@ -1,0 +1,57 @@
+﻿{
+  "claimId": "CLM-2026-8942",
+  "policyNumber": "POL-FR-554210",
+  "policyholder": {
+    "name": "Sophie Martin",
+    "contractType": "Tous Risques Confort",
+    "deductibleEuros": 250,
+    "vehicle": {
+      "make": "Constructeur automobile",
+      "model": "Modèle SUV Allure Pack",
+      "year": 2024,
+      "licensePlate": "AB-123-CD"
+    }
+  },
+  "incident": {
+    "dateTimeUtc": "2026-09-02T12:35:00Z",
+    "location": "Boulevard Haussmann x Rue Scribe, Paris 9e",
+    "weather": "Temps sec, bonne visibilité",
+    "circumstances": "Le véhicule de l'assurée était à l'arrêt à un feu rouge tricolore. Le véhicule tiers, une camionnette utilitaire, n'a pas freiné à temps et a percuté violemment l'arrière du véhicule assuré.",
+    "thirdParty": {
+      "identified": true,
+      "driverName": "Karim Benali (Entreprise du secteur de la logistique et livraison)",
+      "vehicle": "Fourgonnette utilitaire blanche",
+      "licensePlate": "XY-789-ZT",
+      "insurer": "Entreprise du secteur des assurances",
+      "policyNumber": "AX-884129",
+      "admitsFault": true
+    },
+    "policeIntervention": false,
+    "amicableReportSigned": true
+  },
+  "damages": {
+    "insuredVehicle": {
+      "reportedDamages": [
+        "Pare-chocs arrière enfoncé et décroché",
+        "Hayon arrière déformé, ne ferme plus correctement",
+        "Bloc optique feu arrière droit détruit",
+        "Capteurs de recul et radar de stationnement ADAS hors service",
+        "Plancher de coffre légèrement gondolé"
+      ],
+      "drivable": true,
+      "towingRequired": false
+    },
+    "thirdPartyVehicle": {
+      "reportedDamages": [
+        "Calandre avant brisée",
+        "Pare-chocs avant fissuré"
+      ]
+    },
+    "bodilyInjuries": {
+      "reportedOnScene": false,
+      "details": "Aucun blessé déclaré sur le constat amiable. Légère douleur aux cervicales mentionnée ultérieurement par l'assurée."
+    }
+  },
+  "estimatedRepairCostMinEuros": 3200,
+  "estimatedRepairCostMaxEuros": 4800
+}

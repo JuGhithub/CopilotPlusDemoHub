@@ -1,0 +1,202 @@
++-------------------------------------------------------------------------------------------------------------------------------------+
+| Model Name                     | Variant                       | Type       | Device | Execution Provider        | Size    | Cached |
+|--------------------------------+-------------------------------+------------+--------+---------------------------+---------+--------|
+| phi-4-mini                     | phi-4-mini-instruct-openvino- | Chat       | NPU    | OpenVINOExecutionProvider | 2.2 GB  | ●      |
+|                                | npu                           |            |        |                           |         |        |
+| deepseek-r1-1.5b               | DeepSeek-R1-Distill-Qwen-1.5B | Chat       | GPU    | OpenVINOExecutionProvider | 1.3 GB  | ○      |
+|                                | -openvino-gpu                 |            |        |                           |         |        |
+| deepseek-r1-14b                | DeepSeek-R1-Distill-Qwen-14B- | Chat       | GPU    | OpenVINOExecutionProvider | 7.9 GB  | ○      |
+|                                | openvino-gpu                  |            |        |                           |         |        |
+|                                | deepseek-r1-distill-qwen-14b- |            | GPU    | WebGpuExecutionProvider   | 10.3 GB | ○      |
+|                                | generic-gpu                   |            |        |                           |         |        |
+|                                | deepseek-r1-distill-qwen-14b- |            | CPU    | CPUExecutionProvider      | 11.5 GB | ○      |
+|                                | generic-cpu                   |            |        |                           |         |        |
+| deepseek-r1-7b                 | DeepSeek-R1-Distill-Qwen-7B-o | Chat       | NPU    | OpenVINOExecutionProvider | 4.2 GB  | ○      |
+|                                | penvino-npu                   |            |        |                           |         |        |
+|                                | DeepSeek-R1-Distill-Qwen-7B-o |            | GPU    | OpenVINOExecutionProvider | 4.2 GB  | ○      |
+|                                | penvino-gpu                   |            |        |                           |         |        |
+|                                | deepseek-r1-distill-qwen-7b-g |            | GPU    | WebGpuExecutionProvider   | 5.6 GB  | ○      |
+|                                | eneric-gpu                    |            |        |                           |         |        |
+|                                | deepseek-r1-distill-qwen-7b-g |            | CPU    | CPUExecutionProvider      | 6.4 GB  | ○      |
+|                                | eneric-cpu                    |            |        |                           |         |        |
+| gemma-4-e2b-it                 | gemma-4-e2b-it-generic-gpu    | Multimodal | GPU    | WebGpuExecutionProvider   | 6.9 GB  | ○      |
+|                                | gemma-4-e2b-it-generic-cpu    |            | CPU    | CPUExecutionProvider      | 5.9 GB  | ○      |
+| gpt-oss-20b                    | gpt-oss-20b-generic-gpu       | Chat       | GPU    | WebGpuExecutionProvider   | 11.8 GB | ○      |
+|                                | gpt-oss-20b-generic-cpu       |            | CPU    | CPUExecutionProvider      | 12.3 GB | ○      |
+| ministral-3-3b-instruct-2512   | ministral-3-3b-instruct-2512- | Multimodal | GPU    | WebGpuExecutionProvider   | 3.6 GB  | ○      |
+|                                | generic-gpu                   |            |        |                           |         |        |
+|                                | ministral-3-3b-instruct-2512- |            | CPU    | CPUExecutionProvider      | 4.6 GB  | ○      |
+|                                | generic-cpu                   |            |        |                           |         |        |
+| mistral-7b-v0.2                | Mistral-7B-Instruct-v0-2-open | Chat       | NPU    | OpenVINOExecutionProvider | 3.6 GB  | ○      |
+|                                | vino-npu                      |            |        |                           |         |        |
+|                                | Mistral-7B-Instruct-v0-2-open |            | GPU    | OpenVINOExecutionProvider | 4.3 GB  | ○      |
+|                                | vino-gpu                      |            |        |                           |         |        |
+|                                | mistralai-Mistral-7B-Instruct |            | GPU    | WebGpuExecutionProvider   | 4.1 GB  | ○      |
+|                                | -v0-2-generic-gpu             |            |        |                           |         |        |
+|                                | mistralai-Mistral-7B-Instruct |            | CPU    | CPUExecutionProvider      | 4.1 GB  | ○      |
+|                                | -v0-2-generic-cpu             |            |        |                           |         |        |
+| mistral-nemo-12b-instruct      | mistral-nemo-12b-instruct-gen | Chat       | GPU    | WebGpuExecutionProvider   | 7.3 GB  | ○      |
+|                                | eric-gpu                      |            |        |                           |         |        |
+|                                | mistral-nemo-12b-instruct-gen |            | CPU    | CPUExecutionProvider      | 6.8 GB  | ○      |
+|                                | eric-cpu                      |            |        |                           |         |        |
+| nemotron-3.5-asr-streaming-0.6 | nemotron-3.5-asr-streaming-0. | Speech     | CPU    | CPUExecutionProvider      | 756 MB  | ○      |
+| b                              | 6b-generic-cpu                |            |        |                           |         |        |
+| nemotron-speech-streaming-en-0 | nemotron-speech-streaming-en- | Speech     | CPU    | CPUExecutionProvider      | 696 MB  | ○      |
+| .6b                            | 0.6b-generic-cpu              |            |        |                           |         |        |
+| nemotron-speech-streaming-es-0 | nemotron-speech-streaming-es- | Speech     | CPU    | CPUExecutionProvider      | 729 MB  | ○      |
+| .6b                            | 0.6b-ft-generic-cpu           |            |        |                           |         |        |
+| olmo-3-7b-instruct             | olmo-3-7b-instruct-generic-gp | Chat       | GPU    | WebGpuExecutionProvider   | 5.5 GB  | ○      |
+|                                | u                             |            |        |                           |         |        |
+|                                | olmo-3-7b-instruct-generic-cp |            | CPU    | CPUExecutionProvider      | 5.2 GB  | ○      |
+|                                | u                             |            |        |                           |         |        |
+| parakeet-tdt-0.6b-v2           | parakeet-tdt-0.6b-v2-generic- | Speech     | CPU    | CPUExecutionProvider      | 692 MB  | ○      |
+|                                | cpu                           |            |        |                           |         |        |
+| phi-3-mini-128k                | Phi-3-mini-128k-instruct-open | Chat       | GPU    | OpenVINOExecutionProvider | 2.3 GB  | ○      |
+|                                | vino-gpu                      |            |        |                           |         |        |
+|                                | Phi-3-mini-128k-instruct-gene |            | GPU    | WebGpuExecutionProvider   | 2.1 GB  | ○      |
+|                                | ric-gpu                       |            |        |                           |         |        |
+|                                | Phi-3-mini-128k-instruct-gene |            | CPU    | CPUExecutionProvider      | 2.5 GB  | ○      |
+|                                | ric-cpu                       |            |        |                           |         |        |
+| phi-3-mini-4k                  | Phi-3-mini-4k-instruct-openvi | Chat       | NPU    | OpenVINOExecutionProvider | 2.1 GB  | ○      |
+|                                | no-npu                        |            |        |                           |         |        |
+|                                | Phi-3-mini-4k-instruct-openvi |            | GPU    | OpenVINOExecutionProvider | 2.0 GB  | ○      |
+|                                | no-gpu                        |            |        |                           |         |        |
+|                                | Phi-3-mini-4k-instruct-generi |            | GPU    | WebGpuExecutionProvider   | 2.1 GB  | ○      |
+|                                | c-gpu                         |            |        |                           |         |        |
+|                                | Phi-3-mini-4k-instruct-generi |            | CPU    | CPUExecutionProvider      | 2.5 GB  | ○      |
+|                                | c-cpu                         |            |        |                           |         |        |
+| phi-3.5-mini                   | Phi-3.5-mini-instruct-openvin | Chat       | GPU    | OpenVINOExecutionProvider | 1.9 GB  | ○      |
+|                                | o-gpu                         |            |        |                           |         |        |
+|                                | Phi-3.5-mini-instruct-generic |            | GPU    | WebGpuExecutionProvider   | 2.2 GB  | ○      |
+|                                | -gpu                          |            |        |                           |         |        |
+|                                | Phi-3.5-mini-instruct-generic |            | CPU    | CPUExecutionProvider      | 2.5 GB  | ○      |
+|                                | -cpu                          |            |        |                           |         |        |
+| phi-4                          | phi-4-openvino-gpu            | Chat       | GPU    | OpenVINOExecutionProvider | 8.8 GB  | ○      |
+|                                | Phi-4-generic-gpu             |            | GPU    | WebGpuExecutionProvider   | 8.4 GB  | ○      |
+|                                | Phi-4-generic-cpu             |            | CPU    | CPUExecutionProvider      | 10.2 GB | ○      |
+| phi-4-mini                     | phi-4-mini-instruct-openvino- | Chat       | GPU    | OpenVINOExecutionProvider | 2.2 GB  | ○      |
+|                                | gpu                           |            |        |                           |         |        |
+|                                | Phi-4-mini-instruct-generic-g |            | GPU    | WebGpuExecutionProvider   | 3.7 GB  | ○      |
+|                                | pu                            |            |        |                           |         |        |
+|                                | Phi-4-mini-instruct-generic-c |            | CPU    | CPUExecutionProvider      | 4.8 GB  | ○      |
+|                                | pu                            |            |        |                           |         |        |
+| phi-4-mini-reasoning           | Phi-4-mini-reasoning-openvino | Chat       | NPU    | OpenVINOExecutionProvider | 2.2 GB  | ○      |
+|                                | -npu                          |            |        |                           |         |        |
+|                                | Phi-4-mini-reasoning-openvino |            | GPU    | OpenVINOExecutionProvider | 2.5 GB  | ○      |
+|                                | -gpu                          |            |        |                           |         |        |
+|                                | Phi-4-mini-reasoning-generic- |            | GPU    | WebGpuExecutionProvider   | 3.1 GB  | ○      |
+|                                | gpu                           |            |        |                           |         |        |
+|                                | Phi-4-mini-reasoning-generic- |            | CPU    | CPUExecutionProvider      | 4.5 GB  | ○      |
+|                                | cpu                           |            |        |                           |         |        |
+| phi-4-reasoning                | Phi-4-reasoning-generic-gpu   | Chat       | GPU    | WebGpuExecutionProvider   | 8.4 GB  | ○      |
+|                                | Phi-4-reasoning-generic-cpu   |            | CPU    | CPUExecutionProvider      | 10.2 GB | ○      |
+| qwen2.5-0.5b                   | qwen2.5-0.5b-instruct-openvin | Chat       | NPU    | OpenVINOExecutionProvider | 331 MB  | ○      |
+|                                | o-npu                         |            |        |                           |         |        |
+|                                | qwen2.5-0.5b-instruct-openvin |            | GPU    | OpenVINOExecutionProvider | 366 MB  | ○      |
+|                                | o-gpu                         |            |        |                           |         |        |
+|                                | qwen2.5-0.5b-instruct-generic |            | GPU    | WebGpuExecutionProvider   | 700 MB  | ○      |
+|                                | -gpu                          |            |        |                           |         |        |
+|                                | qwen2.5-0.5b-instruct-generic |            | CPU    | CPUExecutionProvider      | 822 MB  | ○      |
+|                                | -cpu                          |            |        |                           |         |        |
+| qwen2.5-1.5b                   | qwen2.5-1.5b-instruct-openvin | Chat       | NPU    | OpenVINOExecutionProvider | 885 MB  | ○      |
+|                                | o-npu                         |            |        |                           |         |        |
+|                                | qwen2.5-1.5b-instruct-openvin |            | GPU    | OpenVINOExecutionProvider | 1019 MB | ○      |
+|                                | o-gpu                         |            |        |                           |         |        |
+|                                | qwen2.5-1.5b-instruct-generic |            | GPU    | WebGpuExecutionProvider   | 1.5 GB  | ○      |
+|                                | -gpu                          |            |        |                           |         |        |
+|                                | qwen2.5-1.5b-instruct-generic |            | CPU    | CPUExecutionProvider      | 1.8 GB  | ○      |
+|                                | -cpu                          |            |        |                           |         |        |
+| qwen2.5-14b                    | qwen2.5-14b-instruct-openvino | Chat       | GPU    | OpenVINOExecutionProvider | 4.8 GB  | ○      |
+|                                | -gpu                          |            |        |                           |         |        |
+|                                | qwen2.5-14b-instruct-generic- |            | GPU    | WebGpuExecutionProvider   | 9.3 GB  | ○      |
+|                                | gpu                           |            |        |                           |         |        |
+|                                | qwen2.5-14b-instruct-generic- |            | CPU    | CPUExecutionProvider      | 11.1 GB | ○      |
+|                                | cpu                           |            |        |                           |         |        |
+| qwen2.5-7b                     | qwen2.5-7b-instruct-openvino- | Chat       | NPU    | OpenVINOExecutionProvider | 4.2 GB  | ○      |
+|                                | npu                           |            |        |                           |         |        |
+|                                | qwen2.5-7b-instruct-openvino- |            | GPU    | OpenVINOExecutionProvider | 4.8 GB  | ○      |
+|                                | gpu                           |            |        |                           |         |        |
+|                                | qwen2.5-7b-instruct-generic-g |            | GPU    | WebGpuExecutionProvider   | 5.2 GB  | ○      |
+|                                | pu                            |            |        |                           |         |        |
+|                                | qwen2.5-7b-instruct-generic-c |            | CPU    | CPUExecutionProvider      | 6.2 GB  | ○      |
+|                                | pu                            |            |        |                           |         |        |
+| qwen2.5-coder-0.5b             | qwen2.5-coder-0.5b-instruct-o | Chat       | NPU    | OpenVINOExecutionProvider | 331 MB  | ○      |
+|                                | penvino-npu                   |            |        |                           |         |        |
+|                                | qwen2.5-coder-0.5b-instruct-o |            | GPU    | OpenVINOExecutionProvider | 365 MB  | ○      |
+|                                | penvino-gpu                   |            |        |                           |         |        |
+|                                | qwen2.5-coder-0.5b-instruct-g |            | GPU    | WebGpuExecutionProvider   | 528 MB  | ○      |
+|                                | eneric-gpu                    |            |        |                           |         |        |
+|                                | qwen2.5-coder-0.5b-instruct-g |            | CPU    | CPUExecutionProvider      | 822 MB  | ○      |
+|                                | eneric-cpu                    |            |        |                           |         |        |
+| qwen2.5-coder-1.5b             | qwen2.5-coder-1.5b-instruct-o | Chat       | NPU    | OpenVINOExecutionProvider | 892 MB  | ○      |
+|                                | penvino-npu                   |            |        |                           |         |        |
+|                                | qwen2.5-coder-1.5b-instruct-o |            | GPU    | OpenVINOExecutionProvider | 1018 MB | ○      |
+|                                | penvino-gpu                   |            |        |                           |         |        |
+|                                | qwen2.5-coder-1.5b-instruct-g |            | GPU    | WebGpuExecutionProvider   | 1.3 GB  | ○      |
+|                                | eneric-gpu                    |            |        |                           |         |        |
+|                                | qwen2.5-coder-1.5b-instruct-g |            | CPU    | CPUExecutionProvider      | 1.8 GB  | ○      |
+|                                | eneric-cpu                    |            |        |                           |         |        |
+| qwen2.5-coder-14b              | qwen2.5-coder-14b-instruct-op | Chat       | GPU    | OpenVINOExecutionProvider | 9.1 GB  | ○      |
+|                                | envino-gpu                    |            |        |                           |         |        |
+|                                | qwen2.5-coder-14b-instruct-ge |            | GPU    | WebGpuExecutionProvider   | 8.8 GB  | ○      |
+|                                | neric-gpu                     |            |        |                           |         |        |
+|                                | qwen2.5-coder-14b-instruct-ge |            | CPU    | CPUExecutionProvider      | 11.1 GB | ○      |
+|                                | neric-cpu                     |            |        |                           |         |        |
+| qwen2.5-coder-7b               | qwen2.5-coder-7b-instruct-ope | Chat       | NPU    | OpenVINOExecutionProvider | 4.2 GB  | ○      |
+|                                | nvino-npu                     |            |        |                           |         |        |
+|                                | qwen2.5-coder-7b-instruct-ope |            | GPU    | OpenVINOExecutionProvider | 4.8 GB  | ○      |
+|                                | nvino-gpu                     |            |        |                           |         |        |
+|                                | qwen2.5-coder-7b-instruct-gen |            | GPU    | WebGpuExecutionProvider   | 4.7 GB  | ○      |
+|                                | eric-gpu                      |            |        |                           |         |        |
+|                                | qwen2.5-coder-7b-instruct-gen |            | CPU    | CPUExecutionProvider      | 6.2 GB  | ○      |
+|                                | eric-cpu                      |            |        |                           |         |        |
+| qwen3-0.6b                     | qwen3-0.6b-generic-gpu        | Chat       | GPU    | WebGpuExecutionProvider   | 529 MB  | ○      |
+|                                | qwen3-0.6b-generic-cpu        |            | CPU    | CPUExecutionProvider      | 593 MB  | ○      |
+| qwen3-1.7b                     | qwen3-1.7b-generic-gpu        | Chat       | GPU    | WebGpuExecutionProvider   | 1.4 GB  | ○      |
+|                                | qwen3-1.7b-generic-cpu        |            | CPU    | CPUExecutionProvider      | 1.3 GB  | ○      |
+| qwen3-14b                      | qwen3-14b-generic-gpu         | Chat       | GPU    | WebGpuExecutionProvider   | 9.9 GB  | ○      |
+|                                | qwen3-14b-generic-cpu         |            | CPU    | CPUExecutionProvider      | 9.3 GB  | ○      |
+| qwen3-4b                       | qwen3-4b-generic-gpu          | Chat       | GPU    | WebGpuExecutionProvider   | 2.9 GB  | ○      |
+|                                | qwen3-4b-generic-cpu          |            | CPU    | CPUExecutionProvider      | 2.7 GB  | ○      |
+| qwen3-8b                       | qwen3-8b-generic-gpu          | Chat       | GPU    | WebGpuExecutionProvider   | 6.0 GB  | ○      |
+|                                | qwen3-8b-generic-cpu          |            | CPU    | CPUExecutionProvider      | 5.7 GB  | ○      |
+| qwen3-embedding-0.6b           | qwen3-embedding-0.6b-generic- | Embedding  | GPU    | WebGpuExecutionProvider   | 515 MB  | ○      |
+|                                | gpu                           |            |        |                           |         |        |
+|                                | qwen3-embedding-0.6b-generic- |            | CPU    | CPUExecutionProvider      | 495 MB  | ○      |
+|                                | cpu                           |            |        |                           |         |        |
+| qwen3-embedding-8b             | qwen3-embedding-8b-generic-gp | Embedding  | GPU    | WebGpuExecutionProvider   | 6.0 GB  | ○      |
+|                                | u                             |            |        |                           |         |        |
+|                                | qwen3-embedding-8b-generic-cp |            | CPU    | CPUExecutionProvider      | 5.6 GB  | ○      |
+|                                | u                             |            |        |                           |         |        |
+| qwen3-vl-2b-instruct           | qwen3-vl-2b-instruct-generic- | Multimodal | CPU    | CPUExecutionProvider      | 1.3 GB  | ○      |
+|                                | cpu                           |            |        |                           |         |        |
+| qwen3-vl-4b-instruct           | qwen3-vl-4b-instruct-generic- | Multimodal | CPU    | CPUExecutionProvider      | 2.7 GB  | ○      |
+|                                | cpu                           |            |        |                           |         |        |
+| qwen3-vl-8b-instruct           | qwen3-vl-8b-instruct-generic- | Multimodal | CPU    | CPUExecutionProvider      | 5.0 GB  | ○      |
+|                                | cpu                           |            |        |                           |         |        |
+| qwen3.5-0.8b                   | qwen3.5-0.8b-generic-gpu      | Multimodal | GPU    | WebGpuExecutionProvider   | 1.4 GB  | ○      |
+|                                | qwen3.5-0.8b-generic-cpu      |            | CPU    | CPUExecutionProvider      | 1.0 GB  | ○      |
+| qwen3.5-2b                     | qwen3.5-2b-generic-gpu        | Multimodal | GPU    | WebGpuExecutionProvider   | 3.0 GB  | ○      |
+|                                | qwen3.5-2b-generic-cpu        |            | CPU    | CPUExecutionProvider      | 1.7 GB  | ○      |
+| qwen3.5-2b-text                | qwen3.5-2b-text-generic-gpu   | Chat       | GPU    | WebGpuExecutionProvider   | 1.3 GB  | ○      |
+|                                | qwen3.5-2b-text-generic-cpu   |            | CPU    | CPUExecutionProvider      | 1.4 GB  | ○      |
+| qwen3.5-4b                     | qwen3.5-4b-generic-gpu        | Multimodal | GPU    | WebGpuExecutionProvider   | 4.1 GB  | ○      |
+|                                | qwen3.5-4b-generic-cpu        |            | CPU    | CPUExecutionProvider      | 3.0 GB  | ○      |
+| qwen3.5-9b                     | qwen3.5-9b-generic-gpu        | Multimodal | GPU    | WebGpuExecutionProvider   | 7.0 GB  | ○      |
+|                                | qwen3.5-9b-generic-cpu        |            | CPU    | CPUExecutionProvider      | 5.4 GB  | ○      |
+| smollm3-3b                     | smollm3-3b-generic-gpu        | Chat       | GPU    | WebGpuExecutionProvider   | 2.2 GB  | ○      |
+|                                | smollm3-3b-generic-cpu        |            | CPU    | CPUExecutionProvider      | 2.1 GB  | ○      |
+| whisper-base                   | openai-whisper-base-generic-c | Speech     | CPU    | CPUExecutionProvider      | 205 MB  | ○      |
+|                                | pu                            |            |        |                           |         |        |
+| whisper-large-v3-turbo         | openai-whisper-large-v3-turbo | Speech     | CPU    | CPUExecutionProvider      | 1.3 GB  | ○      |
+|                                | -generic-cpu                  |            |        |                           |         |        |
+| whisper-medium                 | openai-whisper-medium-generic | Speech     | CPU    | CPUExecutionProvider      | 937 MB  | ○      |
+|                                | -cpu                          |            |        |                           |         |        |
+| whisper-small                  | openai-whisper-small-generic- | Speech     | CPU    | CPUExecutionProvider      | 438 MB  | ○      |
+|                                | cpu                           |            |        |                           |         |        |
+| whisper-tiny                   | openai-whisper-tiny-generic-c | Speech     | CPU    | CPUExecutionProvider      | 131 MB  | ○      |
+|                                | pu                            |            |        |                           |         |        |
++-------------------------------------------------------------------------------------------------------------------------------------+
+Device: NPU / GPU / CPU = exact hardware target for this variant.
+Execution Provider: runtime backend used by this variant.
+Cached: this specific variant is downloaded on this machine.

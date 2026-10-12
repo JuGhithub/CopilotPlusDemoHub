@@ -1,0 +1,287 @@
+<UserControl x:Class="CopilotPlusDemoHub.UI.Views.MagicEraserStudioView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Focusable="True">
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid Margin="24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- 1. Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock x:Name="LblEraserTitle" Text="🧹 GOMME MAGIQUE IA : DÉTOURAGE &amp; SUPPRESSION D'OBJETS HORS-LIGNE"
+                                   FontSize="20" FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock x:Name="LblEraserSub" Text="Cas d'usage 100% réel : Segmentation d'objets OpenVINO (YOLOv8 INT8) sur NPU / GPU / CPU et reconstitution d'arrière-plan en temps réel"
+                                   FontSize="13" Margin="0,4,0,0"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border x:Name="BadgeModelContainer" Background="#162238" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="Modèles d'Intelligence Artificielle exécutés localement">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="🧠" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock x:Name="TxtModelBadge" Text="Modèles : YOLOv8n-Seg (Segmentation) + Inpainting" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                        <Button x:Name="BtnDocHelp" Style="{StaticResource ModernButtonStyle}"
+                                Background="#1E293B" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                                Height="32" Padding="12,0" VerticalAlignment="Center"
+                                ToolTip="Documentation &amp; Guide de démonstration (FR / EN)" Click="BtnDocHelp_Click">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="❓" FontSize="12" Margin="0,0,6,0" />
+                                <TextBlock x:Name="TxtDocHelp" Text="Guide &amp; Doc" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- 2. Source Selector Bar & Hardware Accelerator -->
+                <Border Grid.Row="1" Background="#131B2E" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,12" Margin="0,0,0,14">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" x:Name="BtnImportImage" Content="📁 Importer une Photo"
+                                ToolTip="Charger une photo depuis votre PC (JPG, PNG)"
+                                Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="32" Padding="12,0"
+                                Click="BtnImportImage_Click" />
+
+                        <Button Grid.Column="2" x:Name="BtnSampleDesk" Content="☕ Exemple Bureau (Tasse, Téléphone)"
+                                ToolTip="Photo de bureau : supprimez la tasse de café, le téléphone..."
+                                Style="{StaticResource ModernButtonStyle}" Background="#1A253A" Height="32" Padding="10,0"
+                                Click="BtnSampleDesk_Click" />
+
+                        <Button Grid.Column="4" x:Name="BtnSampleBeach" Content="🏖️ Exemple Plage (Touristes)"
+                                ToolTip="Photo de vacances : effacez les touristes en arrière-plan en 1 clic"
+                                Style="{StaticResource ModernButtonStyle}" Background="#1A253A" Height="32" Padding="10,0"
+                                Click="BtnSampleBeach_Click" />
+
+                        <Button Grid.Column="6" x:Name="BtnSampleTie" Content="👔 Exemple Portrait (Cravate)"
+                                ToolTip="Portrait d'affaires : retirez la cravate proprement"
+                                Style="{StaticResource ModernButtonStyle}" Background="#1A253A" Height="32" Padding="10,0"
+                                Click="BtnSampleTie_Click" />
+
+                        <!-- Engine & Hardware Accelerator Selectors -->
+                        <StackPanel Grid.Column="8" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="LblEraserEngineLabel" Text="MOTEUR :" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,5,0" />
+                            <RadioButton x:Name="RadEngineOpenVINO" GroupName="EraserEngineGrp" Content="⚡ OpenVINO" IsChecked="True" Style="{StaticResource PillButtonStyle}" Margin="0,0,3,0" Checked="Engine_Checked" ToolTip="Moteur natif Intel OpenVINO (Level Zero, NPU &amp; GPU Arc)" />
+                            <RadioButton x:Name="RadEngineONNX" GroupName="EraserEngineGrp" Content="🌐 ONNX" Style="{StaticResource PillButtonStyle}" Margin="0,0,3,0" Checked="Engine_Checked" ToolTip="Moteur ONNX Runtime universel (DirectML GPU FP32)" />
+                            <RadioButton x:Name="RadEngineOlive" GroupName="EraserEngineGrp" Content="🟢 Olive FP16" Style="{StaticResource PillButtonStyle}" Margin="0,0,10,0" Checked="Engine_Checked" ToolTip="Moteur ONNX Runtime optimisé par Microsoft Olive (DirectML GPU FP16)" />
+
+                            <TextBlock x:Name="LblEraserSiliconLabel" Text="SILICIUM :" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,5,0" />
+                            <RadioButton x:Name="RadDeviceNpu" GroupName="EraserSiliconGrp" Content="⚡ NPU" Style="{StaticResource PillButtonStyle}" Margin="0,0,3,0" Checked="Device_Checked" ToolTip="Exécution sur NPU Intel AI Boost (~20 ms, ultra-basse consommation ~2W)" />
+                            <RadioButton x:Name="RadDeviceGpu" GroupName="EraserSiliconGrp" Content="🎮 GPU" Style="{StaticResource PillButtonStyle}" Margin="0,0,3,0" Checked="Device_Checked" ToolTip="Exécution sur GPU Xe2 Intel Arc 140V (~13 ms)" />
+                            <RadioButton x:Name="RadDeviceCpu" GroupName="EraserSiliconGrp" Content="💻 CPU" Style="{StaticResource PillButtonStyle}" Checked="Device_Checked" ToolTip="Exécution sur CPU Core Ultra (~45 ms)" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- 3. Interactive Prompt Bar & Quick Selection Chips -->
+                <Border Grid.Row="2" Background="#131F33" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,14">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Row 0: Text Input + Action CTA -->
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Prompt Label Icon -->
+                            <Border Grid.Column="0" Background="#1E293B" CornerRadius="6" Padding="10,0" Height="36" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblEraserPromptLabel" Text="🔍 Objet à effacer :" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                            </Border>
+
+                            <!-- Text Input Box -->
+                            <TextBox Grid.Column="2" x:Name="TxtPrompt"
+                                     Text="enlève la tasse"
+                                     FontSize="13" VerticalContentAlignment="Center" Padding="12,0"
+                                     Background="#0C1424" Foreground="{StaticResource TextPrimaryBrush}"
+                                     BorderBrush="#2A3B5C" BorderThickness="1" Height="36"
+                                     KeyDown="TxtPrompt_KeyDown" />
+
+                            <!-- Detect & Segment Button -->
+                            <Button Grid.Column="4" x:Name="BtnDetect" Content="🎯 Détecter &amp; Détourer"
+                                    ToolTip="Localiser et détourer l'élément demandé avec le contour néon cyan"
+                                    Style="{StaticResource ModernButtonStyle}" Background="{StaticResource CopilotBlueBrush}"
+                                    Foreground="White" FontWeight="Bold" FontSize="13" Height="36" Padding="18,0"
+                                    Click="BtnDetect_Click" />
+                        </Grid>
+
+                        <!-- Row 1: Quick-selection pills from detections -->
+                        <StackPanel Grid.Row="1" x:Name="PanelChips" Orientation="Horizontal" Margin="0,8,0,0" VerticalAlignment="Center">
+                            <TextBlock x:Name="LblEraserSuggestionsLabel" Text="Suggestions rapides :" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <WrapPanel x:Name="WrapChips" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button x:Name="ChipCup" Content="☕ Tasse de café" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="24" Padding="8,0" Margin="0,0,6,0" FontSize="11" Click="Chip_Click" />
+                                <Button x:Name="ChipPhone" Content="📱 Téléphone" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="24" Padding="8,0" Margin="0,0,6,0" FontSize="11" Click="Chip_Click" />
+                                <Button x:Name="ChipTie" Content="👔 Cravate" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="24" Padding="8,0" Margin="0,0,6,0" FontSize="11" Click="Chip_Click" />
+                                <Button x:Name="ChipLaptop" Content="💻 Ordinateur" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="24" Padding="8,0" Margin="0,0,6,0" FontSize="11" Click="Chip_Click" />
+                                <Button x:Name="ChipTourists" Content="👥 Touristes (fond)" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="24" Padding="8,0" Margin="0,0,6,0" FontSize="11" Click="Chip_Click" />
+                            </WrapPanel>
+                            <TextBlock x:Name="LblEraserClickHint" Text="💡 Vous pouvez aussi cliquer directement sur l'objet dans la photo !" FontSize="11" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" Margin="12,0,0,0" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- 4. Main Interactive Canvas & Confirmation Zone -->
+                <Grid Grid.Row="3" Margin="0,0,0,16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Floating Action / Confirmation Banner -->
+                    <Border Grid.Row="0" x:Name="BannerConfirm" Background="#1E293B" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1.5" CornerRadius="8" Padding="14,10" Margin="0,0,0,10" Visibility="Collapsed">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="🎯" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0" />
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtConfirmTitle" Text="Objet identifié : Tasse de café (Confiance 91%)" FontWeight="Bold" FontSize="13" Foreground="{StaticResource CopilotCyanBrush}" />
+                                <TextBlock x:Name="LblConfirmSub" Text="Le contour cyan montre l'élément qui va être effacé et reconstitué." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,2,0,0" />
+                            </StackPanel>
+
+                            <Button Grid.Column="2" x:Name="BtnConfirmErase" Content="✨ Confirmer la Suppression"
+                                    Style="{StaticResource ModernButtonStyle}" Background="#10B981" Foreground="White" FontWeight="Bold"
+                                    Height="32" Padding="16,0" Click="BtnConfirmErase_Click" />
+
+                            <Button Grid.Column="4" x:Name="BtnCancelSelection" Content="❌ Annuler"
+                                    Style="{StaticResource ModernButtonStyle}" Background="#334155" Foreground="{StaticResource TextSecondaryBrush}"
+                                    Height="32" Padding="12,0" Click="BtnCancelSelection_Click" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Image Display Area with Click Detection -->
+                    <Border Grid.Row="1" Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Top Bar of Image Container -->
+                            <Grid Grid.Row="0" Margin="0,0,0,10">
+                                <TextBlock x:Name="LblCanvasInfo" Text="🖼️ Image active • Cliquez directement sur un objet ou saisissez son nom pour le détourer" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+
+                                <!-- History & Undo/Redo Buttons -->
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button x:Name="BtnUndo" Content="↩️ Annuler (Rollback)"
+                                            ToolTip="Revenir en arrière à l'étape précédente"
+                                            Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Foreground="{StaticResource TextPrimaryBrush}"
+                                            Height="28" Padding="10,0" Margin="0,0,6,0" IsEnabled="False"
+                                            Click="BtnUndo_Click" />
+
+                                    <Button x:Name="BtnResetOriginal" Content="🔄 Photo Initiale"
+                                            ToolTip="Rétablir la photo de départ sans aucune modification"
+                                            Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Foreground="{StaticResource TextMutedBrush}"
+                                            Height="28" Padding="10,0" Margin="0,0,6,0"
+                                            Click="BtnResetOriginal_Click" />
+
+                                    <Button x:Name="BtnSaveImage" Content="💾 Sauvegarder"
+                                            ToolTip="Exporter la photo retouchée sur votre disque"
+                                            Style="{StaticResource ModernButtonStyle}" Background="#0284C7" Foreground="White"
+                                            FontWeight="Bold" Height="28" Padding="12,0"
+                                            Click="BtnSaveImage_Click" />
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Interactive Image Surface -->
+                            <Border Grid.Row="1" Background="#0C1424" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" ClipToBounds="True" MinHeight="440">
+                                <Grid>
+                                    <Image x:Name="ImgDisplay" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Cursor="Cross" MouseLeftButtonDown="ImgDisplay_MouseLeftButtonDown" />
+
+                                    <!-- Loading / In-Progress Overlay -->
+                                    <Border x:Name="OverlayStatus" Background="#E6080E1A" Visibility="Collapsed" CornerRadius="8">
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <ProgressBar x:Name="PrgStatus" IsIndeterminate="True" Width="220" Height="6" Background="#1E293B" Foreground="{StaticResource CopilotCyanBrush}" Margin="0,0,0,14" />
+                                            <TextBlock x:Name="TxtOverlayMessage" Text="Analyse et segmentation de l'objet en cours..."
+                                                       FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock x:Name="TxtOverlaySub" Text="Inférence native OpenVINO sur le silicium local"
+                                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Status & Metrics Footer -->
+                    <Grid Grid.Row="2" Margin="0,8,0,0">
+                        <TextBlock x:Name="LblStatus" Text="Prêt • Saisissez un objet ou cliquez directement sur la photo." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Border x:Name="BadgeSpeed" Background="#1E293B" CornerRadius="10" Padding="8,2" Margin="0,0,6,0" Visibility="Collapsed">
+                                <TextBlock x:Name="TxtInferSpeed" Text="⚡ 21 ms • 🔋 ~2.2 W • NPU (Intel AI Boost)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                            </Border>
+                            <Border x:Name="BadgePower" Background="#1E293B" CornerRadius="10" Padding="8,2" Margin="0,0,6,0" Visibility="Collapsed">
+                                <TextBlock x:Name="TxtPower" Text="🌱 0.03 J (Ultra-sobre)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                            </Border>
+                            <Border x:Name="BadgeHistoryCount" Background="#1E293B" CornerRadius="10" Padding="8,2" Visibility="Collapsed">
+                                <TextBlock x:Name="TxtHistoryCount" Text="1 modification" FontSize="10" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+
+                <!-- 5. Architecture & Business Value Card -->
+                <Border Grid.Row="4" Background="#131B2E" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="14" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Background="#1E293B" CornerRadius="6" Width="36" Height="36" VerticalAlignment="Center">
+                            <TextBlock Text="💡" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                            <TextBlock x:Name="LblTechTitle" Text="POURQUOI LA GOMME MAGIQUE EN LOCAL EST UNE RÉVOLUTION D'ENTREPRISE :"
+                                       FontSize="11" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                            <TextBlock x:Name="LblTechDesc" Text="Contrairement aux outils cloud (Google Photos, Adobe Firefly, Canva) qui téléversent vos photos et visages sur des serveurs distants, cette Gomme Magique s'exécute intégralement sur le silicium de votre Copilot+ PC. La détection s'effectue directement sur le NPU ou le GPU en 15-25 ms via OpenVINO, le détourage est précis au pixel près, et vos données confidentielles ne quittent jamais votre machine."
+                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0" LineHeight="16" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -1,0 +1,269 @@
+<UserControl x:Class="CopilotPlusDemoHub.UI.Views.OperationsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- View Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock x:Name="LblOperationsTitle" Text="ASSISTANT OPÉRATIONS TERRAIN"
+                           FontSize="20" FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimaryBrush}" />
+                <TextBlock x:Name="LblOperationsSub" Text="Signaux prédictifs • Diagnostic hors-connexion • Recommandations de maintenance privées"
+                           FontSize="13" Margin="0,4,0,0"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border x:Name="BadgeModelContainer" Background="#162238" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="Modèle d'Intelligence Artificielle exécuté localement">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="🧠" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center" />
+                        <TextBlock x:Name="TxtModelBadge" Text="Modèle : Phi-4-mini (Instruct 3.8B • INT4 NPU/GPU)" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <Button x:Name="BtnDocHelp" Style="{StaticResource ModernButtonStyle}"
+                        Background="#1E293B" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                        Height="32" Padding="12,0" VerticalAlignment="Center"
+                        ToolTip="Documentation &amp; Guide de démonstration (FR / EN)" Click="BtnDocHelp_Click">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="❓" FontSize="12" Margin="0,0,6,0" />
+                        <TextBlock x:Name="TxtDocHelp" Text="Guide &amp; Doc" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- Two Columns Layout -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="380" />
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Incident Input Card -->
+            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,6,0">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="LblCardIncident" Text="DONNÉES DE L'INCIDENT"
+                                           FontSize="13" FontWeight="Bold"
+                                           Foreground="{StaticResource CopilotCyanBrush}"
+                                           VerticalAlignment="Center" />
+                                <Button Grid.Column="1" x:Name="BtnViewSourceDoc" Style="{StaticResource ModernButtonStyle}"
+                                        Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                        Height="28" Padding="10,0" Click="BtnViewSourceDoc_Click"
+                                        ToolTip="Consulter la fiche télémétrique complète de l'incident (JSON)">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="📄" FontSize="11" Margin="0,0,5,0" />
+                                        <TextBlock x:Name="TxtBtnViewSourceDoc" Text="Fiche Source" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <TextBlock x:Name="LblEquipment" Text="Équipement concerné"
+                                       FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,4" />
+                            <TextBox x:Name="TxtEquipment"
+                                     Text="Unité de traitement d'air CVC - Bâtiment B"
+                                     Background="{StaticResource InputBgBrush}"
+                                     Foreground="{StaticResource TextPrimaryBrush}"
+                                     BorderBrush="{StaticResource CardBorderBrush}"
+                                     Padding="10,6" Margin="0,0,0,10" />
+
+                            <TextBlock x:Name="LblAlarmCode" Text="Code d'alarme"
+                                       FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,4" />
+                            <TextBox x:Name="TxtAlarmCode"
+                                     Text="P1045"
+                                     Background="{StaticResource InputBgBrush}"
+                                     Foreground="{StaticResource TextPrimaryBrush}"
+                                     BorderBrush="{StaticResource CardBorderBrush}"
+                                     Padding="10,6" Margin="0,0,0,10" />
+
+                            <TextBlock x:Name="LblSymptoms" Text="Symptômes observés sur le terrain"
+                                       FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,4" />
+                            <TextBox x:Name="TxtSymptoms"
+                                     Text="Débit d'air anormalement réduit; Arrêt intermittent du ventilateur centrifuge; Vibrations mécaniques importantes détectées sur les paliers."
+                                     TextWrapping="Wrap" AcceptsReturn="True" Height="70"
+                                     Background="{StaticResource InputBgBrush}"
+                                     Foreground="{StaticResource TextPrimaryBrush}"
+                                     BorderBrush="{StaticResource CardBorderBrush}"
+                                     Padding="10,6" VerticalScrollBarVisibility="Auto" Margin="0,0,0,10" />
+
+                            <!-- Quick Question Chips -->
+                            <TextBlock x:Name="LblQuickQuestions" Text="Questions rapides pour la démo :"
+                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                            <WrapPanel Margin="0,0,0,10">
+                                <Button x:Name="BtnChipRootCause" Style="{StaticResource ModernButtonStyle}"
+                                        Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                        Height="24" Padding="6,0" Margin="0,2,4,2" Click="BtnChipRootCause_Click"
+                                        ToolTip="Identifier la cause racine et corréler les données télémétriques de débit et vibration">
+                                    <TextBlock x:Name="TxtChipRootCause" Text="⚡ Cause racine &amp; Télémétrie" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                </Button>
+                                <Button x:Name="BtnChipBelt" Style="{StaticResource ModernButtonStyle}"
+                                        Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                        Height="24" Padding="6,0" Margin="0,2,4,2" Click="BtnChipBelt_Click"
+                                        ToolTip="Procédure de tensionnement et remplacement des courroies trapézoïdales">
+                                    <TextBlock x:Name="TxtChipBelt" Text="🔧 Procédure Courroie" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                </Button>
+                                <Button x:Name="BtnChipVibration" Style="{StaticResource ModernButtonStyle}"
+                                        Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                        Height="24" Padding="6,0" Margin="0,2,4,2" Click="BtnChipVibration_Click"
+                                        ToolTip="Normes ISO 10816-3 et spécifications de graissage SKF LGMT 2">
+                                    <TextBlock x:Name="TxtChipVibration" Text="🛢️ Graisse &amp; Vibrations ISO" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                </Button>
+                                <Button x:Name="BtnChipLockout" Style="{StaticResource ModernButtonStyle}"
+                                        Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                        Height="24" Padding="6,0" Margin="0,2,4,2" Click="BtnChipLockout_Click"
+                                        ToolTip="Procédure de consignation électrique d'urgence NF C 18-510">
+                                    <TextBlock x:Name="TxtChipLockout" Text="🛑 Sécurité NF C 18-510" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                </Button>
+                            </WrapPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Bottom Action Button & Status -->
+                    <StackPanel Grid.Row="2" Margin="0,10,0,0">
+                        <Button x:Name="BtnRun"
+                                Content="▶ Lancer l'analyse locale"
+                                Style="{StaticResource ModernButtonStyle}"
+                                Height="40"
+                                Click="BtnRun_Click" />
+
+                        <ProgressBar x:Name="PrgBusy"
+                                     IsIndeterminate="True"
+                                     Height="3"
+                                     Margin="0,6,0,0"
+                                     Visibility="Collapsed" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Right: AI Guidance & Telemetry Card -->
+            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Guidance Header -->
+                    <StackPanel Grid.Row="0">
+                        <TextBlock x:Name="LblGuidanceTitle" Text="DIAGNOSTIC &amp; RECOMMANDATIONS DE MAINTENANCE"
+                                   FontSize="13" FontWeight="Bold"
+                                   Foreground="{StaticResource CopilotCyanBrush}" />
+                    </StackPanel>
+
+                    <!-- Telemetry KPI Bar -->
+                    <Border Grid.Row="1" Background="#0F172A" CornerRadius="6" Padding="12,8" Margin="0,10,0,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="105" />
+                                <ColumnDefinition Width="135" />
+                                <ColumnDefinition Width="110" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblLatencyHeader" Text="CHRONO / DURÉE" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                <TextBlock x:Name="LblLatency" Text="-- ms" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblThroughputHeader" Text="DÉBIT TEMPS RÉEL" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                <TextBlock x:Name="LblThroughput" Text="-- tok/s" FontSize="13" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblTokensHeader" Text="JETONS GÉNÉRÉS" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                <TextBlock x:Name="LblTokens" Text="-- tok" FontSize="13" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblPrivacyHeader" Text="CONFIDENTIALITÉ" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                <TextBlock x:Name="LblPrivacyBadge" Text="🛡️ 100% Hors-ligne" FontSize="12" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Live Pipeline & Reasoning Steps Tracker -->
+                    <Border Grid.Row="2" Background="#111B2E" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12,8" Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Pipeline Steps Pills -->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border x:Name="PillStep1" Background="#1E293B" CornerRadius="4" Padding="7,3" Margin="0,0,5,0">
+                                    <TextBlock x:Name="TxtStep1" Text="1. Ingestion Télémétrie" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
+                                </Border>
+                                <TextBlock Text="›" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,5,0" VerticalAlignment="Center" FontSize="11" />
+                                <Border x:Name="PillStep2" Background="#1E293B" CornerRadius="4" Padding="7,3" Margin="0,0,5,0">
+                                    <TextBlock x:Name="TxtStep2" Text="2. Prefill Silicium" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
+                                </Border>
+                                <TextBlock Text="›" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,5,0" VerticalAlignment="Center" FontSize="11" />
+                                <Border x:Name="PillStep3" Background="#1E293B" CornerRadius="4" Padding="7,3" Margin="0,0,5,0">
+                                    <TextBlock x:Name="TxtStep3" Text="3. Diagnostic &amp; Procédure" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
+                                </Border>
+                                <TextBlock Text="›" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,5,0" VerticalAlignment="Center" FontSize="11" />
+                                <Border x:Name="PillStep4" Background="#1E293B" CornerRadius="4" Padding="7,3">
+                                    <TextBlock x:Name="TxtStep4" Text="4. Validation Sécurité" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Live Status Description -->
+                            <TextBlock Grid.Row="1" x:Name="LblLiveStatus"
+                                       Text="Prêt • En attente de lancement de l'analyse d'incident"
+                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Streaming Output -->
+                    <ScrollViewer Grid.Row="3" x:Name="ScrollerOutput" VerticalScrollBarVisibility="Auto">
+                        <TextBox x:Name="TxtOutput"
+                                 IsReadOnly="True"
+                                 TextWrapping="Wrap"
+                                 Background="Transparent"
+                                 Foreground="{StaticResource TextPrimaryBrush}"
+                                 BorderThickness="0"
+                                 FontSize="13"
+                                 Text="En attente de lancement de l'analyse..." />
+                    </ScrollViewer>
+
+                    <!-- Safety Notice -->
+                    <Border Grid.Row="4" Background="#162033" CornerRadius="6" Padding="12,8" Margin="0,10,0,0">
+                        <TextBlock x:Name="LblSafetyNotice" Text="⚠️ Sécurité : Ces recommandations assistent l'opérateur mais ne remplacent pas les consignes approuvées de sécurité et d'habilitation électrique."
+                                   FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

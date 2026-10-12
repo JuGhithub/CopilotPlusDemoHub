@@ -1,0 +1,48 @@
+AIR HANDLING UNIT MAINTENANCE GUIDE
+
+SECTION 1 - FAN VIBRATION
+
+Excessive fan vibration may be caused by:
+
+- Bearing wear
+- Shaft misalignment
+- Blade damage
+- Loose mounting hardware
+- Airflow obstruction
+
+Recommended inspection:
+
+1. Inspect fan blades.
+2. Verify shaft alignment.
+3. Inspect bearings.
+4. Check mounting bolts.
+5. Validate airflow path.
+
+SECTION 2 - MOTOR OVERHEATING
+
+Motor overheating may be caused by:
+
+- Restricted airflow
+- Electrical imbalance
+- Bearing friction
+- Excessive load
+
+If motor temperature exceeds the approved operating range:
+
+1. Stop the unit.
+2. Inspect airflow conditions.
+3. Check motor current.
+4. Verify cooling airflow.
+
+SECTION 3 - BEARING INSPECTION
+
+Inspect bearings every six months.
+
+Signs of bearing degradation:
+
+- Abnormal noise
+- Excessive vibration
+- Increased temperature
+- Lubrication leakage
+
+Replace bearings showing significant wear.

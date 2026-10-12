@@ -1,0 +1,381 @@
+<UserControl x:Class="CopilotPlusDemoHub.UI.Views.SecurityAccessView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Focusable="True">
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid Margin="24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- 1. Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock x:Name="LblAccessTitle" Text="🛡️ CONTRÔLE D'ACCÈS ZERO-TRUST &amp; DÉMINEUR SOUVERAIN"
+                                   FontSize="20" FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock x:Name="LblAccessSub" Text="Authentification multimodale NPU/GPU : Détection conjointe obligatoire Tasse ☕ + Lunettes 👓 + Casque Audio 🎧"
+                                   FontSize="13" Margin="0,4,0,0"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border x:Name="BadgeModelContainer" Background="#162238" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="Modèle d'Intelligence Artificielle exécuté localement">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="🧠" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock x:Name="TxtModelBadge" Text="Modèle : YOLOv8s-World (Vision Zéro-Trust 27 classes)" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                        <Button x:Name="BtnDocHelp" Style="{StaticResource ModernButtonStyle}"
+                                Background="#1E293B" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                                Height="32" Padding="12,0" VerticalAlignment="Center"
+                                ToolTip="Documentation &amp; Guide de démonstration (FR / EN)" Click="BtnDocHelp_Click">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="❓" FontSize="12" Margin="0,0,6,0" />
+                                <TextBlock x:Name="TxtDocHelp" Text="Guide &amp; Doc" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- 2. Source Selector & Action Bar -->
+                <Border Grid.Row="1" Background="#131B2E" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,12" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="14" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Live Webcam Stream Toggle -->
+                        <Button Grid.Column="0" x:Name="BtnScanWebcam" Content="📹 Lancer la Webcam en Direct"
+                                ToolTip="Lancer le flux vidéo en temps réel de votre webcam avec détection continue IA"
+                                Style="{StaticResource ModernButtonStyle}" Background="#0284C7" Height="32" Padding="14,0" FontWeight="Bold"
+                                Click="BtnScanWebcam_Click" />
+
+                        <!-- Import Custom Image -->
+                        <Button Grid.Column="2" x:Name="BtnImportImage" Content="📁 Importer une Photo"
+                                ToolTip="Charger une photo depuis votre PC pour tester la détection"
+                                Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="32" Padding="12,0"
+                                Click="BtnImportImage_Click" />
+
+                        <!-- Sample Testing Scenarios -->
+                        <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="ÉCHANTILLONS :" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <Button x:Name="BtnSampleAllThree" Content="☕+👓+🎧 Valide (3/3)" Style="{StaticResource ModernButtonStyle}" Background="#065F46" BorderBrush="#10B981" BorderThickness="1.5" Height="30" Padding="10,0" Margin="0,0,6,0" FontWeight="Bold" Click="BtnSampleAllThree_Click" ToolTip="Tasse + Lunettes + Casque : 3/3 prérequis conformes (Accès Accordé)" />
+                            <Button x:Name="BtnSampleBoth" Content="☕+👓 Sans Casque (2/3)" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="9,0" Margin="0,0,6,0" Click="BtnSampleBoth_Click" ToolTip="Tasse et lunettes seules, casque manquant (Accès Refusé)" />
+                            <Button x:Name="BtnSampleCup" Content="☕ Tasse Seule" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="9,0" Margin="0,0,6,0" Click="BtnSampleCup_Click" ToolTip="Tasse seule présente, lunettes et casque manquants (Accès Refusé)" />
+                            <Button x:Name="BtnSampleGlasses" Content="👓 Lunettes Seules" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="9,0" Margin="0,0,6,0" Click="BtnSampleGlasses_Click" ToolTip="Lunettes seules présentes, tasse et casque manquants (Accès Refusé)" />
+                            <Button x:Name="BtnSampleNone" Content="❌ Aucun" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="9,0" Click="BtnSampleNone_Click" ToolTip="Aucun équipement présent (Refus total)" />
+                        </StackPanel>
+
+                        <!-- Engine & Hardware Accelerator -->
+                        <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="LblEngineTitle" Text="MOTEUR :" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <RadioButton x:Name="RadEngineOpenVINO" GroupName="AccessEngGrp" Content="⚡ OpenVINO" IsChecked="True" Style="{StaticResource PillButtonStyle}" Margin="0,0,4,0" ToolTip="Moteur Intel OpenVINO natif (NPU &amp; GPU Arc)" Checked="Engine_Checked" />
+                            <RadioButton x:Name="RadEngineONNX" GroupName="AccessEngGrp" Content="🌐 ONNX" Style="{StaticResource PillButtonStyle}" Margin="0,0,4,0" ToolTip="Moteur ONNX Runtime universel (DirectML GPU FP32)" Checked="Engine_Checked" />
+                            <RadioButton x:Name="RadEngineOlive" GroupName="AccessEngGrp" Content="🟢 Olive FP16" Style="{StaticResource PillButtonStyle}" Margin="0,0,12,0" ToolTip="Moteur ONNX Runtime optimisé par Microsoft Olive (DirectML GPU FP16)" Checked="Engine_Checked" />
+
+                            <TextBlock Text="ACCÉLÉRATEUR :" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <RadioButton x:Name="RadDeviceGpu" GroupName="AccessDevGrp" Content="🎮 GPU Intel Arc (18ms)" IsChecked="True" Style="{StaticResource PillButtonStyle}" Margin="0,0,4,0" Checked="Device_Checked" ToolTip="Inférence Vision temps réel sur GPU Intel Arc Xe2 (~18 ms, ~14W)" />
+                            <RadioButton x:Name="RadDeviceCpu" GroupName="AccessDevGrp" Content="💻 CPU Core Ultra" Style="{StaticResource PillButtonStyle}" Checked="Device_Checked" ToolTip="Inférence sur processeur Intel Core Ultra" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- 3. Main Workspace -->
+                <Grid Grid.Row="2">
+                    <!-- MODE A: Scanning & Security Gate Mode (Camera & Verification Active) -->
+                    <Grid x:Name="ViewScanningMode" Visibility="Visible">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" MinWidth="440" />
+                            <ColumnDefinition Width="18" />
+                            <ColumnDefinition Width="1.05*" MinWidth="440" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left Column: Scanner Feed & Compliance HUD -->
+                        <Border Grid.Column="0" Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" MinHeight="360" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Panel Header -->
+                                <Grid Grid.Row="0" Margin="0,0,0,10">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="📹" FontSize="14" Margin="0,0,6,0" />
+                                        <TextBlock Text="SCANNER OPTIQUE BIOMÉTRIQUE" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    </StackPanel>
+                                    <TextBlock x:Name="LblFeedSource" Text="Prêt à scanner" FontSize="11" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                </Grid>
+
+                                <!-- Video / Image Preview Area -->
+                                <Border Grid.Row="1" Background="#0A0F1D" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+                                    <Grid>
+                                        <!-- Scan Feed Image -->
+                                        <Image x:Name="ImgScannerFeed" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                                        <!-- Live Streaming Overlay Indicator -->
+                                        <Border x:Name="BadgeLiveStream" Visibility="Collapsed" Background="#D9DC2626" CornerRadius="4" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Ellipse Width="8" Height="8" Fill="White" Margin="0,0,6,0" />
+                                                <TextBlock x:Name="TxtLiveStreamLabel" Text="🔴 LIVE WEBCAM • SCAN EN TEMPS RÉEL" FontSize="10" FontWeight="Bold" Foreground="White" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Placeholder when empty -->
+                                        <StackPanel x:Name="PanelFeedPlaceholder" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock Text="🛡️" FontSize="46" HorizontalAlignment="Center" Opacity="0.4" Margin="0,0,0,8" />
+                                            <TextBlock Text="Cliquez sur « 📹 Lancer la Webcam en Direct »" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock Text="ou sélectionnez un échantillon pour vérifier vos 3 équipements" FontSize="11" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                        </StackPanel>
+
+                                        <!-- Scanning Busy Overlay -->
+                                        <Border x:Name="OverlayScanning" Background="#CC0B1220" Visibility="Collapsed">
+                                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <ProgressBar IsIndeterminate="True" Width="140" Height="4" Background="#1E293B" Foreground="{StaticResource CopilotCyanBrush}" Margin="0,0,0,12" />
+                                                <TextBlock Text="Analyse neuronale OpenVINO en cours..." FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                                                <TextBlock x:Name="TxtScanningDevice" Text="Inférence YOLO-World sur GPU" FontSize="11" Foreground="{StaticResource CopilotCyanBrush}" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Prerequisite Progress Bar & Counter -->
+                                <Border Grid.Row="2" Background="#0C1424" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="12,8" Margin="0,10,0,0">
+                                    <Grid>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="STATUT DES PRÉREQUIS SÉCURITÉ :" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                            <ProgressBar x:Name="BarPrereqProgress" Value="0" Maximum="3" Width="80" Height="7" Background="#1E293B" Foreground="#EF4444" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <TextBlock x:Name="TxtPrereqProgress" Text="0 / 3 CONFORMES" FontSize="11.5" FontWeight="Bold" Foreground="#F87171" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                    </Grid>
+                                </Border>
+
+                                <!-- 3 Verification Badges: Cup, Glasses, Headset -->
+                                <Grid Grid.Row="3" Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="8" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Cup Badge -->
+                                    <Border Grid.Column="0" x:Name="BadgeCup" Background="#162032" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="8,8">
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="☕" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                                <StackPanel>
+                                                    <TextBlock Text="Tasse Café" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                    <TextBlock x:Name="TxtCupStatus" Text="En attente..." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <TextBlock x:Name="IconCupState" Text="⏳" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Glasses Badge -->
+                                    <Border Grid.Column="2" x:Name="BadgeGlasses" Background="#162032" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="8,8">
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="👓" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                                <StackPanel>
+                                                    <TextBlock Text="Lunettes" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                    <TextBlock x:Name="TxtGlassesStatus" Text="En attente..." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <TextBlock x:Name="IconGlassesState" Text="⏳" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Headset Badge -->
+                                    <Border Grid.Column="4" x:Name="BadgeHeadset" Background="#162032" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="8,8">
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="🎧" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                                <StackPanel>
+                                                    <TextBlock Text="Casque Audio" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                    <TextBlock x:Name="TxtHeadsetStatus" Text="En attente..." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,0" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <TextBlock x:Name="IconHeadsetState" Text="⏳" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Access Decision Banner & Silicon Metrics -->
+                                <StackPanel Grid.Row="4" Margin="0,10,0,0">
+                                    <Border x:Name="BannerAccessDecision" Background="#261A1D" BorderBrush="#7F1D1D" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock x:Name="IconAccessDecision" Text="🔒" FontSize="16" Margin="0,0,8,0" Foreground="#F87171" />
+                                                <TextBlock x:Name="TxtAccessDecision" Text="ACCÈS RESTREINT — ÉQUIPEMENTS REQUIS NON DÉTECTÉS" FontSize="11.5" FontWeight="Bold" Foreground="#FCA5A5" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Silicon Speed & Power Footer -->
+                                    <Grid Margin="0,8,0,0">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Border x:Name="BadgeSpeed" Background="#10253F" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1" CornerRadius="12" Padding="8,2" Margin="0,0,6,0" Visibility="Collapsed">
+                                                <TextBlock x:Name="TxtInferSpeed" Text="⚡ 18 ms • GPU" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                            </Border>
+                                            <Border x:Name="BadgePower" Background="#132B1A" BorderBrush="{StaticResource NpuGreenBrush}" BorderThickness="1" CornerRadius="12" Padding="8,2" Visibility="Collapsed">
+                                                <TextBlock x:Name="TxtPower" Text="🔋 ~3.5 W • 0.06 J" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="Zéro fuite cloud • Inférence 100% locale" FontSize="10" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                    </Grid>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Right Column: Secured Portal Platform & Locked Vault State -->
+                        <Border Grid.Column="2" Background="{StaticResource CardBgBrush}" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="16">
+                            <Border x:Name="PanelVaultLocked" Visibility="Visible" Background="#0C1322" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="24">
+                                <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <StackPanel MaxWidth="400" HorizontalAlignment="Center">
+                                        <Border Width="80" Height="80" CornerRadius="40" Background="#162035" BorderBrush="#334155" BorderThickness="2" HorizontalAlignment="Center" Margin="0,0,0,16">
+                                            <TextBlock Text="🔒" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Border>
+                                        <TextBlock Text="CONSOLE SÉCURISÉE VERROUILLÉE" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
+                                        <TextBlock Text="Authentification Matérielle &amp; Ergonomique Obligatoire" FontSize="12" Foreground="{StaticResource CopilotCyanBrush}" HorizontalAlignment="Center" Margin="0,4,0,14" />
+                                        <TextBlock Text="Pour déverrouiller la console exécutive et lancer la plateforme de déminage, le modèle IA doit attester conjointement 3 équipements :" FontSize="11.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,14" />
+
+                                        <!-- Prerequisite Requirements List -->
+                                        <Border Background="#10192A" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="14,12" Margin="0,0,0,16">
+                                            <StackPanel>
+                                                <TextBlock Text="1. ☕ Tasse de café (Indicateur d'éveil opérationnel)" FontSize="11.5" Foreground="#FDE047" Margin="0,0,0,8" />
+                                                <TextBlock Text="2. 👓 Paire de lunettes (Équipement de précision visuelle)" FontSize="11.5" Foreground="#67E8F9" Margin="0,0,0,8" />
+                                                <TextBlock Text="3. 🎧 Casque audio (Isolation phonique &amp; communication)" FontSize="11.5" Foreground="#F472B6" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <TextBlock Text="💡 Conseil : Présentez vos 3 équipements devant la webcam ou cliquez sur « ☕+👓+🎧 Valide (3/3) » pour déverrouiller instantanément." FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" TextAlignment="Center" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Border>
+                    </Grid>
+
+                    <!-- MODE B: Centered Sovereign Minesweeper Game (Camera disappears completely) -->
+                    <Grid x:Name="ViewMinesweeperMode" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                        <Border MaxWidth="580" Background="{StaticResource CardBgBrush}" BorderBrush="#10B981" BorderThickness="1.5" CornerRadius="12" Padding="20" HorizontalAlignment="Center">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- 1. Top Authorization Header & Re-lock Button -->
+                                <Border Grid.Row="0" Background="#064E3B" BorderBrush="#10B981" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,12">
+                                    <Grid>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="🟢" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                            <StackPanel>
+                                                <TextBlock Text="ACCÈS PRIVILÉGIÉ AUTORISÉ — 3/3 PRÉREQUIS CONFORMES" FontSize="12.5" FontWeight="Bold" Foreground="#A7F3D0" />
+                                                <TextBlock x:Name="TxtUnlockedTelemetry" Text="☕ Tasse + 👓 Lunettes + 🎧 Casque validés avec succès sur GPU Intel Arc" FontSize="10.5" Foreground="#6EE7B7" Margin="0,2,0,0" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <Button x:Name="BtnRelock" Content="🔒 Re-verrouiller / Scanner" Style="{StaticResource ModernButtonStyle}" Background="#065F46" BorderBrush="#34D399" BorderThickness="1" Height="28" Padding="12,0" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center" Click="BtnRelock_Click" ToolTip="Verrouiller à nouveau et réactiver la caméra de scan" />
+                                    </Grid>
+                                </Border>
+
+                                <!-- 2. Security Badge Proof Bar -->
+                                <Border Grid.Row="1" Background="#0A1628" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,0,14">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <TextBlock Text="ÉQUIPEMENTS VALIDÉS : " FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                        <Border Background="#132B1A" BorderBrush="#10B981" BorderThickness="1" CornerRadius="10" Padding="8,2" Margin="0,0,6,0">
+                                            <TextBlock Text="☕ Tasse d'éveil" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                                        </Border>
+                                        <Border Background="#132B1A" BorderBrush="#10B981" BorderThickness="1" CornerRadius="10" Padding="8,2" Margin="0,0,6,0">
+                                            <TextBlock Text="👓 Lunettes de précision" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                                        </Border>
+                                        <Border Background="#132B1A" BorderBrush="#10B981" BorderThickness="1" CornerRadius="10" Padding="8,2">
+                                            <TextBlock Text="🎧 Casque d'isolation" FontSize="10" FontWeight="Bold" Foreground="#34D399" />
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- 3. Minesweeper Dashboard Header (Mines, Smiley, Timer) -->
+                                <Border Grid.Row="2" Background="#090D16" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="16,10" Margin="0,0,0,14">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Remaining Mines LED Display -->
+                                        <Border Grid.Column="0" Background="#020617" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="4" Padding="10,4" HorizontalAlignment="Left">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="💣 " FontSize="14" VerticalAlignment="Center" />
+                                                <TextBlock x:Name="TxtMinesCounter" Text="010" FontSize="20" FontWeight="Bold" FontFamily="Consolas, Courier New" Foreground="#EF4444" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Face Reset Button -->
+                                        <Button Grid.Column="1" x:Name="BtnMinesFace" Content="🙂" FontSize="22" Width="48" Height="44"
+                                                Style="{StaticResource ModernButtonStyle}" Background="#1E293B" BorderBrush="#334155" BorderThickness="1"
+                                                Click="BtnMinesFace_Click" ToolTip="Réinitialiser la partie de Démineur" />
+
+                                        <!-- Timer LED Display -->
+                                        <Border Grid.Column="2" Background="#020617" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="4" Padding="10,4" HorizontalAlignment="Right">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="⏱️ " FontSize="14" VerticalAlignment="Center" />
+                                                <TextBlock x:Name="TxtMinesTimer" Text="000" FontSize="20" FontWeight="Bold" FontFamily="Consolas, Courier New" Foreground="#38BDF8" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- 4. Minesweeper 9x9 Board Grid -->
+                                <Border Grid.Row="3" Background="#0B1120" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="14" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <StackPanel>
+                                        <!-- Game Over / Victory Status Toast -->
+                                        <Border x:Name="BannerGameResult" Visibility="Collapsed" CornerRadius="4" Padding="8,4" Margin="0,0,0,8" HorizontalAlignment="Center">
+                                            <TextBlock x:Name="TxtGameResult" Text="VICTOIRE !" FontSize="11" FontWeight="Bold" />
+                                        </Border>
+
+                                        <!-- Uniform Grid of Cells -->
+                                        <UniformGrid x:Name="GridMinesweeper" Rows="9" Columns="9" Width="324" Height="324" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- 5. Game Controls & Windows Launch Footer -->
+                                <Grid Grid.Row="4" Margin="0,14,0,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button x:Name="BtnNewGame" Content="🔄 Nouvelle Partie" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="12,0" Margin="0,0,8,0" Click="BtnNewGame_Click" />
+                                        <Button x:Name="BtnLaunchWinmine" Content="🎮 Démineur Windows Externe" Style="{StaticResource ModernButtonStyle}" Background="#132038" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1" Height="30" Padding="12,0" Click="BtnLaunchWinmine_Click" ToolTip="Tenter de lancer l'application Démineur native de Windows" />
+                                    </StackPanel>
+                                    <TextBlock Text="Clic gauche: Révéler • Clic droit: 🚩 Drapeau" FontSize="11" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

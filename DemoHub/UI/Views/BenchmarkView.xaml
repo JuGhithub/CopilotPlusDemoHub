@@ -1,0 +1,279 @@
+<UserControl x:Class="CopilotPlusDemoHub.UI.Views.BenchmarkView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- View Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock x:Name="LblBenchmarkTitle" Text="BENCHMARK ÉNERGIE, BATTERIE &amp; REFROIDISSEMENT"
+                           FontSize="20" FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimaryBrush}" />
+                <TextBlock x:Name="LblBenchmarkSub" Text="Mesure continue en temps réel de la consommation en Watts • Télémétrie thermique • Efficience énergétique Tokens/Watt"
+                           FontSize="13" Margin="0,4,0,0"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border x:Name="BadgeModelContainer" Background="#162238" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="Modèles d'Intelligence Artificielle testés">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="🧠" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center" />
+                        <TextBlock x:Name="TxtModelBadge" Text="Modèles : YOLOv8n-Seg (Duel NPU) • Phi-4-mini (LLM)" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <Button x:Name="BtnDocHelp" Style="{StaticResource ModernButtonStyle}"
+                        Background="#1E293B" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                        Height="32" Padding="12,0" VerticalAlignment="Center"
+                        ToolTip="Documentation &amp; Guide de démonstration (FR / EN)" Click="BtnDocHelp_Click">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="❓" FontSize="12" Margin="0,0,6,0" />
+                        <TextBlock x:Name="TxtDocHelp" Text="Guide &amp; Doc" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- Battery Tip Banner -->
+        <Border Grid.Row="1" Background="#132438" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="💡" FontSize="18" Margin="0,0,12,0" VerticalAlignment="Center" />
+                <TextBlock x:Name="LblBatteryTip" Grid.Column="1" VerticalAlignment="Center"
+                           Text="Conseil de démonstration : Pour visualiser la consommation réelle en direct (Watts), débranchez le chargeur secteur et passez sur batterie."
+                           FontSize="12" Foreground="{StaticResource CopilotCyanBrush}" TextWrapping="Wrap" />
+            </Grid>
+        </Border>
+
+        <!-- KPI Tiles Row -->
+        <Grid Grid.Row="2" Margin="0,0,0,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Card 1: Estimated Autonomy & Power -->
+            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Padding="16">
+                <StackPanel>
+                    <TextBlock x:Name="LblCardAutonomy" Text="AUTONOMIE ESTIMÉE (IA CONTINUE)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="LblAutonomy" Text="~ 3h 00" FontSize="20" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" Margin="0,6,0,2" TextWrapping="Wrap" />
+                    <TextBlock x:Name="LblWattsDetails" Text="Décharge : -- W" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,3" TextWrapping="Wrap" />
+                    <TextBlock x:Name="LblWattsEfficiency" Text="⚡ NPU : 3x plus sobre qu'un GPU" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource NpuGreenBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <!-- Card 2: Battery % -->
+            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}" Padding="16">
+                <StackPanel>
+                    <TextBlock x:Name="LblCardBattery" Text="NIVEAU BATTERIE" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="LblBattery" Text="-- %" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,6,0,2" />
+                    <TextBlock x:Name="LblPowerSource" Text="Détection alimentation..." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <!-- Card 3: Silicon Load & Cooling Fans -->
+            <Border Grid.Column="4" Style="{StaticResource CardBorderStyle}" Padding="12,12,12,10">
+                <StackPanel>
+                    <TextBlock x:Name="LblCardCpu" Text="CHARGE SILICIUM" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                    
+                    <!-- 3 Accelerators Load Pills -->
+                    <Grid Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="6" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="6" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- NPU Pill -->
+                        <Border Grid.Column="0" Background="#11241E" CornerRadius="5" Padding="4,6">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="⚡ NPU" FontSize="9" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="LblNpu" Text="-- %" FontSize="14" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" HorizontalAlignment="Center" Margin="0,1,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- GPU Pill -->
+                        <Border Grid.Column="2" Background="#241E11" CornerRadius="5" Padding="4,6">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="🎮 GPU" FontSize="9" FontWeight="Bold" Foreground="{StaticResource GpuAmberBrush}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="LblGpu" Text="-- %" FontSize="14" FontWeight="Bold" Foreground="{StaticResource GpuAmberBrush}" HorizontalAlignment="Center" Margin="0,1,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- CPU Pill -->
+                        <Border Grid.Column="4" Background="#161B2E" CornerRadius="5" Padding="4,6">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="💻 CPU" FontSize="9" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" HorizontalAlignment="Center" />
+                                <TextBlock x:Name="LblCpu" Text="-- %" FontSize="14" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" HorizontalAlignment="Center" Margin="0,1,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Card 4: Tokens Generated -->
+            <Border Grid.Column="6" Style="{StaticResource CardBorderStyle}" Padding="16">
+                <StackPanel>
+                    <TextBlock x:Name="LblCardTokens" Text="TOKENS GÉNÉRÉS" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                    <TextBlock x:Name="LblTokens" Text="0" FontSize="22" FontWeight="Bold" Foreground="{StaticResource GpuAmberBrush}" Margin="0,6,0,2" />
+                    <TextBlock x:Name="LblThroughput" Text="Débit: -- tok/s" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Executive Client Explainer Card -->
+        <Border Grid.Row="3" Background="#111B2E" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="10" Padding="16,10" Margin="0,0,0,16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock Text="💡" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Center" />
+                    <TextBlock x:Name="LblExplainerTitle" Text="COMPRENDRE LES WATTS EN RENDEZ-VOUS CLIENT" FontSize="11" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Column 1: LED Analogy -->
+                    <Border Grid.Column="0" Background="#162238" CornerRadius="6" Padding="10,8">
+                        <StackPanel>
+                            <TextBlock x:Name="LblExplainerTitle1" Text="💡 Équivalence Concrète" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,3" />
+                            <TextBlock x:Name="LblExplainer1" Text="25 W pour TOUT le PC (écran + IA à 100% + système), c'est la consommation d'une simple ampoule LED." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Column 2: Autonomy -->
+                    <Border Grid.Column="2" Background="#162238" CornerRadius="6" Padding="10,8">
+                        <StackPanel>
+                            <TextBlock x:Name="LblExplainerTitle2" Text="🔋 Autonomie Réelle" FontSize="11" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" Margin="0,0,0,3" />
+                            <TextBlock x:Name="LblExplainer2" Text="~3h d'IA ininterrompue à 100%, soit plus de 10h à 12h d'autonomie en journée de travail classique (usage mixte)." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Column 3: GPU comparison -->
+                    <Border Grid.Column="4" Background="#162238" CornerRadius="6" Padding="10,8">
+                        <StackPanel>
+                            <TextBlock x:Name="LblExplainerTitle3" Text="❄️ Face au GPU Classique" FontSize="11" FontWeight="Bold" Foreground="{StaticResource GpuAmberBrush}" Margin="0,0,0,3" />
+                            <TextBlock x:Name="LblExplainer3" Text="Un GPU consomme 65W à 100W (batterie vidée en 45 min, chauffe élevée, bruit de turbine). Le NPU est 3x plus sobre." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Bottom Controls & Execution Log -->
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="340" />
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Controls Card -->
+            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+                <StackPanel>
+                    <TextBlock x:Name="LblConfigTitle" Text="CONFIGURATION DU BENCHMARK" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,12" />
+                    <TextBlock x:Name="LblModeTitle" Text="TYPE D'ÉPREUVE :" FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8" />
+                    <StackPanel Margin="0,0,0,16">
+                        <RadioButton x:Name="RadModeLLM" GroupName="BenchModeGrp" Content="⚡ Endurance LLM (Phi-4-mini)" IsChecked="True" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8" Checked="BenchmarkMode_Changed" />
+                        <RadioButton x:Name="RadModeDuel" GroupName="BenchModeGrp" Content="⚔️ Duel NPU : OpenVINO IR vs Modèle Brut ONNX vs Olive" Foreground="{StaticResource CopilotCyanBrush}" FontWeight="SemiBold" Checked="BenchmarkMode_Changed" ToolTip="Duel 100% NPU sur Intel AI Boost : OpenVINO IR natif vs Modèle Brut ONNX vs Modèle Optimisé Microsoft Olive (-50% taille mémoire)" />
+                    </StackPanel>
+
+                    <TextBlock x:Name="LblDurationLabel" Text="Durée du test continu :" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,8" />
+                    <StackPanel Margin="0,0,0,16">
+                        <RadioButton x:Name="Rad30s" GroupName="BenchTimeGrp" Content="⚡ 30 secondes (Démonstration express)" IsChecked="True" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8" />
+                        <RadioButton x:Name="Rad2m" GroupName="BenchTimeGrp" Content="⏱️ 2 minutes (Évaluation rapide)" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8" />
+                        <RadioButton x:Name="Rad5m" GroupName="BenchTimeGrp" Content="⏱️ 5 minutes (Test de chauffe)" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,8" />
+                        <RadioButton x:Name="Rad10m" GroupName="BenchTimeGrp" Content="⏱️ 10 minutes (Stress test complet)" Foreground="{StaticResource TextPrimaryBrush}" />
+                    </StackPanel>
+
+                    <TextBlock x:Name="LblActiveDeviceLabel" Text="Accélérateur sélectionné :" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                    <TextBlock x:Name="LblActiveDevice" Text="NPU (Intel AI Boost)" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource NpuGreenBrush}" Margin="0,0,0,20" />
+
+                    <Button x:Name="BtnStart" Content="▶ Démarrer le Benchmark"
+                            Style="{StaticResource ModernButtonStyle}" Height="44"
+                            Click="BtnStart_Click" Margin="0,0,0,10" />
+
+                    <Button x:Name="BtnStop" Content="⏹ Arrêter le test"
+                            Style="{StaticResource ModernButtonStyle}"
+                            Background="#334155"
+                            Height="36"
+                            IsEnabled="False" Click="BtnStop_Click" />
+
+                    <ProgressBar x:Name="PrgDuration" Height="6" Margin="0,16,0,0" Value="0" Maximum="100" />
+                    <TextBlock x:Name="LblRemainingTime" Text="Prêt à démarrer" FontSize="11" HorizontalAlignment="Center" Foreground="{StaticResource TextMutedBrush}" Margin="0,6,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- Right Activity Log Card -->
+            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="LblLogTitle" Grid.Column="0" Text="JOURNAL DE TÉLÉMÉTRIE EN TEMPS RÉEL" FontSize="13" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                        <Button x:Name="BtnClearLog" Grid.Column="1" Content="🗑️ Effacer"
+                                Style="{StaticResource ModernButtonStyle}"
+                                Background="#334155"
+                                FontSize="11"
+                                Padding="8,2"
+                                Height="26"
+                                VerticalAlignment="Center"
+                                Click="BtnClearLog_Click" />
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1" x:Name="ScrollerLog" Height="285" VerticalScrollBarVisibility="Visible">
+                        <TextBox x:Name="TxtLog"
+                                 IsReadOnly="True"
+                                 TextWrapping="Wrap"
+                                 Background="Transparent"
+                                 Foreground="{StaticResource TextPrimaryBrush}"
+                                 BorderThickness="0"
+                                 FontSize="12"
+                                 FontFamily="Consolas"
+                                 Text="Appuyez sur 'Démarrer le Benchmark' pour injecter une charge d'inférence continue..." />
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

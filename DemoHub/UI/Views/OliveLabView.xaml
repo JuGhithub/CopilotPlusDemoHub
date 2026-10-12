@@ -1,0 +1,941 @@
+<UserControl x:Class="CopilotPlusDemoHub.UI.Views.OliveLabView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Focusable="True">
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid Margin="24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- 1. Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🧪" FontSize="20" Margin="0,0,8,0" VerticalAlignment="Center" />
+                            <TextBlock x:Name="LblTitle" Text="MICROSOFT OLIVE AI MODEL OPTIMIZER"
+                                       FontSize="16" FontWeight="Bold"
+                                       Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <TextBlock x:Name="LblSubtitle" Text="Pure Model Benchmark: Unoptimized Model (Raw FP32) vs. Olive-Optimized Model (FP16)"
+                                   FontSize="11.5" Margin="28,3,0,0"
+                                   Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <WrapPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
+                        <Border Background="#0C1424" BorderBrush="#2A3B5C" BorderThickness="1" CornerRadius="16" Padding="10,5" Margin="0,0,8,4">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Width="7" Height="7" Fill="{StaticResource NpuGreenBrush}" Margin="0,0,6,0" />
+                                <TextBlock x:Name="LblComplianceBadge" Text="Zero Quality Loss • -50% Memory • 4.2x Faster" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource NpuGreenBrush}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border x:Name="BadgeModelContainer" Background="#162238" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="6" Padding="8,5" Margin="0,0,8,4" ToolTip="Microsoft Olive pipeline executed locally">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="🧠" FontSize="11" Margin="0,0,5,0" VerticalAlignment="Center" />
+                                <TextBlock x:Name="TxtModelBadge" Text="Pipeline: YOLOv8s-World (FP16 / DirectML)" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
+                        <Button x:Name="BtnDocHelp" Style="{StaticResource ModernButtonStyle}"
+                                Background="#1E293B" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                                Height="28" Padding="10,0" Margin="0,0,0,4"
+                                ToolTip="Documentation &amp; Demo Guide" Click="BtnDocHelp_Click">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="❓" FontSize="11" Margin="0,0,5,0" />
+                                <TextBlock x:Name="TxtDocHelp" Text="Demo Guide &amp; Docs" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                            </StackPanel>
+                        </Button>
+                    </WrapPanel>
+                </Grid>
+
+                <!-- 2. Configuration & Control Bar -->
+                <Border Grid.Row="1" Background="#131B2E" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="8" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="10" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Row 0: Model Selector -->
+                        <WrapPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="LblModelSelector" Text="AI Model to Benchmark:" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <Border Background="#0C1424" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="3">
+                                <WrapPanel Orientation="Horizontal">
+                                    <RadioButton x:Name="RadModelYoloWorld" GroupName="OliveModelGrp" IsChecked="True"
+                                                 Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="Bold"
+                                                 Checked="Model_Checked">
+                                        <TextBlock Text="👁️ YOLOv8s-World (Vision &amp; Security)" />
+                                    </RadioButton>
+                                    <RadioButton x:Name="RadModelYoloSeg" GroupName="OliveModelGrp"
+                                                 Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="SemiBold"
+                                                 Checked="Model_Checked">
+                                        <TextBlock Text="✂️ YOLOv8n-Seg (Segmentation)" />
+                                    </RadioButton>
+                                    <RadioButton x:Name="RadModelPpOcr" GroupName="OliveModelGrp"
+                                                 Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="SemiBold"
+                                                 Checked="Model_Checked">
+                                        <TextBlock Text="📑 PP-OCRv4 (Document OCR)" />
+                                    </RadioButton>
+                                    <RadioButton x:Name="RadModelMultiAgentMcp" GroupName="OliveModelGrp"
+                                                 Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="Bold"
+                                                 Foreground="{StaticResource CopilotCyanBrush}"
+                                                 Checked="Model_Checked">
+                                        <TextBlock Text="🤖 Multi-Agent Fleet MCP (3 Agents Concurrent)" />
+                                    </RadioButton>
+                                    <RadioButton x:Name="RadModelPhi4" GroupName="OliveModelGrp"
+                                                 Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="Bold"
+                                                 Foreground="{StaticResource CopilotCyanBrush}"
+                                                 Checked="Model_Checked">
+                                        <TextBlock Text="⚡ Phi-4-mini SLM (Language &amp; Tokens)" />
+                                    </RadioButton>
+                                </WrapPanel>
+                            </Border>
+                        </WrapPanel>
+
+                        <!-- Row 2: Mode Selector + Accelerator Badge -->
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Mode Selector -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblModeSelector" Text="Benchmark Mode:" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <Border Background="#0C1424" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="3">
+                                    <StackPanel Orientation="Horizontal">
+                                        <RadioButton x:Name="RadModeDuel" GroupName="OliveModeGrp" IsChecked="True"
+                                                     Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="Bold"
+                                                     Checked="Mode_Checked">
+                                            <TextBlock Text="⚡ Side-by-Side Duel" />
+                                        </RadioButton>
+                                        <RadioButton x:Name="RadModeOlive" GroupName="OliveModeGrp"
+                                                     Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="SemiBold"
+                                                     Checked="Mode_Checked">
+                                            <TextBlock Text="🟢 Olive Optimized Only" />
+                                        </RadioButton>
+                                        <RadioButton x:Name="RadModeRaw" GroupName="OliveModeGrp"
+                                                     Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="SemiBold"
+                                                     Checked="Mode_Checked">
+                                            <TextBlock Text="❌ Raw Unoptimized Only" />
+                                        </RadioButton>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Active Hardware Accelerator Badge -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Target Silicon Accelerator:" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <Border Background="#1A253A" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="10,4">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Ellipse Width="7" Height="7" Fill="{StaticResource NpuGreenBrush}" Margin="0,0,6,0" />
+                                        <TextBlock x:Name="TxtActiveDevice" Text="⚡ DirectML (GPU / NPU Acceleration)" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Row 4: Sample Buttons + Benchmark CTA -->
+                        <Grid Grid.Row="4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="0" x:Name="BtnSample1" Content="🖼️ Sample 1: Security Access"
+                                    Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="32" Padding="12,0"
+                                    Click="BtnSample1_Click" />
+
+                            <Button Grid.Column="2" x:Name="BtnSample2" Content="🖼️ Sample 2: Desk &amp; Objects"
+                                    Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="32" Padding="12,0"
+                                    Click="BtnSample2_Click" />
+
+                            <Button Grid.Column="4" x:Name="BtnImportImage" Content="📂 Load Custom Image"
+                                    Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="32" Padding="12,0"
+                                    Click="BtnImportImage_Click" />
+
+                            <!-- Big CTA Benchmark Button -->
+                            <Button Grid.Column="6" x:Name="BtnRunBenchmark" Content="🚀 Run Olive Benchmark"
+                                    Style="{StaticResource ModernButtonStyle}" Background="#0284C7" Height="34" Padding="18,0"
+                                    FontSize="12.5" FontWeight="Bold" Click="BtnRunBenchmark_Click" />
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- 3. Main Content: Visual Render (Left) + KPI Cards (Right) -->
+                <Grid Grid.Row="2" MinHeight="560">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.1*" />
+                        <ColumnDefinition Width="18" />
+                        <ColumnDefinition Width="0.9*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- LEFT COLUMN: Visual Render Output -->
+                    <Border Grid.Column="0" Background="#0C1424" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="14">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" MinHeight="360" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Render Info Header -->
+                            <Grid Grid.Row="0" Margin="0,0,0,10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Row 0: Title on Left, Badges on Right -->
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" x:Name="LblVisualTitle" Text="Visual Model Optimization Duel" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <Border Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                                            <TextBlock x:Name="TxtDetectionsBadge" Text="Status: Ready" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                        </Border>
+                                        <Border Background="#0E2E20" BorderBrush="{StaticResource NpuGreenBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2">
+                                            <TextBlock x:Name="TxtFidelityBadge" Text="🎯 100% Precision Preserved" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Row 1: Full-width Subtitle (never collides with badges) -->
+                                <TextBlock Grid.Row="1" x:Name="LblVisualSub" Text="Direct side-by-side comparison: Raw FP32 Model vs. Olive FP16 Model" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0" TextWrapping="Wrap" />
+                            </Grid>
+
+                            <!-- Visual Display Canvas -->
+                            <Border Grid.Row="1" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" MinHeight="360">
+                                <Grid>
+                                    <!-- 1. Single Model Side-by-Side Duel -->
+                                    <Grid x:Name="GridSinglePreview" Visibility="Visible" Margin="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="10" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Raw Single Model -->
+                                        <Border Grid.Column="0" Background="#0B0609" BorderBrush="#3B1822" BorderThickness="1" CornerRadius="8" Padding="10">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <!-- Header -->
+                                                <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                                                    <TextBlock Text="❌ BEFORE OLIVE (Raw)" FontSize="12" FontWeight="Bold" Foreground="#EF4444" TextWrapping="Wrap" />
+                                                    <WrapPanel Margin="0,4,0,0">
+                                                        <Border Background="#251218" BorderBrush="#EF4444" BorderThickness="0.5" CornerRadius="3" Padding="5,2" Margin="0,0,4,4">
+                                                            <TextBlock x:Name="TxtRawTagFp" Text="FP32 Precision" FontSize="10" FontWeight="SemiBold" Foreground="#FCA5A5" />
+                                                        </Border>
+                                                        <Border Background="#251218" BorderBrush="#EF4444" BorderThickness="0.5" CornerRadius="3" Padding="5,2" Margin="0,0,4,4">
+                                                            <TextBlock x:Name="TxtRawTagSize" Text="50.3 MB" FontSize="10" FontWeight="SemiBold" Foreground="#FCA5A5" />
+                                                        </Border>
+                                                        <Border Background="#251218" BorderBrush="#EF4444" BorderThickness="0.5" CornerRadius="3" Padding="5,2" Margin="0,0,4,4">
+                                                            <TextBlock x:Name="TxtRawTagGraph" Text="Standard Graph" FontSize="10" FontWeight="SemiBold" Foreground="#FCA5A5" />
+                                                        </Border>
+                                                    </WrapPanel>
+                                                </StackPanel>
+
+                                                <!-- Canvas -->
+                                                <Border Grid.Row="1" Background="#04070D" CornerRadius="6" MinHeight="260">
+                                                    <Image x:Name="ImgRawPreview" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+
+                                                <!-- Bottom Info Panel (No Overlap) -->
+                                                <Border Grid.Row="2" Background="#140A0F" BorderBrush="#3B1822" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="0,8,0,0">
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
+                                                        <Border Grid.Row="0" HorizontalAlignment="Left" Background="#251218" CornerRadius="4" Padding="6,2">
+                                                            <TextBlock x:Name="TxtRawSingleDetail" Text="Unoptimized Baseline (FP32)" FontSize="10" FontWeight="SemiBold" Foreground="#F87171" />
+                                                        </Border>
+                                                        <TextBlock Grid.Row="1" x:Name="TxtRawSingleLat" Text="Latency: ~60 ms • 16.7 inf/s" FontSize="12" FontWeight="Bold" Foreground="#EF4444" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                                    </Grid>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Olive Single Model -->
+                                        <Border Grid.Column="2" Background="#051211" BorderBrush="#0E3A2F" BorderThickness="1" CornerRadius="8" Padding="10">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <!-- Header -->
+                                                <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                                                    <TextBlock Text="🟢 AFTER OLIVE (Optimized)" FontSize="12" FontWeight="Bold" Foreground="#34D399" TextWrapping="Wrap" />
+                                                    <WrapPanel Margin="0,4,0,0">
+                                                        <Border Background="#0C2A1E" BorderBrush="#10B981" BorderThickness="0.5" CornerRadius="3" Padding="5,2" Margin="0,0,4,4">
+                                                            <TextBlock x:Name="TxtOliveTagFp" Text="FP16 Half-Precision" FontSize="10" FontWeight="Bold" Foreground="#6EE7B7" />
+                                                        </Border>
+                                                        <Border Background="#0C2A1E" BorderBrush="#10B981" BorderThickness="0.5" CornerRadius="3" Padding="5,2" Margin="0,0,4,4">
+                                                            <TextBlock x:Name="TxtOliveTagSize" Text="25.2 MB (-50%)" FontSize="10" FontWeight="Bold" Foreground="#6EE7B7" />
+                                                        </Border>
+                                                        <Border Background="#0C2A1E" BorderBrush="#10B981" BorderThickness="0.5" CornerRadius="3" Padding="5,2" Margin="0,0,4,4">
+                                                            <TextBlock x:Name="TxtOliveTagGraph" Text="Fused Kernels" FontSize="10" FontWeight="Bold" Foreground="#6EE7B7" />
+                                                        </Border>
+                                                    </WrapPanel>
+                                                </StackPanel>
+
+                                                <!-- Canvas -->
+                                                <Border Grid.Row="1" Background="#04070D" CornerRadius="6" MinHeight="260">
+                                                    <Image x:Name="ImgPreview" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                </Border>
+
+                                                <!-- Bottom Info Panel (No Overlap) -->
+                                                <Border Grid.Row="2" Background="#061A14" BorderBrush="#0E3A2F" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="0,8,0,0">
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
+                                                        <Border Grid.Row="0" HorizontalAlignment="Left" Background="#0C2A1E" BorderBrush="{StaticResource NpuGreenBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2">
+                                                            <TextBlock x:Name="TxtOliveSingleDetail" Text="4.2x Faster • 100% Fidelity" FontSize="10" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                                                        </Border>
+                                                        <TextBlock Grid.Row="1" x:Name="TxtOliveSingleLat" Text="Latency: ~14 ms • 70.4 inf/s" FontSize="12" FontWeight="Bold" Foreground="#34D399" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                                    </Grid>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- 2. Multi-Agent MCP Trio Duel Cockpit -->
+                                    <Grid x:Name="GridMcpTrioPreview" Visibility="Collapsed" Margin="8">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="8" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+
+                                        <!-- TIER 1: Raw Unoptimized Fleet (FP32) -->
+                                        <Border Grid.Row="0" Background="#0C070B" BorderBrush="#3B1822" BorderThickness="1" CornerRadius="6" Padding="8">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                </Grid.RowDefinitions>
+
+                                                 <Grid Grid.Row="0" Margin="0,0,0,6">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <WrapPanel Grid.Column="0" VerticalAlignment="Center">
+                                                        <TextBlock Text="❌ RAW UNOPTIMIZED FLEET (3 FP32 MODELS)" FontSize="10.5" FontWeight="Bold" Foreground="#EF4444" Margin="0,0,8,0" />
+                                                        <TextBlock Text="80 MB Weights • ~500 MB RAM • Unfused Graphs" FontSize="9.5" Foreground="#FCA5A5" VerticalAlignment="Center" />
+                                                    </WrapPanel>
+                                                    <Border Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Background="#251218" CornerRadius="3" Padding="6,2">
+                                                        <TextBlock x:Name="TxtRawFleetBadge" Text="Unoptimized Baseline • ~185 ms" FontSize="9.5" FontWeight="SemiBold" Foreground="#F87171" />
+                                                    </Border>
+                                                </Grid>
+
+                                                <Grid Grid.Row="1">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="6" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="6" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Raw Agent 1: Vision -->
+                                                    <Border Grid.Column="0" Background="#0A0407" CornerRadius="4" Padding="4">
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="*" MinHeight="100" />
+                                                                <RowDefinition Height="Auto" />
+                                                            </Grid.RowDefinitions>
+                                                            <TextBlock Grid.Row="0" Text="👁️ Agent 1: Vision (FP32)" FontSize="9.5" FontWeight="Bold" Foreground="#FCA5A5" Margin="0,0,0,2" />
+                                                            <Image Grid.Row="1" x:Name="ImgRawAgent1" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            <Grid Grid.Row="2" Margin="0,2,0,0">
+                                                                <TextBlock x:Name="TxtRawAgent1Lat" Text="59.8 ms" FontSize="9.5" Foreground="#EF4444" FontWeight="SemiBold" HorizontalAlignment="Left" />
+                                                                <TextBlock x:Name="TxtRawAgent1Detail" Text="Raw FP32" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Border>
+
+                                                    <!-- Raw Agent 2: OCR -->
+                                                    <Border Grid.Column="2" Background="#0A0407" CornerRadius="4" Padding="4">
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="*" MinHeight="100" />
+                                                                <RowDefinition Height="Auto" />
+                                                            </Grid.RowDefinitions>
+                                                            <TextBlock Grid.Row="0" Text="📑 Agent 2: OCR (FP32)" FontSize="9.5" FontWeight="Bold" Foreground="#FCA5A5" Margin="0,0,0,2" />
+                                                            <Image Grid.Row="1" x:Name="ImgRawAgent2" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            <Grid Grid.Row="2" Margin="0,2,0,0">
+                                                                <TextBlock x:Name="TxtRawAgent2Lat" Text="72.1 ms" FontSize="9.5" Foreground="#EF4444" FontWeight="SemiBold" HorizontalAlignment="Left" />
+                                                                <TextBlock x:Name="TxtRawAgent2Detail" Text="Raw FP32" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Border>
+
+                                                    <!-- Raw Agent 3: Seg -->
+                                                    <Border Grid.Column="4" Background="#0A0407" CornerRadius="4" Padding="4">
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="*" MinHeight="100" />
+                                                                <RowDefinition Height="Auto" />
+                                                            </Grid.RowDefinitions>
+                                                            <TextBlock Grid.Row="0" Text="✂️ Agent 3: Seg (FP32)" FontSize="9.5" FontWeight="Bold" Foreground="#FCA5A5" Margin="0,0,0,2" />
+                                                            <Image Grid.Row="1" x:Name="ImgRawAgent3" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            <Grid Grid.Row="2" Margin="0,2,0,0">
+                                                                <TextBlock x:Name="TxtRawAgent3Lat" Text="53.4 ms" FontSize="9.5" Foreground="#EF4444" FontWeight="SemiBold" HorizontalAlignment="Left" />
+                                                                <TextBlock x:Name="TxtRawAgent3Detail" Text="Raw FP32" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Border>
+                                                </Grid>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- TIER 2: Olive Optimized Fleet (FP16) -->
+                                        <Border Grid.Row="2" Background="#061713" BorderBrush="#0E3A2F" BorderThickness="1" CornerRadius="6" Padding="8">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                </Grid.RowDefinitions>
+
+                                                 <Grid Grid.Row="0" Margin="0,0,0,6">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <WrapPanel Grid.Column="0" VerticalAlignment="Center">
+                                                        <TextBlock Text="🟢 OLIVE OPTIMIZED FLEET (3 FP16 MODELS)" FontSize="10.5" FontWeight="Bold" Foreground="#34D399" Margin="0,0,8,0" />
+                                                        <TextBlock Text="40 MB Weights (-50%) • ~200 MB RAM • Fused Kernels" FontSize="9.5" Foreground="#6EE7B7" VerticalAlignment="Center" />
+                                                    </WrapPanel>
+                                                    <Border Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Background="#0C2A1E" CornerRadius="3" Padding="6,2">
+                                                        <TextBlock x:Name="TxtOliveFleetBadge" Text="⚡ Fused Silicon • ~8.0 ms • 8.6x Speedup" FontSize="9.5" FontWeight="SemiBold" Foreground="#34D399" />
+                                                    </Border>
+                                                </Grid>
+
+                                                <Grid Grid.Row="1">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="6" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="6" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Olive Agent 1: Vision -->
+                                                    <Border Grid.Column="0" Background="#020908" CornerRadius="4" Padding="4">
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="*" MinHeight="100" />
+                                                                <RowDefinition Height="Auto" />
+                                                            </Grid.RowDefinitions>
+                                                            <TextBlock Grid.Row="0" Text="👁️ Agent 1: Vision (FP16)" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" Margin="0,0,0,2" />
+                                                            <Image Grid.Row="1" x:Name="ImgMcpAgent1" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            <Grid Grid.Row="2" Margin="0,2,0,0">
+                                                                <TextBlock x:Name="TxtMcpAgent1Lat" Text="6.7 ms" FontSize="9.5" Foreground="#34D399" FontWeight="SemiBold" HorizontalAlignment="Left" />
+                                                                <TextBlock x:Name="TxtMcpAgent1Detail" Text="Olive FP16" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Border>
+
+                                                    <!-- Olive Agent 2: OCR -->
+                                                    <Border Grid.Column="2" Background="#020908" CornerRadius="4" Padding="4">
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="*" MinHeight="100" />
+                                                                <RowDefinition Height="Auto" />
+                                                            </Grid.RowDefinitions>
+                                                            <TextBlock Grid.Row="0" Text="📑 Agent 2: OCR (FP16)" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" Margin="0,0,0,2" />
+                                                            <Image Grid.Row="1" x:Name="ImgMcpAgent2" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            <Grid Grid.Row="2" Margin="0,2,0,0">
+                                                                <TextBlock x:Name="TxtMcpAgent2Lat" Text="8.1 ms" FontSize="9.5" Foreground="#34D399" FontWeight="SemiBold" HorizontalAlignment="Left" />
+                                                                <TextBlock x:Name="TxtMcpAgent2Detail" Text="Olive FP16" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Border>
+
+                                                    <!-- Olive Agent 3: Seg -->
+                                                    <Border Grid.Column="4" Background="#020908" CornerRadius="4" Padding="4">
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="*" MinHeight="100" />
+                                                                <RowDefinition Height="Auto" />
+                                                            </Grid.RowDefinitions>
+                                                            <TextBlock Grid.Row="0" Text="✂️ Agent 3: Seg (FP16)" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" Margin="0,0,0,2" />
+                                                            <Image Grid.Row="1" x:Name="ImgMcpAgent3" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                            <Grid Grid.Row="2" Margin="0,2,0,0">
+                                                                <TextBlock x:Name="TxtMcpAgent3Lat" Text="6.7 ms" FontSize="9.5" Foreground="#34D399" FontWeight="SemiBold" HorizontalAlignment="Left" />
+                                                                <TextBlock x:Name="TxtMcpAgent3Detail" Text="Olive FP16" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Border>
+                                                </Grid>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- 3. SLM Language Model Duel Cockpit (Tokens & tok/s) -->
+                                    <Grid x:Name="GridSlmDuelPreview" Visibility="Collapsed" Margin="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="10" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Raw SLM Model -->
+                                        <Border Grid.Column="0" Background="#0B0609" BorderBrush="#3B1822" BorderThickness="1" CornerRadius="8" Padding="10">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <!-- Header -->
+                                                <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                                                    <TextBlock Text="❌ BEFORE OLIVE: Raw Model (FP32)" FontSize="12" FontWeight="Bold" Foreground="#EF4444" TextWrapping="Wrap" />
+                                                    <WrapPanel Margin="0,4,0,0">
+                                                        <Border Background="#251218" BorderBrush="#EF4444" BorderThickness="0.5" CornerRadius="3" Padding="5,2" Margin="0,0,4,4">
+                                                            <TextBlock Text="FP32 Baseline" FontSize="10" FontWeight="SemiBold" Foreground="#FCA5A5" />
+                                                        </Border>
+                                                        <Border Background="#251218" BorderBrush="#EF4444" BorderThickness="0.5" CornerRadius="3" Padding="5,2" Margin="0,0,4,4">
+                                                            <TextBlock x:Name="TxtRawSlmTagSize" Text="8.4 GB" FontSize="10" FontWeight="SemiBold" Foreground="#FCA5A5" />
+                                                        </Border>
+                                                        <Border Background="#251218" BorderBrush="#EF4444" BorderThickness="0.5" CornerRadius="3" Padding="5,2" Margin="0,0,4,4">
+                                                            <TextBlock Text="Standard Graph" FontSize="10" FontWeight="SemiBold" Foreground="#FCA5A5" />
+                                                        </Border>
+                                                    </WrapPanel>
+                                                </StackPanel>
+
+                                                <!-- Monospace Streaming Console -->
+                                                <Border Grid.Row="1" Background="#04070D" BorderBrush="#1F1520" BorderThickness="1" CornerRadius="6" MinHeight="260">
+                                                    <ScrollViewer x:Name="ScrollerRawSlm" VerticalScrollBarVisibility="Auto" Padding="10">
+                                                        <TextBlock x:Name="TxtRawSlmStream" FontFamily="Consolas, Cascadia Code, Courier New" FontSize="11" Foreground="#FCA5A5" TextWrapping="Wrap" LineHeight="17" />
+                                                    </ScrollViewer>
+                                                </Border>
+
+                                                <!-- Bottom Info Panel -->
+                                                <Border Grid.Row="2" Background="#140A0F" BorderBrush="#3B1822" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="0,8,0,0">
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
+                                                        <Border Grid.Row="0" HorizontalAlignment="Left" Background="#251218" CornerRadius="4" Padding="6,2">
+                                                            <TextBlock x:Name="TxtRawSlmDetail" Text="High Latency • Sluggish Throughput (~8.4 GB RAM)" FontSize="10" FontWeight="SemiBold" Foreground="#F87171" />
+                                                        </Border>
+                                                        <TextBlock Grid.Row="1" x:Name="TxtRawSlmLat" Text="Throughput: ~14.5 tok/s • ~69 ms/tok" FontSize="12" FontWeight="Bold" Foreground="#EF4444" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                                    </Grid>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Olive SLM Model -->
+                                        <Border Grid.Column="2" Background="#051211" BorderBrush="#0E3A2F" BorderThickness="1" CornerRadius="8" Padding="10">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+
+                                                <!-- Header -->
+                                                <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                                                    <TextBlock Text="🟢 AFTER OLIVE: Microsoft Olive Optimized" FontSize="12" FontWeight="Bold" Foreground="#34D399" TextWrapping="Wrap" />
+                                                    <WrapPanel Margin="0,4,0,0">
+                                                        <Border Background="#0C2A1E" BorderBrush="#10B981" BorderThickness="0.5" CornerRadius="3" Padding="5,2" Margin="0,0,4,4">
+                                                            <TextBlock Text="FP16 / Fused Attention" FontSize="10" FontWeight="Bold" Foreground="#6EE7B7" />
+                                                        </Border>
+                                                        <Border Background="#0C2A1E" BorderBrush="#10B981" BorderThickness="0.5" CornerRadius="3" Padding="5,2" Margin="0,0,4,4">
+                                                            <TextBlock x:Name="TxtOliveSlmTagSize" Text="2.2 GB (-74%)" FontSize="10" FontWeight="Bold" Foreground="#6EE7B7" />
+                                                        </Border>
+                                                        <Border Background="#0C2A1E" BorderBrush="#10B981" BorderThickness="0.5" CornerRadius="3" Padding="5,2" Margin="0,0,4,4">
+                                                            <TextBlock Text="NPU / DirectML" FontSize="10" FontWeight="Bold" Foreground="#6EE7B7" />
+                                                        </Border>
+                                                    </WrapPanel>
+                                                </StackPanel>
+
+                                                <!-- Monospace Streaming Console -->
+                                                <Border Grid.Row="1" Background="#04070D" BorderBrush="#0A2A1E" BorderThickness="1" CornerRadius="6" MinHeight="260">
+                                                    <ScrollViewer x:Name="ScrollerOliveSlm" VerticalScrollBarVisibility="Auto" Padding="10">
+                                                        <TextBlock x:Name="TxtOliveSlmStream" FontFamily="Consolas, Cascadia Code, Courier New" FontSize="11" Foreground="#6EE7B7" TextWrapping="Wrap" LineHeight="17" />
+                                                    </ScrollViewer>
+                                                </Border>
+
+                                                <!-- Bottom Info Panel -->
+                                                <Border Grid.Row="2" Background="#061A14" BorderBrush="#0E3A2F" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="0,8,0,0">
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
+                                                        <Border Grid.Row="0" HorizontalAlignment="Left" Background="#0C2A1E" BorderBrush="{StaticResource NpuGreenBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2">
+                                                            <TextBlock x:Name="TxtOliveSlmDetail" Text="4.7x Faster • 100% Accuracy (Zero Memory Pressure)" FontSize="10" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                                                        </Border>
+                                                        <TextBlock Grid.Row="1" x:Name="TxtOliveSlmLat" Text="Throughput: ~68.2 tok/s • ~14.7 ms/tok" FontSize="12" FontWeight="Bold" Foreground="#34D399" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                                    </Grid>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Loading Spinner Overlay -->
+                                    <Border x:Name="OverlayBusy" Background="#CC060A12" CornerRadius="8" Visibility="Collapsed">
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <ProgressBar IsIndeterminate="True" Width="140" Height="4" Foreground="{StaticResource CopilotCyanBrush}" Margin="0,0,0,12" />
+                                            <TextBlock x:Name="TxtBusyMessage" Text="Running Olive Benchmark..." FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" />
+                                            <TextBlock x:Name="TxtBusySub" Text="Measuring model latency, RAM footprint &amp; accuracy retention..." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0" HorizontalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- Row 2: Executive MCP 3-Line Summary (Client Demo Ready) -->
+                            <Border Grid.Row="2" x:Name="BorderMcpSummary" Background="#0C1B2E" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,10,0,0" Visibility="Collapsed">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="🛡️" FontSize="22" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Open Standard Model Context Protocol (MCP) Active" FontSize="12" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                        <TextBlock Text="• 3 autonomous agents connected concurrently in local memory via standard JSON-RPC 2.0 protocol" FontSize="11" Foreground="#CBD5E1" Margin="0,2,0,0" />
+                                        <TextBlock Text="• 100% On-Device &amp; Zero Cloud: Enterprise data remains confidential, executed locally on NPU / DirectML" FontSize="11" Foreground="#34D399" FontWeight="SemiBold" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Row 2 (Alternative): Executive SLM Summary (Tokens & tok/s) -->
+                            <Border Grid.Row="2" x:Name="BorderSlmSummary" Background="#0C1B2E" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,10,0,0" Visibility="Collapsed">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="💬" FontSize="22" VerticalAlignment="Center" Margin="0,0,12,0" />
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Phi-4-mini Small Language Model (SLM) • Real-Time Token Generation" FontSize="12" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                        <TextBlock x:Name="TxtSlmActivePrompt" Text="Active Prompt: ESG &amp; CSRD Corporate Carbon Footprint Compliance Audit" FontSize="11" Foreground="#CBD5E1" Margin="0,2,0,0" />
+                                        <TextBlock Text="• Demonstrating token-by-token streaming speedup via Olive FP16 quantization &amp; fused attention kernels" FontSize="11" Foreground="#34D399" FontWeight="SemiBold" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Hidden controls for C# compatibility -->
+                            <Expander x:Name="ExpanderMcpInspector" Visibility="Collapsed" IsExpanded="False">
+                                <TextBox x:Name="TxtMcpInspectorLogs" />
+                            </Expander>
+
+                            <!-- Row 3: Bottom Status Summary -->
+                            <TextBlock Grid.Row="3" x:Name="LblStatus" Text="Ready for benchmark. Click 'Run Olive Benchmark' to measure Microsoft Olive model optimization impact."
+                                       FontSize="11.5" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,10,0,0" TextWrapping="Wrap" />
+                        </Grid>
+                    </Border>
+
+                    <!-- RIGHT COLUMN: 4 High-Impact Executive KPI Cards -->
+                    <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel>
+
+                            <!-- HERO KPI CARD 1: MODEL SIZE & RAM FOOTPRINT -->
+                            <Border Background="#131F33" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Header -->
+                                    <Grid Grid.Row="0">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="💾" FontSize="16" Margin="0,0,6,0" />
+                                            <TextBlock x:Name="LblKpiDiskTitle" Text="1. MODEL SIZE &amp; RAM FOOTPRINT" FontSize="12" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                        </StackPanel>
+                                        <Border HorizontalAlignment="Right" Background="#0C2A1E" BorderBrush="{StaticResource NpuGreenBrush}" BorderThickness="1" CornerRadius="12" Padding="10,3">
+                                            <TextBlock x:Name="TxtDiskSavedPercent" Text="-50% MEMORY" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Comparison Values -->
+                                    <Grid Grid.Row="1" Margin="0,10,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Raw -->
+                                        <Border Grid.Column="0" Background="#140E14" BorderBrush="#3B1E29" BorderThickness="1" CornerRadius="6" Padding="10,8">
+                                            <StackPanel>
+                                                <TextBlock Text="❌ Raw Unoptimized (FP32)" FontSize="10" Foreground="#FCA5A5" FontWeight="SemiBold" />
+                                                <TextBlock x:Name="TxtRawDiskSize" Text="50.3 MB" FontSize="22" FontWeight="Bold" Foreground="#EF4444" Margin="0,2,0,0" />
+                                                <TextBlock x:Name="TxtRawRamSize" Text="RAM Footprint: ~100 MB" FontSize="10" Foreground="#94A3B8" Margin="0,1,0,0" />
+                                                <Border Background="#251218" CornerRadius="3" Padding="4,2" Margin="0,4,0,0">
+                                                    <TextBlock Text="FP32 Baseline • Double Weight" FontSize="9" Foreground="#F87171" HorizontalAlignment="Center" />
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <TextBlock Grid.Column="1" Text="➔" FontSize="18" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" Margin="8,0" />
+
+                                        <!-- Olive -->
+                                        <Border Grid.Column="2" Background="#0A2218" BorderBrush="{StaticResource NpuGreenBrush}" BorderThickness="1" CornerRadius="6" Padding="10,8">
+                                            <StackPanel>
+                                                <TextBlock Text="✅ Olive Optimized (FP16)" FontSize="10" Foreground="#6EE7B7" FontWeight="SemiBold" />
+                                                <TextBlock x:Name="TxtOliveDiskSize" Text="25.2 MB" FontSize="22" FontWeight="Bold" Foreground="#34D399" Margin="0,2,0,0" />
+                                                <TextBlock x:Name="TxtOliveRamSize" Text="RAM Footprint: ~50 MB" FontSize="10" Foreground="#A7F3D0" Margin="0,1,0,0" />
+                                                <Border Background="#0E2E20" CornerRadius="3" Padding="4,2" Margin="0,4,0,0">
+                                                    <TextBlock Text="Compact • Low Memory Pressure" FontSize="9" Foreground="#6EE7B7" HorizontalAlignment="Center" />
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Client Takeaway -->
+                                    <Border Grid.Row="2" Background="#0C1424" CornerRadius="6" Padding="8,6" Margin="0,2,0,0">
+                                        <TextBlock x:Name="LblKpiDiskDesc" Text="💡 Executive Takeaway: Olive cuts model storage and RAM footprint in half via FP16 quantization, allowing local AI to run without memory pressure on 16GB enterprise laptops." FontSize="10.5" Foreground="#E2E8F0" TextWrapping="Wrap" />
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- HERO KPI CARD 2: SPEED & THROUGHPUT -->
+                            <Border Background="#131F33" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Header -->
+                                    <Grid Grid.Row="0">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="⚡" FontSize="16" Margin="0,0,6,0" />
+                                            <TextBlock x:Name="LblKpiSpeedTitle" Text="2. REAL-TIME SPEED &amp; THROUGHPUT" FontSize="12" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                        </StackPanel>
+                                        <Border HorizontalAlignment="Right" Background="#132F4C" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1" CornerRadius="12" Padding="10,3">
+                                            <TextBlock x:Name="TxtSpeedupBadge" Text="4.2x Faster" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Comparison Values -->
+                                    <Grid Grid.Row="1" Margin="0,10,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Raw -->
+                                        <Border Grid.Column="0" Background="#140E14" BorderBrush="#3B1E29" BorderThickness="1" CornerRadius="6" Padding="10,8">
+                                            <StackPanel>
+                                                <TextBlock Text="❌ Raw Unoptimized Model" FontSize="10" Foreground="#FCA5A5" FontWeight="SemiBold" />
+                                                <TextBlock x:Name="TxtRawFps" Text="16.7 inf/s" FontSize="22" FontWeight="Bold" Foreground="#EF4444" Margin="0,2,0,0" />
+                                                <TextBlock x:Name="TxtRawLatency" Text="Latency: ~60 ms" FontSize="10" Foreground="#94A3B8" Margin="0,1,0,0" />
+                                                <Border Background="#251218" CornerRadius="3" Padding="4,2" Margin="0,4,0,0">
+                                                    <TextBlock Text="Unoptimized • Sluggish Throughput" FontSize="9" Foreground="#F87171" HorizontalAlignment="Center" />
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <TextBlock Grid.Column="1" Text="➔" FontSize="18" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" Margin="8,0" />
+
+                                        <!-- Olive -->
+                                        <Border Grid.Column="2" Background="#0A2218" BorderBrush="{StaticResource NpuGreenBrush}" BorderThickness="1" CornerRadius="6" Padding="10,8">
+                                            <StackPanel>
+                                                <TextBlock Text="✅ Olive Optimized Model" FontSize="10" Foreground="#6EE7B7" FontWeight="SemiBold" />
+                                                <TextBlock x:Name="TxtOliveFps" Text="70.4 inf/s" FontSize="22" FontWeight="Bold" Foreground="#34D399" Margin="0,2,0,0" />
+                                                <TextBlock x:Name="TxtOliveLatency" Text="Latency: ~14 ms" FontSize="10" Foreground="#A7F3D0" Margin="0,1,0,0" />
+                                                <Border Background="#0E2E20" CornerRadius="3" Padding="4,2" Margin="0,4,0,0">
+                                                    <TextBlock Text="DirectML / NPU Fused • Fluid UX" FontSize="9" Foreground="#6EE7B7" HorizontalAlignment="Center" />
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Client Takeaway -->
+                                    <Border Grid.Row="2" Background="#0C1424" CornerRadius="6" Padding="8,6" Margin="0,2,0,0">
+                                        <TextBlock x:Name="LblKpiSpeedDesc" Text="💡 Executive Takeaway: Over 4x faster response time achieved entirely through software graph optimization and kernel fusion without changing hardware." FontSize="10.5" Foreground="#E2E8F0" TextWrapping="Wrap" />
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- HERO KPI CARD 3: POWER & THERMAL EFFICIENCY -->
+                            <Border Background="#131F33" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Header -->
+                                    <Grid Grid.Row="0">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="🔋" FontSize="16" Margin="0,0,6,0" />
+                                            <TextBlock x:Name="LblKpiEnergyTitle" Text="3. POWER &amp; THERMAL EFFICIENCY" FontSize="12" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                        </StackPanel>
+                                        <Border HorizontalAlignment="Right" Background="#0C2A1E" BorderBrush="{StaticResource NpuGreenBrush}" BorderThickness="1" CornerRadius="12" Padding="10,3">
+                                            <TextBlock x:Name="TxtEnergySavedBadge" Text="-73% Power Draw" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Comparison Values -->
+                                    <Grid Grid.Row="1" Margin="0,10,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Raw -->
+                                        <Border Grid.Column="0" Background="#140E14" BorderBrush="#3B1E29" BorderThickness="1" CornerRadius="6" Padding="10,8">
+                                            <StackPanel>
+                                                <TextBlock Text="❌ Raw Unoptimized (FP32)" FontSize="10" Foreground="#FCA5A5" FontWeight="SemiBold" />
+                                                <TextBlock x:Name="TxtRawPower" Text="28.5 W" FontSize="22" FontWeight="Bold" Foreground="#EF4444" Margin="0,2,0,0" />
+                                                <TextBlock x:Name="TxtRawEnergy" Text="Energy: ~1.71 J" FontSize="10" Foreground="#94A3B8" Margin="0,1,0,0" />
+                                                <Border Background="#251218" CornerRadius="3" Padding="4,2" Margin="0,4,0,0">
+                                                    <TextBlock Text="High Compute Cycles • Heat" FontSize="9" Foreground="#F87171" HorizontalAlignment="Center" />
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <TextBlock Grid.Column="1" Text="➔" FontSize="18" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" Margin="8,0" />
+
+                                        <!-- Olive -->
+                                        <Border Grid.Column="2" Background="#0A2218" BorderBrush="{StaticResource NpuGreenBrush}" BorderThickness="1" CornerRadius="6" Padding="10,8">
+                                            <StackPanel>
+                                                <TextBlock Text="✅ Olive Optimized (FP16)" FontSize="10" Foreground="#6EE7B7" FontWeight="SemiBold" />
+                                                <TextBlock x:Name="TxtOlivePower" Text="7.8 W" FontSize="22" FontWeight="Bold" Foreground="#34D399" Margin="0,2,0,0" />
+                                                <TextBlock x:Name="TxtOliveEnergy" Text="Energy: ~0.11 J" FontSize="10" Foreground="#A7F3D0" Margin="0,1,0,0" />
+                                                <Border Background="#0E2E20" CornerRadius="3" Padding="4,2" Margin="0,4,0,0">
+                                                    <TextBlock Text="Silent • Extended Battery Life" FontSize="9" Foreground="#6EE7B7" HorizontalAlignment="Center" />
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Client Takeaway -->
+                                    <Border Grid.Row="2" Background="#0C1424" CornerRadius="6" Padding="8,6" Margin="0,2,0,0">
+                                        <TextBlock x:Name="LblKpiEnergyDesc" Text="💡 Executive Takeaway: Drastically lowers energy consumed per inference, keeping enterprise laptops cool, completely silent, and extending all-day battery life." FontSize="10.5" Foreground="#E2E8F0" TextWrapping="Wrap" />
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- HERO KPI CARD 4: DETECTION PRECISION & FIDELITY -->
+                            <Border Background="#131F33" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Header -->
+                                    <Grid Grid.Row="0">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="🎯" FontSize="16" Margin="0,0,6,0" />
+                                            <TextBlock x:Name="LblKpiFidelityTitle" Text="4. DETECTION PRECISION &amp; ACCURACY" FontSize="12" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                        </StackPanel>
+                                        <Border HorizontalAlignment="Right" Background="#0C2A1E" BorderBrush="{StaticResource NpuGreenBrush}" BorderThickness="1" CornerRadius="12" Padding="10,3">
+                                            <TextBlock x:Name="TxtFidelityCardBadge" Text="100% PRESERVED" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Comparison Values -->
+                                    <Grid Grid.Row="1" Margin="0,10,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Raw -->
+                                        <Border Grid.Column="0" Background="#140E14" BorderBrush="#3B1E29" BorderThickness="1" CornerRadius="6" Padding="10,8">
+                                            <StackPanel>
+                                                <TextBlock Text="❌ Raw FP32 Output" FontSize="10" Foreground="#FCA5A5" FontWeight="SemiBold" />
+                                                <TextBlock x:Name="TxtRawDetCount" Text="4 Objects" FontSize="20" FontWeight="Bold" Foreground="#EF4444" Margin="0,2,0,0" />
+                                                <TextBlock Text="Precision Baseline: 100%" FontSize="10" Foreground="#94A3B8" Margin="0,1,0,0" />
+                                                <Border Background="#251218" CornerRadius="3" Padding="4,2" Margin="0,4,0,0">
+                                                    <TextBlock Text="Standard Bounding Boxes" FontSize="9" Foreground="#F87171" HorizontalAlignment="Center" />
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <TextBlock Grid.Column="1" Text="➔" FontSize="18" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" Margin="8,0" />
+
+                                        <!-- Olive -->
+                                        <Border Grid.Column="2" Background="#0A2218" BorderBrush="{StaticResource NpuGreenBrush}" BorderThickness="1" CornerRadius="6" Padding="10,8">
+                                            <StackPanel>
+                                                <TextBlock Text="✅ Olive FP16 Output" FontSize="10" Foreground="#6EE7B7" FontWeight="SemiBold" />
+                                                <TextBlock x:Name="TxtOliveDetCount" Text="4 Objects" FontSize="20" FontWeight="Bold" Foreground="#34D399" Margin="0,2,0,0" />
+                                                <TextBlock Text="Exact Match: 0% Degradation" FontSize="10" Foreground="#A7F3D0" Margin="0,1,0,0" />
+                                                <Border Background="#0E2E20" CornerRadius="3" Padding="4,2" Margin="0,4,0,0">
+                                                    <TextBlock Text="Identical Detections &amp; Classes" FontSize="9" Foreground="#6EE7B7" HorizontalAlignment="Center" />
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Client Takeaway -->
+                                    <Border Grid.Row="2" Background="#0C1424" CornerRadius="6" Padding="8,6" Margin="0,2,0,0">
+                                        <TextBlock x:Name="LblKpiFidelityDesc" Text="💡 Executive Takeaway: Quantization from FP32 to FP16 cuts model weight in half without losing a single detection or degrading confidence scores." FontSize="10.5" Foreground="#E2E8F0" TextWrapping="Wrap" />
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- TECHNICAL AUDIT PIPELINE EXPLAINER -->
+                            <Expander Header="🔍 Technical Audit (Microsoft Olive Pipeline Details)..." 
+                                      IsExpanded="False" Foreground="{StaticResource TextMutedBrush}" FontSize="10.5" Margin="0,4,0,0">
+                                <Border Background="#0C1424" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,4,0,0">
+                                    <StackPanel>
+                                        <TextBlock x:Name="LblAuditTitle" Text="MICROSOFT OLIVE OPTIMIZATION PIPELINE" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        <TextBlock x:Name="TxtPassesDesc" Text="1️⃣ Graph Optimization (Dead code pruning) • 2️⃣ FP16 Quantization • 3️⃣ DirectML / NPU Kernel Fusion" FontSize="9.5" Foreground="#94A3B8" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </Border>
+                            </Expander>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

@@ -1,0 +1,69 @@
+DOSSIER D'ANALYSE FINANCIÈRE & DEMANDE D'ENGAGEMENT DE CRÉDIT
+RÉFÉRENCE DOSSIER : CRD-2026-AERO-0849
+DATE D'ÉVALUATION : OCTOBRE 2026
+CLASSIFICATION BANCAIRE : CONFIDENTIEL COMITÉ DES ENGAGEMENTS
+
+================================================================================
+1. IDENTIFICATION DE L'ENTREPRISE EMPRUNTEUSE
+================================================================================
+Raison Sociale   : Entreprise du secteur de la sous-traitance aéronautique
+Forme Juridique  : Société par Actions Simplifiée (SAS) au capital de 5 000 000 €
+SIREN            : 849 201 932 (RCS Paris B 849 123 456)
+Activité         : Usinage de précision de pièces titane/inconel pour moteurs civils et militaires
+Effectif         : 142 salariés en CDI
+Implantation     : 2 sites industriels en France (Île-de-France et Nouvelle-Aquitaine)
+Notation BdF     : 3+ (Capacité très satisfaisante à honorer les engagements financiers)
+Relation Bancaire: Client depuis 12 ans, aucun incident de paiement sur nos livres
+
+================================================================================
+2. OBJET DE LA DEMANDE SOUMISE AU COMITÉ
+================================================================================
+Type de Concours : Facilité de caisse court terme (Ligne de crédit revolving de trésorerie)
+Montant Sollicité: 2 500 000 € (Deux millions cinq cent mille euros)
+Durée            : 12 mois renouvelable à échéance annuelle
+Objet            : Financement de la montée en cadence de production et décalage temporaire du BFR
+Garanties        : Gage sans dépossession sur stock de matières premières stratégiques (Titane aéro)
+
+================================================================================
+3. SYNTHÈSE DES ÉTATS FINANCIERS & COMPTE DE RÉSULTAT (EN MILLIONS D'EUROS)
+================================================================================
+Indicateur Financier              Exercice N-1 (2024)   Exercice N (2025)   Variation
+--------------------------------------------------------------------------------
+Chiffre d'Affaires HT                    16.4 M€             18.4 M€         +12.2%
+Marge Brute                              10.2 M€             11.7 M€         +14.7%
+Excédent Brut d'Exploitation (EBE)        1.8 M€              2.1 M€         +16.6%
+Marge d'EBE (% du CA)                     11.0%               11.4%          +0.4 pt
+Résultat d'Exploitation (REX)             1.2 M€              1.4 M€         +16.7%
+Résultat Net Comptable                    0.75 M€             0.92 M€        +22.6%
+Capacité d'Autofinancement (CAF)          1.45 M€             1.70 M€        +17.2%
+
+================================================================================
+4. STRUCTURE DU BILAN & DETTE FINANCIÈRE
+================================================================================
+Poste du Bilan                   Montant Clôture N      Commentaire
+--------------------------------------------------------------------------------
+Capitaux Propres Consolidés            7.2 M€           Structure financière solide
+Dettes Financières Long Terme          4.6 M€           Prêts bancaires amortissables (échéance moyenne 4 ans)
+Dettes Financières Court Terme         1.6 M€           Lignes de trésorerie utilisées
+Trésorerie Active Disponible           0.42 M€ (420 k€) En tension suite aux approvisionnements massifs
+Dette Financière Nette (DFN)           5.78 M€ (5.8 M€)
+Ratio Levier Financier (DFN / EBE)     2.76x            Inférieur au covenant maximal autorisé (3.50x)
+Ratio Gearing (DFN / Fonds Propres)    0.80x            Endettement sous contrôle
+
+================================================================================
+5. ANALYSE DU BESOIN EN FONDS DE ROULEMENT (BFR) & RISQUES DÉTECTÉS
+================================================================================
+- Allongement du cycle BFR : +45 jours sur l'exercice écoulé (BFR = 92 jours de CA).
+- Cause principale : Allongement des délais de validation client à l'export pour le secteur aéronautique 
+  et constitution d'un stock de sécurité d'alliages nobles (protection contre la volatilité des cours).
+- Portefeuille Clients : Carnet de commandes ferme de 38.5 M€ sur 24 mois, constitué à 90% d'entreprises 
+  de rang 1 de l'aéronautique et de la défense.
+- Litiges : Un litige prud'homal mineur est en cours, provisionné à hauteur de 80 000 € au bilan 
+  (aucun risque systémique sur la continuité d'exploitation).
+
+================================================================================
+6. RATING ESG & CONFORMITÉ CSRD
+================================================================================
+- Score CSRD / ESG : B+ (Audit environnemental Scope 1 & 2 validé, recyclage des copeaux de titane à 98%).
+- Conformité réglementaire : Certification EN 9100 et ISO 14001 renouvelées sans réserve.
+================================================================================

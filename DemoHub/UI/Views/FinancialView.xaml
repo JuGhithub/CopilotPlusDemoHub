@@ -1,0 +1,270 @@
+<UserControl x:Class="CopilotPlusDemoHub.UI.Views.FinancialView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- View Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock x:Name="LblFinTitle" Text="ASSISTANT SERVICES FINANCIERS &amp; ANALYSE DE RISQUE"
+                           FontSize="20" FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimaryBrush}" />
+                <TextBlock x:Name="LblFinSub" Text="Classification documentaire • Préparation comité de crédit • Détection des signaux faibles &amp; conformité"
+                           FontSize="13" Margin="0,4,0,0"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border x:Name="BadgeModelContainer" Background="#162238" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="Modèle d'Intelligence Artificielle exécuté localement">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="🧠" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center" />
+                        <TextBlock x:Name="TxtModelBadge" Text="Modèle : Phi-4-mini (Audit Risque &amp; CSRD 3.8B)" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <Button x:Name="BtnDocHelp" Style="{StaticResource ModernButtonStyle}"
+                        Background="#1E293B" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                        Height="32" Padding="12,0" VerticalAlignment="Center"
+                        ToolTip="Documentation &amp; Guide de démonstration (FR / EN)" Click="BtnDocHelp_Click">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="❓" FontSize="12" Margin="0,0,6,0" />
+                        <TextBlock x:Name="TxtDocHelp" Text="Guide &amp; Doc" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- Two Columns Layout -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="380" />
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Document & Credit Request Card -->
+            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,6,0">
+                        <StackPanel>
+                            <TextBlock x:Name="LblCardCredit" Text="DOSSIER DE CRÉDIT ENTREPRISE"
+                                       FontSize="13" FontWeight="Bold"
+                                       Foreground="{StaticResource CopilotCyanBrush}"
+                                       Margin="0,0,0,12" />
+
+                            <Border Background="#0F172A" CornerRadius="6" Padding="12,10" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock x:Name="LblCompany" Text="📊 Synthèse Financière : Entreprise du secteur de la sous-traitance aéronautique" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" FontSize="12" />
+                                        <TextBlock x:Name="LblCompanySub1" Text="SIREN : 849 201 932 • Demande : Facilité de caisse 2 500 000 €" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0" />
+                                        <TextBlock x:Name="LblCompanySub2" Text="Notation Banque de France : 3+ • Secteur : Sous-traitance aéronautique" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" x:Name="BtnViewSourceDoc" Style="{StaticResource ModernButtonStyle}"
+                                            Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                            Height="28" Padding="10,0" Margin="8,0,0,0" Click="BtnViewSourceDoc_Click"
+                                            ToolTip="Consulter la liasse fiscale et le dossier financier d'entreprise complet">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="📄" FontSize="11" Margin="0,0,5,0" />
+                                            <TextBlock x:Name="TxtBtnViewSourceDoc" Text="Dossier Source" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                            </Border>
+
+                            <TextBlock x:Name="LblFinDataLabel" Text="Données financières &amp; signaux"
+                                       FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,4" />
+                            <TextBox x:Name="TxtFinancialData"
+                                     Text="Chiffre d'affaires : 18.4M€ (+12% N-1); EBE : 2.1M€ (Marge 11.4%); Dettes financières nettes : 5.8M€ (Leverage 2.76x); BFR en tension (+45 jours en raison d'allongement des délais clients à l'export); Trésorerie active : 420k€; Litige prud'homal mineur provisionné à hauteur de 80k€."
+                                     TextWrapping="Wrap" AcceptsReturn="True" Height="75"
+                                     VerticalScrollBarVisibility="Auto"
+                                     Background="{StaticResource InputBgBrush}"
+                                     Foreground="{StaticResource TextPrimaryBrush}"
+                                     BorderBrush="{StaticResource CardBorderBrush}"
+                                     Padding="10,6" Margin="0,0,0,10" />
+
+                            <!-- Quick Question Chips -->
+                            <TextBlock x:Name="LblQuickQuestions" Text="Questions rapides pour la démo :"
+                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                            <WrapPanel Margin="0,0,0,10">
+                                <Button x:Name="BtnChipSolvency" Style="{StaticResource ModernButtonStyle}"
+                                        Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                        Height="24" Padding="6,0" Margin="0,2,4,2" Click="BtnChipSolvency_Click"
+                                        ToolTip="Évaluer la structure financière, solvabilité et ratios d'endettement net">
+                                    <TextBlock x:Name="TxtChipSolvency" Text="📈 Solvabilité &amp; Ratios" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                </Button>
+                                <Button x:Name="BtnChipWcr" Style="{StaticResource ModernButtonStyle}"
+                                        Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                        Height="24" Padding="6,0" Margin="0,2,4,2" Click="BtnChipWcr_Click"
+                                        ToolTip="Analyser l'allongement des délais clients à l'export (+45j) et la tension de trésorerie">
+                                    <TextBlock x:Name="TxtChipWcr" Text="⏳ Tension BFR Export" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                </Button>
+                                <Button x:Name="BtnChipCommittee" Style="{StaticResource ModernButtonStyle}"
+                                        Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                        Height="24" Padding="6,0" Margin="0,2,4,2" Click="BtnChipCommittee_Click"
+                                        ToolTip="Formuler l'avis motivé du comité sur la facilité de 2,5M€ et les garanties à exiger">
+                                    <TextBlock x:Name="TxtChipCommittee" Text="⚖️ Avis Comité &amp; Garanties" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                </Button>
+                                <Button x:Name="BtnChipBdF" Style="{StaticResource ModernButtonStyle}"
+                                        Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                        Height="24" Padding="6,0" Margin="0,2,4,2" Click="BtnChipBdF_Click"
+                                        ToolTip="Analyser la cotation Banque de France 3+ et les implications sur le risque">
+                                    <TextBlock x:Name="TxtChipBdF" Text="🏛️ Notation BdF 3+" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                </Button>
+                            </WrapPanel>
+
+                            <TextBlock x:Name="LblInstructionLabel" Text="Instruction comité"
+                                       FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,4" />
+                            <TextBox x:Name="TxtInstruction"
+                                     Text="Évaluer la solvabilité, analyser la capacité de remboursement, identifier les risques de liquidité et formuler une recommandation motivée."
+                                     TextWrapping="Wrap" AcceptsReturn="True" Height="50"
+                                     VerticalScrollBarVisibility="Auto"
+                                     Background="{StaticResource InputBgBrush}"
+                                     Foreground="{StaticResource TextPrimaryBrush}"
+                                     BorderBrush="{StaticResource CardBorderBrush}"
+                                     Padding="10,6" />
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Bottom Action Button & Status -->
+                    <StackPanel Grid.Row="2" Margin="0,10,0,0">
+                        <Button x:Name="BtnRun"
+                                Content="▶ Évaluer le risque (IA Locale)"
+                                Style="{StaticResource ModernButtonStyle}"
+                                Height="40"
+                                Click="BtnRun_Click" />
+
+                        <ProgressBar x:Name="PrgBusy"
+                                     IsIndeterminate="True"
+                                     Height="3"
+                                     Margin="0,6,0,0"
+                                     Visibility="Collapsed" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Right: Financial Assessment Output Card -->
+            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <StackPanel Grid.Row="0">
+                        <TextBlock x:Name="LblSynthesisTitle" Text="NOTE DE SYNTHÈSE COMITÉ DES CRÉDITS &amp; RISQUE"
+                                   FontSize="13" FontWeight="Bold"
+                                   Foreground="{StaticResource CopilotCyanBrush}" />
+                    </StackPanel>
+
+                    <!-- Telemetry KPI Bar -->
+                    <Border Grid.Row="1" Background="#0F172A" CornerRadius="6" Padding="12,8" Margin="0,10,0,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="105" />
+                                <ColumnDefinition Width="135" />
+                                <ColumnDefinition Width="110" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblLatencyHeader" Text="CHRONO / DURÉE" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                <TextBlock x:Name="LblLatency" Text="-- ms" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblThroughputHeader" Text="DÉBIT TEMPS RÉEL" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                <TextBlock x:Name="LblThroughput" Text="-- tok/s" FontSize="13" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblTokensHeader" Text="JETONS GÉNÉRÉS" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                <TextBlock x:Name="LblTokens" Text="-- tok" FontSize="13" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblBankingHeader" Text="SECRET BANCAIRE" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                <TextBlock x:Name="LblBankingBadge" Text="🛡️ Données isolées sur poste" FontSize="12" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Live Pipeline & Reasoning Steps Tracker -->
+                    <Border Grid.Row="2" Background="#111B2E" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12,8" Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Pipeline Steps Pills -->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border x:Name="PillStep1" Background="#1E293B" CornerRadius="4" Padding="7,3" Margin="0,0,5,0">
+                                    <TextBlock x:Name="TxtStep1" Text="1. Ingestion Dossier" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
+                                </Border>
+                                <TextBlock Text="›" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,5,0" VerticalAlignment="Center" FontSize="11" />
+                                <Border x:Name="PillStep2" Background="#1E293B" CornerRadius="4" Padding="7,3" Margin="0,0,5,0">
+                                    <TextBlock x:Name="TxtStep2" Text="2. Prefill Silicium" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
+                                </Border>
+                                <TextBlock Text="›" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,5,0" VerticalAlignment="Center" FontSize="11" />
+                                <Border x:Name="PillStep3" Background="#1E293B" CornerRadius="4" Padding="7,3" Margin="0,0,5,0">
+                                    <TextBlock x:Name="TxtStep3" Text="3. Raisonnement &amp; Rédaction" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
+                                </Border>
+                                <TextBlock Text="›" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,5,0" VerticalAlignment="Center" FontSize="11" />
+                                <Border x:Name="PillStep4" Background="#1E293B" CornerRadius="4" Padding="7,3">
+                                    <TextBlock x:Name="TxtStep4" Text="4. Confinement Validé" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Live Status Description -->
+                            <TextBlock Grid.Row="1" x:Name="LblLiveStatus"
+                                       Text="Prêt • En attente de lancement de l'évaluation financière"
+                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Streaming Output -->
+                    <ScrollViewer Grid.Row="3" x:Name="ScrollerOutput" VerticalScrollBarVisibility="Auto">
+                        <TextBox x:Name="TxtOutput"
+                                 IsReadOnly="True"
+                                 TextWrapping="Wrap"
+                                 Background="Transparent"
+                                 Foreground="{StaticResource TextPrimaryBrush}"
+                                 BorderThickness="0"
+                                 FontSize="13"
+                                 Text="Cliquez sur 'Évaluer le risque' pour générer la note d'analyse financière..." />
+                    </ScrollViewer>
+
+                    <!-- Notice -->
+                    <Border Grid.Row="4" Background="#162033" CornerRadius="6" Padding="12,8" Margin="0,10,0,0">
+                        <TextBlock x:Name="LblNotice" Text="🔒 Secret d'affaires &amp; Bancaire : Les bilans, ratios et états financiers restent strictement confinés au silicium local de ce poste de travail."
+                                   FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

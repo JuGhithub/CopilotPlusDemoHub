@@ -1,0 +1,188 @@
+<Window x:Class="CopilotPlusDemoHub.UI.Views.DocumentationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Documentation &amp; Architecture Technique • Copilot+ Demo Hub"
+        Width="1080" Height="740"
+        MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BgDarkBrush}"
+        Foreground="{StaticResource TextPrimaryBrush}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="46" />
+        </Grid.RowDefinitions>
+
+        <!-- 1. Header Bar -->
+        <Border Grid.Row="0" Background="{StaticResource SidebarBgBrush}" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="0,0,0,1" Padding="20,0">
+            <Grid VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="14" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="#1E3A8A" CornerRadius="8" Width="36" Height="36" Margin="0,0,12,0">
+                        <TextBlock Text="📖" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel>
+                        <TextBlock x:Name="TxtHeaderTitle" Text="CENTRE DE DOCUMENTATION &amp; ARCHITECTURE TECHNIQUE" FontSize="14.5" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock x:Name="TxtHeaderSub" Text="Spécifications matérielles, guides pas-à-pas et pitchs de démonstration" FontSize="11.5" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Right: Language Selector -->
+                <Border Grid.Column="2" Background="#131F33" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="4,2" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton x:Name="RadLangFr" GroupName="DocLangGrp" Content="🇫🇷 FR" Style="{StaticResource PillButtonStyle}" Checked="Language_Checked" />
+                        <RadioButton x:Name="RadLangEn" GroupName="DocLangGrp" Content="🇬🇧 EN" Style="{StaticResource PillButtonStyle}" Checked="Language_Checked" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Close Button -->
+                <Button Grid.Column="4" x:Name="BtnCloseTop" Content="✕ Fermer" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="12,0" Click="BtnClose_Click" />
+            </Grid>
+        </Border>
+
+        <!-- 2. Main Content Split: Left Sidebar Topics + Right Detail Viewer -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="310" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Navigation Sidebar -->
+            <Border Grid.Column="0" Background="{StaticResource SidebarBgBrush}" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="0,0,1,0" Padding="12,12">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel>
+                        <!-- Global Section Header -->
+                        <TextBlock x:Name="LblNavGlobalHeader" Text="DOCUMENTATION GLOBALE DU PROJET" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" Margin="8,4,0,8" />
+                        <StackPanel x:Name="PanelGlobalNav" Margin="0,0,0,12" />
+
+                        <Border Height="1" Background="{StaticResource CardBorderBrush}" Margin="6,0,6,12" />
+
+                        <!-- Demos Section Header -->
+                        <TextBlock x:Name="LblNavDemosHeader" Text="GUIDES DES 11 DÉMONSTRATIONS" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" Margin="8,0,0,8" />
+                        <StackPanel x:Name="PanelDemoNav" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Right Detail Viewer -->
+            <Border Grid.Column="1" Background="{StaticResource BgDarkBrush}" Padding="24,20">
+                <ScrollViewer x:Name="ScrollDetails" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel MaxWidth="800" HorizontalAlignment="Left">
+                        <!-- Topic Header Card -->
+                        <Border Background="#131E33" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,0,18">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Title Row -->
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                                    <TextBlock x:Name="TxtTopicIcon" Text="🌐" FontSize="26" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock x:Name="TxtTopicTitle" Text="Titre de la fiche" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                        <TextBlock x:Name="TxtTopicSubtitle" Text="Sous-titre explicatif" FontSize="12.5" Foreground="{StaticResource CopilotCyanBrush}" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <!-- Badges Row: Accelerator + Latency/Power -->
+                                <WrapPanel Grid.Row="1" Margin="0,10,0,0">
+                                    <Border Background="#0C2036" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1" CornerRadius="14" Padding="10,4" Margin="0,0,8,6">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="⚙️ " FontSize="11" />
+                                            <TextBlock x:Name="TxtBadgeAccelerator" Text="Accélérateur" FontSize="11" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#064E3B" BorderBrush="#10B981" BorderThickness="1" CornerRadius="14" Padding="10,4" Margin="0,0,8,6">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="⚡ " FontSize="11" />
+                                            <TextBlock x:Name="TxtBadgeLatencyPower" Text="Métriques Silicium" FontSize="11" FontWeight="Bold" Foreground="#6EE7B7" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="#1E293B" BorderBrush="#475569" BorderThickness="1" CornerRadius="14" Padding="10,4" Margin="0,0,8,6">
+                                        <TextBlock Text="🔒 100% Hors-Ligne &amp; Souverain" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </Border>
+                                </WrapPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Section 1: Pitch & Live Demo Script -->
+                        <Border Background="#0F243E" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,16">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <TextBlock Text="🎙️" FontSize="14" Margin="0,0,6,0" />
+                                    <TextBlock x:Name="LblSectionPitch" Text="PITCH DE PRÉSENTATION EN DIRECT (2 MINUTES)" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                </StackPanel>
+                                <TextBlock x:Name="TxtSectionPitch" Text="Contenu du pitch..." FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" LineHeight="18" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Section 2: Functional & Business Description -->
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <TextBlock Text="📋" FontSize="14" Margin="0,0,6,0" />
+                                    <TextBlock x:Name="LblSectionDesc" Text="DESCRIPTION DU CAS D'USAGE &amp; VALEUR MÉTIER" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                </StackPanel>
+                                <TextBlock x:Name="TxtSectionDesc" Text="Description..." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" LineHeight="18" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Section 3: Technical Architecture & Deep Dive -->
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <TextBlock Text="⚙️" FontSize="14" Margin="0,0,6,0" />
+                                    <TextBlock x:Name="LblSectionTech" Text="ARCHITECTURE TECHNIQUE &amp; PIPELINE D'INFÉRENCE" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource GpuAmberBrush}" />
+                                </StackPanel>
+                                <TextBlock x:Name="TxtSectionTech" Text="Spécifications techniques..." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" LineHeight="18" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Section 4: Binaries, Models & File Structure -->
+                        <Border Style="{StaticResource CardBorderStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <TextBlock Text="📁" FontSize="14" Margin="0,0,6,0" />
+                                    <TextBlock x:Name="LblSectionBinaries" Text="BINAIRES, MODÈLES &amp; FICHIERS CLÉS" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                                </StackPanel>
+                                <TextBlock x:Name="TxtSectionBinaries" Text="Fichiers..." FontSize="11.5" FontFamily="Consolas, Courier New" Foreground="#A7F3D0" LineHeight="18" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Section 5: How To Run / Step-by-Step Guide -->
+                        <Border Background="#131D2D" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,24">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <TextBlock Text="🚀" FontSize="14" Margin="0,0,6,0" />
+                                    <TextBlock x:Name="LblSectionHowTo" Text="GUIDE PAS-À-PAS : COMMENT EXÉCUTER CETTE DÉMO" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                </StackPanel>
+                                <TextBlock x:Name="TxtSectionHowTo" Text="Étapes..." FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" LineHeight="18" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <!-- 3. Bottom Footer Action Bar -->
+        <Border Grid.Row="2" Background="{StaticResource SidebarBgBrush}" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="0,1,0,0" Padding="20,0">
+            <Grid VerticalAlignment="Center">
+                <TextBlock x:Name="TxtFooterConfidential" Text="🔒 Fiches techniques certifiées Microsoft Foundry Local • Confinement 100% sur l'appareil" FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button x:Name="BtnCopyDoc" Content="📋 Copier la Fiche" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="28" Padding="12,0" Margin="0,0,8,0" Click="BtnCopyDoc_Click" ToolTip="Copier le texte de cette fiche dans le presse-papier" />
+                    <Button x:Name="BtnCloseBottom" Content="Fermer" Style="{StaticResource ModernButtonStyle}" Background="#0284C7" Height="28" Padding="16,0" Click="BtnClose_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

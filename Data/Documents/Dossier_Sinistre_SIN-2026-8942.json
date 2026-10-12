@@ -1,0 +1,57 @@
+{
+  "claimId": "SIN-2026-8942",
+  "reportedDate": "2026-10-02T14:15:00Z",
+  "policyNumber": "POL-992384",
+  "policyholder": {
+    "fullName": "Marc DUPONT",
+    "contractFormula": "Tous Risques Confort & Assistance 0km",
+    "deductibleEuros": 250.0,
+    "vehicle": {
+      "type": "Modèle SUV compact (2024)",
+      "licensePlate": "GE-482-TX",
+      "vin": "VF3MCYHZRKS128942",
+      "mileageKm": 24800,
+      "drivable": true
+    }
+  },
+  "incidentCircumstances": {
+    "location": "Avenue de la République, Paris 11e (Feu tricolore carrefour Richard-Lenoir)",
+    "dateTime": "2026-10-02T08:45:00Z",
+    "weather": "Chaussée sèche, circulation dense matinale",
+    "declaration": "Véhicule assuré à l'arrêt complet à un feu de signalisation rouge sur l'avenue de la République. Le véhicule tiers (Fourgonnette d'une entreprise du secteur de la livraison, conducteur M. Martin) est venu percuter avec violence l'arrière du véhicule assuré sans laisser de traces de freinage.",
+    "amicableReportSigned": true,
+    "policeReport": false
+  },
+  "thirdParty": {
+    "identified": true,
+    "driver": "M. Martin",
+    "entity": "Entreprise du secteur de la livraison et transport express",
+    "vehicle": "Fourgonnette utilitaire 3.5T",
+    "licensePlate": "DP-912-KB",
+    "insurer": "Entreprise du secteur des assurances mutuelles",
+    "policyNumber": "ASSUR-PRO-774128",
+    "faultAdmission": "Conducteur tiers reconnaît avoir été distrait par son terminal GPS"
+  },
+  "damagesInventory": {
+    "bodywork": [
+      "Pare-chocs arrière déformé, déchiré et désolidarisé des attaches latérales",
+      "Hayon arrière froissé, serrure motorisée bloquée, vitre intacte",
+      "Optique arrière droit détruit (feux LED et clignotant brisés)",
+      "Plancher de coffre embouti au niveau de l'attelage et du bac roue de secours"
+    ],
+    "adasSensors": [
+      "Capteurs ultrasons de recul (x4) pulvérisés",
+      "Module radar d'angle mort arrière droit déconnecté et endommagé",
+      "Caméra de recul 360° désaxée"
+    ],
+    "mechanical": "Structure de train arrière sans déformation visible immédiate, contrôle géométrie requis",
+    "bodilyInjuries": "Aucun blessé déclaré sur le constat. Céphalée et contracture cervicale légère signalées sous 48h par l'assuré."
+  },
+  "preliminaryEstimate": {
+    "partsCostEuros": 2850.0,
+    "laborCostEuros": 1400.0,
+    "adasCalibrationEuros": 450.0,
+    "totalEstimatedEuros": 4700.0,
+    "conventionApplicable": "Convention IRSA (Barème Cas 10 : Choc arrière sur véhicule à l'arrêt = 100% recours contre tiers)"
+  }
+}

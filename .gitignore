@@ -1,0 +1,78 @@
+# =====================================================================
+# GitIgnore for Copilot+ PC Demo Hub (.NET 8 WPF + Python AI Services)
+# =====================================================================
+
+# --------------------------------------------------
+# Visual Studio & .NET Build Artifacts
+# --------------------------------------------------
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+.vs/
+.vscode/
+
+# --------------------------------------------------
+# Python Caches & Virtual Environments
+# --------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+ENV/
+
+# --------------------------------------------------
+# Large AI Models & Hardware Blob Caches (>100MB GitHub limit)
+# --------------------------------------------------
+models/
+weights/
+cache/
+.olive-cache/
+yolov8n_openvino_model/
+
+# Binary models & hardware-compiled blobs anywhere
+*.blob
+*.pt
+*.pth
+*.bin
+*.onnx
+*.engine
+
+# --------------------------------------------------
+# Runtime Generated Outputs, Packages & Logs
+# --------------------------------------------------
+Logs/
+*.log
+run-pass-output/
+scratch/
+Releases/
+*.zip
+Data/**/outputs/
+Data/Audio/recordings/
+
+# --------------------------------------------------
+# Internal Tool & Backup Artifacts
+# --------------------------------------------------
+_backups/
+.system_generated/
+*.tmp
+*.bak
+
+# --------------------------------------------------
+# OS Generated Files
+# --------------------------------------------------
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store

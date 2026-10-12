@@ -1,0 +1,108 @@
+MANUEL TECHNIQUE D'EXPLOITATION & MAINTENANCE INDUSTRIELLE
+DOCUMENTATION TECHNIQUE RÉFÉRENCE : CVC-IND-2026-V2.4
+CLASSIFICATION : DOCUMENT INTERNE D'ENTREPRISE (CONFIDENTIALITÉ NIVEAU 1)
+ÉQUIPEMENTS COUVERTS : UNITÉS DE TRAITEMENT D'AIR (UTA) SÉRIE T-400 À T-800 & VENTILATEURS CENTRIFUGES
+
+================================================================================
+SECTION 1 : DESCRIPTION TECHNIQUE & ARCHITECTURE GÉNÉRALE
+================================================================================
+1.1 PRÉSENTATION DU SYSTÈME
+Les Unités de Traitement d'Air (UTA) industrielles assurent le conditionnement, 
+la filtration fine, le contrôle hygrométrique et la circulation continue de l'air 
+dans les bâtiments tertiaires et ateliers de haute précision.
+
+1.2 COMPOSANTS PRINCIPAUX
+- Caisson de mélange et registres motorisés étanches (servomoteurs 0-10V).
+- Étage de préfiltration G4 (perte de charge nominale : 45 Pa) et filtration F7/H13.
+- Batterie chaude (eau surchauffée 90/70°C) et batterie froide à détente directe.
+- Groupe motoventilateur centrifuge à accouplement direct ou transmission par courroie.
+- Variateur de fréquence électronique (VFD) asservi à la pression différentielle.
+
+1.3 CONDITIONS NOMINALES DE FONCTIONNEMENT
+- Débit d'air volumique nominal : 12 500 m³/h (plage de modulation : 4 000 à 15 000 m³/h).
+- Pression statique disponible : 450 Pa.
+- Vitesse nominale de rotation du rotor : 1 450 tr/min.
+- Température ambiante admissible : -15°C à +45°C.
+
+================================================================================
+SECTION 2 : ANALYSE VIBRATOIRE & SEUILS DE TOLÉRANCE (ISO 10816-3)
+================================================================================
+2.1 SURVEILLANCE DES NIVEAUX DE VIBRATION
+La surveillance vibratoire des paliers et du châssis moteur est réalisée en vitesse 
+efficace RMS (Root Mean Square) sur la bande spectrale standard 10 Hz - 1 000 Hz.
+
+2.2 SEUILS DE VIBRATION ADMISSIBLES :
+- Zone A (< 1.8 mm/s RMS) : État neuf ou révision complète (Excellente condition).
+- Zone B (1.8 à 4.5 mm/s RMS) : Fonctionnement normal admissible sans restriction.
+- Zone C (4.5 à 7.1 mm/s RMS) : Seuil d'alerte. Dégradation détectée, surveillance accrue requise.
+- Zone D (> 7.1 mm/s RMS) : Seuil de danger critique. Risque imminent de rupture mécanique. Arrêt d'urgence prescrit.
+
+2.3 CAUSES PRINCIPALES DE VIBRATIONS ANORMALES (CODE P1045) :
+a) Balourd de roue centrifuge :
+   - Dépôt de poussières grasses ou particules colmatées sur les aubes.
+   - Érosion ou déformation mécanique suite à l'aspiration d'un corps étranger.
+b) Usure ou écaillage des roulements de paliers :
+   - Paliers à rouleaux coniques ou à billes endommagés par fatigue superficielle.
+   - Fréquences caractéristiques de bague externe (BPFO) ou interne (BPFI) visibles au spectre FFT.
+c) Défaut d'alignement d'arbres ou tension des courroies :
+   - Désalignement angulaire ou parallèle entre l'arbre moteur et l'arbre de turbine.
+   - Résonance mécanique sur les plots antivibratiles élastomères.
+
+================================================================================
+SECTION 3 : LUBRIFICATION, PALIERS ET ROULEMENTS
+================================================================================
+3.1 SPÉCIFICATIONS DES LUBRIFIANTS
+- Graisse agréée : Graisse synthétique lithium-complexe haute performance (Grade NLGI 2).
+- Plage thermique de travail : -30°C à +140°C.
+- Viscosité cinématique de l'huile de base à 40°C : 110 à 150 cSt.
+- Référence d'atelier préconisée : Graisse industrielle polyvalente haute pression (SKF LGMT 2 ou équivalent certifié).
+
+3.2 PÉRIODICITÉS DE GRAISSAGE
+- Régime continu (24h/24, 7j/7) : Graissage préventif obligatoire tous les 6 mois (ou 4 000 heures de fonctionnement).
+- Quantité par palier : 25 grammes par graisseur (utiliser une pompe manuelle tarée à 1.5 g par coup).
+- Procédure : Réaliser l'injection de graisse moteur en rotation lente si la sécurité le permet, purgeur ouvert, afin d'éviter la surpression dans les flasques d'étanchéité.
+
+3.3 SIGNES DE DÉGRADATION D'UN ROULEMENT :
+- Élévation anormale de température du palier (> 75°C en régime stabilisé).
+- Bruit métallique strident ou grondement sourd continu.
+- Présence de limailles ou suintement d'huile noircie au niveau des joints labyrinthes.
+
+================================================================================
+SECTION 4 : DIAGNOSTIC THERMIQUE & DÉBITS D'AIR
+================================================================================
+4.1 ÉCHAUFFEMENT DU MOTEUR ÉLECTRIQUE
+La température des bobinages du stator ne doit pas excéder les limites de la classe d'isolation F (échauffement maximal admissible : 105 K au-dessus d'une ambiance à 40°C, soit une température maximale absolue de 145°C).
+En régime nominal, la température de carcasse mesurée par sonde PT100 doit être comprise entre 55°C et 75°C.
+Un échauffement supérieur à 80°C indique :
+- Une surcharge mécanique consécutive au grippage partiel d'un palier.
+- Une obstruction du ventilateur de refroidissement propre au moteur (capot arrière encombré).
+- Un déséquilibre de tension réseau triphasé (> 2% entre phases).
+
+4.2 CHUTES DE DÉBIT D'AIR
+Toute baisse de débit sous le seuil de 9 000 m³/h avec ventilateur en rotation active indique :
+- Colmatage critique des batteries filtrantes (contrôler le pressostat différentiel DP).
+- Glissement de courroie trapézoïdale détendue ou usée.
+- Registre de recyclage bloqué mécaniquement en position intermédiaire.
+
+================================================================================
+SECTION 5 : CONSIGNATION, SÉCURITÉ & TOLÉRANCES D'ALIGNEMENT
+================================================================================
+5.1 RÈGLES DE CONSIGNATION STRICTES (NORME NF C 18-510)
+Avant toute intervention mécanique ou ouverture des portes de visite sous pression :
+1. Séparation : Ouvrir le sectionneur de proximité cadenassable en façade de l'armoire CVC.
+2. Condamnation : Poser un cadenas individuel de consignation avec étiquette nominative.
+3. Vérification d'Absence de Tension (VAT) : Mesurer entre toutes phases et phase-terre.
+4. Immobilisation de la turbine : La turbine peut tourner par effet cheminée ; poser le cale-rotor de sécurité.
+
+5.2 TOLÉRANCES D'ALIGNEMENT LASER :
+Pour les groupes motoventilateurs à entraînement direct par accouplement élastique :
+- Désalignement angulaire maximal : 0.05 mm pour 100 mm de diamètre d'accouplement.
+- Désalignement parallèle radial maximal : 0.05 mm.
+- Serrage au couple préconisé des pieds moteur sur cales rectifiées : 85 N.m (boulonnerie M12 classe 8.8).
+
+================================================================================
+HISTORIQUE DES RÉVISIONS :
+- v1.0 : Création initiale de la documentation technique de site.
+- v2.0 : Intégration des seuils de vibration ISO 10816-3 et spécifications NLGI 2.
+- v2.4 : Mise à jour des protocoles d'alignement laser et consignation NF C 18-510.
+================================================================================

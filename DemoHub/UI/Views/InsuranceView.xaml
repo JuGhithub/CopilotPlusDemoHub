@@ -1,0 +1,339 @@
+<UserControl x:Class="CopilotPlusDemoHub.UI.Views.InsuranceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- View Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock x:Name="LblInsuranceTitle" Text="ASSISTANT QUALIFICATION DE SINISTRES (ASSURANCE)"
+                           FontSize="20" FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimaryBrush}" />
+                <TextBlock x:Name="LblInsuranceSub" Text="Traitement confidentiel des données personnelles • Estimation des responsabilités • Détection de fraude"
+                           FontSize="13" Margin="0,4,0,0"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border x:Name="BadgeModelContainer" Background="#162238" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="Modèles d'Intelligence Artificielle exécutés localement">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="🧠" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center" />
+                        <TextBlock x:Name="TxtModelBadge" Text="Modèles : YOLOv8 (Vision) + Phi-4-mini (Chiffrage)" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+                <Button x:Name="BtnDocHelp" Style="{StaticResource ModernButtonStyle}"
+                        Background="#1E293B" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                        Height="32" Padding="12,0" VerticalAlignment="Center"
+                        ToolTip="Documentation &amp; Guide de démonstration (FR / EN)" Click="BtnDocHelp_Click">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="❓" FontSize="12" Margin="0,0,6,0" />
+                        <TextBlock x:Name="TxtDocHelp" Text="Guide &amp; Doc" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- Two Columns Layout -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="420" />
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Claim Card -->
+            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,6,0">
+                        <StackPanel>
+                            <TextBlock x:Name="LblCardClaim" Text="DOSSIER DE SINISTRE CHARGÉ"
+                                       FontSize="13" FontWeight="Bold"
+                                       Foreground="{StaticResource CopilotCyanBrush}"
+                                       Margin="0,0,0,12" />
+
+                            <!-- Header Claim Info -->
+                            <Border Background="#0F172A" CornerRadius="6" Padding="12,10" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock x:Name="LblClaimHeader" Text="📁 Sinistre N° SIN-2026-8942" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" FontSize="12" />
+                                        <TextBlock x:Name="LblClaimInsured" Text="Assuré : Marc DUPONT • Police : POL-992384" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0" />
+                                        <TextBlock x:Name="LblClaimVehicle" Text="Véhicule : Modèle SUV compact (2024) - Imm. GE-482-TX" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" x:Name="BtnViewSourceDoc" Style="{StaticResource ModernButtonStyle}"
+                                            Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                            Height="28" Padding="10,0" Margin="8,0,0,0" Click="BtnViewSourceDoc_Click"
+                                            ToolTip="Consulter la déclaration officielle et le constat amiable complet (JSON)">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="📄" FontSize="11" Margin="0,0,5,0" />
+                                            <TextBlock x:Name="TxtBtnViewSourceDoc" Text="Dossier Source" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                            </Border>
+
+                            <!-- Photo Damage Section -->
+                            <Border Background="#0F172A" CornerRadius="6" BorderBrush="#1E293B" BorderThickness="1" Padding="10" Margin="0,0,0,12">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Photo Header -->
+                                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="📸" FontSize="12" Margin="0,0,6,0" />
+                                            <TextBlock x:Name="LblPhotoHeader" Text="CONSTAT PHOTO / DOMMAGES" FontSize="11" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" x:Name="BtnUploadPhoto" Style="{StaticResource ModernButtonStyle}"
+                                                Background="#1E293B" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                                Height="24" Padding="8,0" Click="BtnUploadPhoto_Click"
+                                                ToolTip="Uploader une photo personnalisée de véhicule ou de sinistre (.jpg, .png)">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="📂" FontSize="10" Margin="0,0,4,0" />
+                                                <TextBlock x:Name="TxtBtnUploadPhoto" Text="Importer..." FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- Preview Image -->
+                                    <Grid Grid.Row="1" Margin="0,0,0,8" Height="110" x:Name="GridPhotoPreview">
+                                        <Border Background="#020617" CornerRadius="4" BorderBrush="#334155" BorderThickness="1" ClipToBounds="True">
+                                            <Grid>
+                                                <Image x:Name="ImgPhotoPreview" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                <Border VerticalAlignment="Bottom" Background="#D90F172A" Padding="8,4">
+                                                    <StackPanel>
+                                                        <TextBlock x:Name="TxtPhotoTitle" Text="Photo 1 : Choc Arrière SUV" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock x:Name="TxtPhotoSub" Text="Impact direct droit, pare-chocs fendu, capteurs ADAS délogés" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Photo Choice Buttons -->
+                                    <WrapPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button x:Name="BtnSamplePhoto1" Style="{StaticResource ModernButtonStyle}"
+                                                Background="#1E293B" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                                Height="24" Padding="6,0" Margin="2,2" Click="BtnSamplePhoto1_Click">
+                                            <TextBlock x:Name="TxtSamplePhoto1" Text="Ex. 1 (Choc arrière)" FontSize="10" Foreground="{StaticResource TextPrimaryBrush}" />
+                                        </Button>
+                                        <Button x:Name="BtnSamplePhoto2" Style="{StaticResource ModernButtonStyle}"
+                                                Background="#162032" BorderBrush="#334155" BorderThickness="1"
+                                                Height="24" Padding="6,0" Margin="2,2" Click="BtnSamplePhoto2_Click">
+                                            <TextBlock x:Name="TxtSamplePhoto2" Text="Ex. 2 (Radar ADAS)" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        </Button>
+                                        <Button x:Name="BtnRemovePhoto" Style="{StaticResource ModernButtonStyle}"
+                                                Background="#162032" BorderBrush="#334155" BorderThickness="1"
+                                                Height="24" Padding="6,0" Margin="2,2" Click="BtnRemovePhoto_Click"
+                                                ToolTip="Désactiver l'analyse photo pour ce test">
+                                            <TextBlock x:Name="TxtRemovePhoto" Text="❌ Sans photo" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        </Button>
+                                    </WrapPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Circumstances -->
+                            <TextBlock x:Name="LblCircumstancesLabel" Text="Circonstances déclarées"
+                                       FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,4" />
+                            <TextBox x:Name="TxtCircumstances"
+                                     Text="Véhicule assuré à l'arrêt complet à un feu de signalisation rouge sur l'avenue de la République. Le véhicule tiers (Fourgonnette d'une entreprise du secteur de la livraison, conducteur M. Martin) est venu percuter avec violence l'arrière du véhicule assuré sans laisser de traces de freinage."
+                                     TextWrapping="Wrap" AcceptsReturn="True" Height="65"
+                                     VerticalScrollBarVisibility="Auto"
+                                     Background="{StaticResource InputBgBrush}"
+                                     Foreground="{StaticResource TextPrimaryBrush}"
+                                     BorderBrush="{StaticResource CardBorderBrush}"
+                                     Padding="10,6" Margin="0,0,0,10" />
+
+                            <!-- Quick Question Chips -->
+                            <TextBlock x:Name="LblQuickQuestions" Text="Questions rapides pour la démo :"
+                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,4" />
+                            <WrapPanel Margin="0,0,0,10">
+                                <Button x:Name="BtnChipIrsa" Style="{StaticResource ModernButtonStyle}"
+                                        Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                        Height="24" Padding="6,0" Margin="0,2,4,2" Click="BtnChipIrsa_Click"
+                                        ToolTip="Établir les responsabilités et recours conventionnels IRSA">
+                                    <TextBlock x:Name="TxtChipIrsa" Text="⚖️ Recours IRSA" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                </Button>
+                                <Button x:Name="BtnChipPhotos" Style="{StaticResource ModernButtonStyle}"
+                                        Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                        Height="24" Padding="6,0" Margin="0,2,4,2" Click="BtnChipPhotos_Click"
+                                        ToolTip="Confronter la déclaration écrite aux preuves visuelles constatées sur les photos">
+                                    <TextBlock x:Name="TxtChipPhotos" Text="📸 Audit Photos vs Déclaration" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                </Button>
+                                <Button x:Name="BtnChipAdas" Style="{StaticResource ModernButtonStyle}"
+                                        Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                        Height="24" Padding="6,0" Margin="0,2,4,2" Click="BtnChipAdas_Click"
+                                        ToolTip="Évaluer les dommages sur les radars ADAS et obligations de recalibrage">
+                                    <TextBlock x:Name="TxtChipAdas" Text="📡 Capteurs &amp; ADAS" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                </Button>
+                                <Button x:Name="BtnChipCost" Style="{StaticResource ModernButtonStyle}"
+                                        Background="#162238" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                                        Height="24" Padding="6,0" Margin="0,2,4,2" Click="BtnChipCost_Click"
+                                        ToolTip="Estimer le chiffrage prévisionnel et mesures d'indemnisation">
+                                    <TextBlock x:Name="TxtChipCost" Text="💶 Chiffrage &amp; Recours" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                </Button>
+                            </WrapPanel>
+
+                            <!-- Instruction -->
+                            <TextBlock x:Name="LblInstructionLabel" Text="Instruction pour l'IA"
+                                       FontSize="12" Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,4" />
+                            <TextBox x:Name="TxtInstruction"
+                                     Text="Qualifier ce sinistre : établir les responsabilités conventionnelles (IRSA), estimer les dommages collatéraux ADAS et dresser le plan d'action d'indemnisation."
+                                     TextWrapping="Wrap" AcceptsReturn="True" Height="50"
+                                     VerticalScrollBarVisibility="Auto"
+                                     Background="{StaticResource InputBgBrush}"
+                                     Foreground="{StaticResource TextPrimaryBrush}"
+                                     BorderBrush="{StaticResource CardBorderBrush}"
+                                     Padding="10,6" />
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Bottom Action Button & Status -->
+                    <StackPanel Grid.Row="1" Margin="0,10,0,0">
+                        <Button x:Name="BtnRun"
+                                Content="▶ Qualifier le sinistre (IA Locale)"
+                                Style="{StaticResource ModernButtonStyle}"
+                                Height="40"
+                                Click="BtnRun_Click" />
+
+                        <ProgressBar x:Name="PrgBusy"
+                                     IsIndeterminate="True"
+                                     Height="3"
+                                     Margin="0,6,0,0"
+                                     Visibility="Collapsed" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Right: Qualification Output Card -->
+            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <StackPanel Grid.Row="0">
+                        <TextBlock x:Name="LblGuidanceTitle" Text="RAPPORT DE QUALIFICATION &amp; DÉCISION DE RECOURS"
+                                   FontSize="13" FontWeight="Bold"
+                                   Foreground="{StaticResource CopilotCyanBrush}" />
+                    </StackPanel>
+
+                    <!-- Telemetry KPI Bar -->
+                    <Border Grid.Row="1" Background="#0F172A" CornerRadius="6" Padding="12,8" Margin="0,10,0,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="105" />
+                                <ColumnDefinition Width="135" />
+                                <ColumnDefinition Width="110" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblLatencyHeader" Text="CHRONO / DURÉE" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                <TextBlock x:Name="LblLatency" Text="-- ms" FontSize="13" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblThroughputHeader" Text="DÉBIT TEMPS RÉEL" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                <TextBlock x:Name="LblThroughput" Text="-- tok/s" FontSize="13" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblTokensHeader" Text="JETONS GÉNÉRÉS" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                <TextBlock x:Name="LblTokens" Text="-- tok" FontSize="13" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblComplianceHeader" Text="CONFORMITÉ RGPD" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                <TextBlock x:Name="LblComplianceBadge" Text="🔒 100% Données sur l'appareil" FontSize="12" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Live Pipeline & Reasoning Steps Tracker -->
+                    <Border Grid.Row="2" Background="#111B2E" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12,8" Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Pipeline Steps Pills -->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border x:Name="PillStep1" Background="#1E293B" CornerRadius="4" Padding="7,3" Margin="0,0,5,0">
+                                    <TextBlock x:Name="TxtStep1" Text="1. Constat &amp; Photos" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
+                                </Border>
+                                <TextBlock Text="›" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,5,0" VerticalAlignment="Center" FontSize="11" />
+                                <Border x:Name="PillStep2" Background="#1E293B" CornerRadius="4" Padding="7,3" Margin="0,0,5,0">
+                                    <TextBlock x:Name="TxtStep2" Text="2. Prefill Silicium" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
+                                </Border>
+                                <TextBlock Text="›" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,5,0" VerticalAlignment="Center" FontSize="11" />
+                                <Border x:Name="PillStep3" Background="#1E293B" CornerRadius="4" Padding="7,3" Margin="0,0,5,0">
+                                    <TextBlock x:Name="TxtStep3" Text="3. Qualification &amp; Recours" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
+                                </Border>
+                                <TextBlock Text="›" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,5,0" VerticalAlignment="Center" FontSize="11" />
+                                <Border x:Name="PillStep4" Background="#1E293B" CornerRadius="4" Padding="7,3">
+                                    <TextBlock x:Name="TxtStep4" Text="4. Dossier Qualifié" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Live Status Description -->
+                            <TextBlock Grid.Row="1" x:Name="LblLiveStatus"
+                                       Text="Prêt • En attente de lancement de la qualification de sinistre"
+                                       FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Streaming Output -->
+                    <ScrollViewer Grid.Row="3" x:Name="ScrollerOutput" VerticalScrollBarVisibility="Auto">
+                        <TextBox x:Name="TxtOutput"
+                                 IsReadOnly="True"
+                                 TextWrapping="Wrap"
+                                 Background="Transparent"
+                                 Foreground="{StaticResource TextPrimaryBrush}"
+                                 BorderThickness="0"
+                                 FontSize="13"
+                                 Text="Cliquez sur 'Qualifier le sinistre' pour lancer l'expertise locale..." />
+                    </ScrollViewer>
+
+                    <!-- Notice -->
+                    <Border Grid.Row="4" Background="#162033" CornerRadius="6" Padding="12,8" Margin="0,10,0,0">
+                        <TextBlock x:Name="LblNotice" Text="🛡️ Sécurité des données : Les noms, plaques d'immatriculation et déclarations personnelles ne transitent par aucun serveur externe."
+                                   FontSize="11" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

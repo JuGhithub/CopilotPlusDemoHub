@@ -1,0 +1,560 @@
+<UserControl x:Class="CopilotPlusDemoHub.UI.Views.AudioStudioView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Focusable="True">
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid Margin="24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- 1. Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock x:Name="LblAudioTitle" Text="🎙️ TRANSCRIPTION DE RÉUNION &amp; RECONNAISSANCE VOCALE : NPU DÉDIÉ vs GPU"
+                                   FontSize="20" FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock x:Name="LblAudioSub" Text="Cas d'usage 100% réel : Capture micro, Diarisation &amp; Reconnaissance automatique des locuteurs par empreinte vocale scellée au TPM 2.0 (Whisper + VoxCeleb OpenVINO)"
+                                   FontSize="13" Margin="0,4,0,0"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border x:Name="BadgeModelContainer" Background="#162238" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="Modèle d'Intelligence Artificielle exécuté localement">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="🧠" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock x:Name="TxtModelBadge" Text="Modèle : OpenAI Whisper (Tiny/Base FP16 OpenVINO)" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                        <Button x:Name="BtnDocHelp" Style="{StaticResource ModernButtonStyle}"
+                                Background="#1E293B" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                                Height="32" Padding="12,0" VerticalAlignment="Center"
+                                ToolTip="Documentation &amp; Guide de démonstration (FR / EN)" Click="BtnDocHelp_Click">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="❓" FontSize="12" Margin="0,0,6,0" />
+                                <TextBlock x:Name="TxtDocHelp" Text="Guide &amp; Doc" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- 2. Audio Player & Control Bar -->
+                <Border Grid.Row="1" Background="#131B2E" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Row 0: File source, Recording & Quick Selector -->
+                        <Grid Grid.Row="0" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Import Custom File -->
+                            <Button Grid.Column="0" x:Name="BtnImportAudio" Content="📁 Importer Fichier"
+                                    ToolTip="Sélectionner n'importe quel enregistrement audio depuis votre PC"
+                                    Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="10,0"
+                                    Click="BtnImportAudio_Click" />
+
+                            <!-- Load Sample Meeting -->
+                            <Button Grid.Column="2" x:Name="BtnSampleMeeting" Content="📋 Réunion (24s)"
+                                    ToolTip="Charger l'enregistrement audio de réunion fourni"
+                                    Style="{StaticResource ModernButtonStyle}" Background="{StaticResource CopilotBlueBrush}" Height="30" Padding="10,0"
+                                    Click="BtnSampleMeeting_Click" />
+
+                            <!-- Load Sample 2-Speaker Dialogue -->
+                            <Button Grid.Column="4" x:Name="BtnSampleConversation" Content="👥 Dialogue 2 Voix (15s)"
+                                    ToolTip="Charger un dialogue à deux intervenants différents pour tester la diarisation"
+                                    Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="10,0"
+                                    Click="BtnSampleConversation_Click" />
+
+                            <!-- Enroll Voice (TPM Secured) -->
+                            <Button Grid.Column="6" x:Name="BtnEnrollVoice" Content="🎙️ Enrôler Voix (TPM)"
+                                    ToolTip="Enregistrer un échantillon vocal (5s) ou un fichier pour mémoriser définitivement une personne dans le TPM"
+                                    Style="{StaticResource ModernButtonStyle}" Background="#0284C7" Foreground="White" FontWeight="SemiBold" Height="30" Padding="10,0"
+                                    Click="BtnEnrollVoice_Click" />
+
+                            <!-- Manage Voice Profiles -->
+                            <Button Grid.Column="8" x:Name="BtnManageProfiles" Content="👤 Profils Vocaux"
+                                    ToolTip="Voir et gérer la base des empreintes vocales mémorisées sur ce PC dans le coffre TPM"
+                                    Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="10,0"
+                                    Click="BtnManageProfiles_Click" />
+
+                            <!-- Current File Info Badge -->
+                            <Border Grid.Column="10" Background="#0A101D" CornerRadius="4" Padding="10,4" VerticalAlignment="Center" Margin="0,0,8,0">
+                                <TextBlock x:Name="LblLoadedTrackInfo" Text="Fichier actif : reunion_codir.wav (22.3s • Whisper Small NPU)" FontSize="11" Foreground="{StaticResource CopilotCyanBrush}" TextTrimming="CharacterEllipsis" />
+                            </Border>
+
+                            <!-- Language hint, Auto-Detect & TPM Badge -->
+                            <StackPanel Grid.Column="11" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Background="#10B981" Opacity="0.15" CornerRadius="12" Padding="8,4" Margin="0,0,6,0">
+                                    <TextBlock x:Name="LblTpmBadge" Text="🔒 TPM 2.0 Scellé" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" ToolTip="Toutes les empreintes vocales sont chiffrées avec la clé matérielle unique de ce PC" />
+                                </Border>
+                                <TextBlock x:Name="LblAudioLanguageLabel" Text="Langue :" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,4,0" />
+                                <ComboBox x:Name="CmbLanguage" SelectedIndex="0" Width="140" Height="26" Background="#1E293B" Foreground="White" BorderBrush="{StaticResource CardBorderBrush}" SelectionChanged="CmbLanguage_SelectionChanged">
+                                    <ComboBoxItem x:Name="CmbItemAuto" Content="🌐 Auto-Détection" Tag="auto" />
+                                    <ComboBoxItem Content="🇫🇷 Français" Tag="&lt;|fr|&gt;" />
+                                    <ComboBoxItem Content="🇬🇧 English" Tag="&lt;|en|&gt;" />
+                                    <ComboBoxItem Content="🇪🇸 Español" Tag="&lt;|es|&gt;" />
+                                    <ComboBoxItem Content="🇩🇪 Deutsch" Tag="&lt;|de|&gt;" />
+                                    <ComboBoxItem Content="🇮🇹 Italiano" Tag="&lt;|it|&gt;" />
+                                </ComboBox>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Row 1: Silicon Mode Selector & Action Buttons -->
+                        <Grid Grid.Row="1" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Audio Playback Controls -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <Button x:Name="BtnPlayPause" Content="▶ Écouter l'enregistrement" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="34" Padding="12,0" Margin="0,0,6,0" Click="BtnPlayPause_Click" />
+                                <Button x:Name="BtnStop" Content="⏹ Stop" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="34" Padding="10,0" Click="BtnStop_Click" />
+                            </StackPanel>
+
+                            <!-- Speaker Mute & Volume -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button x:Name="BtnMuteSound" Content="🔊 Son HP" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="32" Padding="8,0" Margin="0,0,8,0" Click="BtnMuteSound_Click" />
+                                <Slider x:Name="SliderMasterVolume" Width="80" Minimum="0" Maximum="1" Value="0.8" VerticalAlignment="Center" ValueChanged="SliderMasterVolume_ValueChanged" />
+                            </StackPanel>
+
+                            <!-- Silicon Selector for Whisper -->
+                            <Button Grid.Column="4" x:Name="BtnGpuMode" Content="🎮 Mode GPU Intel Arc (~32W)"
+                                    Style="{StaticResource ModernButtonStyle}"
+                                    Background="#1E293B" Height="34" Padding="12,0"
+                                    Click="BtnGpuMode_Click" />
+
+                            <Button Grid.Column="6" x:Name="BtnNpuMode" Content="⚡ Mode NPU Intel AI Boost (~5.5W)"
+                                    Style="{StaticResource ModernButtonStyle}"
+                                    Background="{StaticResource NpuGreenBrush}" Foreground="Black" FontWeight="Bold" Height="34" Padding="14,0"
+                                    Click="BtnNpuMode_Click" />
+                        </Grid>
+
+                        <!-- Row 2: Timeline Slider & Start Transcribe CTA -->
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock x:Name="LblCurrentTime" Text="00:00" FontSize="11" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                            <Slider Grid.Column="1" x:Name="SliderTimeline" Minimum="0" Maximum="24" Value="0" VerticalAlignment="Center" ValueChanged="SliderTimeline_ValueChanged" />
+                            <TextBlock Grid.Column="2" x:Name="LblTotalTime" Text="00:24" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="10,0,0,0" />
+
+                            <!-- UNIFIED ACTION BUTTONS -->
+                            <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                                <!-- Big Primary One-Click Live Button -->
+                                <Button x:Name="BtnLiveTranscribe" Content="🎙️ Démarrer la Conversation &amp; Transcription (Direct)"
+                                        ToolTip="Un seul clic : Démarre le microphone, la transcription Whisper NPU temps réel et la reconnaissance des intervenants"
+                                        Style="{StaticResource ModernButtonStyle}"
+                                        Background="#DC2626" Foreground="White" FontWeight="Bold" Height="36" Padding="16,0"
+                                        Click="BtnLiveTranscribe_Click" />
+
+                                <!-- Secondary button for pre-recorded files -->
+                                <Button x:Name="BtnStartTranscription" Content="⚡ Transcrire le Fichier"
+                                        ToolTip="Lancer la transcription Whisper sur le fichier audio pré-enregistré sélectionné"
+                                        Style="{StaticResource ModernButtonStyle}"
+                                        Background="#1E293B" Foreground="{StaticResource CopilotCyanBrush}" FontWeight="SemiBold" Height="36" Padding="14,0" Margin="8,0,0,0"
+                                        Click="BtnStartTranscription_Click" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- 3. Main Center: Live Transcript (Left) + Real Hardware Telemetry (Right) -->
+                <Grid Grid.Row="2" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.1*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="0.9*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left Column: Live Transcription Output -->
+                    <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Padding="16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Header & Speed Tag -->
+                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="LblLiveHeader" Text="📝 TRANSCRIPTION &amp; IDENTIFICATION VOCALE EN DIRECT" FontSize="12" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                                <Border Grid.Column="1" x:Name="BadgeLiveIndicator" Background="#26DC2626" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="12" Padding="8,3" Visibility="Collapsed">
+                                    <TextBlock x:Name="TxtLiveIndicator" Text="● EN DIRECT MICRO (NPU)" FontSize="10" FontWeight="Bold" Foreground="#EF4444" />
+                                </Border>
+                                <Border Grid.Column="3" x:Name="BadgeDetectedLanguage" Background="#0C1B2A" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1" CornerRadius="12" Padding="8,3" Visibility="Collapsed">
+                                    <TextBlock x:Name="TxtDetectedLanguage" Text="🌐 Détecté : 🇫🇷 FR" FontSize="10" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                </Border>
+                                <Border Grid.Column="5" x:Name="BadgeSpeedFactor" Background="#0F172A" BorderBrush="{StaticResource NpuGreenBrush}" BorderThickness="1" CornerRadius="12" Padding="8,3" Visibility="Collapsed">
+                                    <TextBlock x:Name="LblSpeedFactor" Text="⚡ 25x plus rapide que le temps réel" FontSize="10" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                                </Border>
+                            </Grid>
+
+                            <!-- Subtitle status -->
+                            <TextBlock Grid.Row="1" x:Name="LblTranscriptionStatus" Text="Prêt. Enregistrez au micro ou sélectionnez un fichier, puis lancez Whisper." FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,10" />
+
+                            <!-- Scrollable Transcript Box -->
+                            <Border Grid.Row="2" Background="#09101E" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12" MinHeight="280">
+                                <ScrollViewer x:Name="ScrollerTranscript" VerticalScrollBarVisibility="Auto">
+                                    <StackPanel x:Name="StackTranscriptSegments">
+                                        <!-- Dynamic transcription segment cards with speaker badge & rename button will appear here -->
+                                        <TextBlock x:Name="TxtTranscriptPlaceholder" Text="La transcription apparaîtra ici avec l'horodatage, le locuteur identifié et le bouton pour renommer/mémoriser la voix..." FontSize="12" Foreground="{StaticResource TextMutedBrush}" FontStyle="Italic" />
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- Post-Transcription Action Bar (Cross-over with Phi-4-mini) -->
+                            <Grid Grid.Row="3" Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Button Grid.Column="0" x:Name="BtnCopyText" Content="📋 Copier le texte" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="10,0" Click="BtnCopyText_Click" />
+                                <Button Grid.Column="2" x:Name="BtnSummarizeMeeting" Content="✨ Résumer les décisions avec Phi-4-mini (NPU)" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="12,0" FontWeight="SemiBold" Click="BtnSummarizeMeeting_Click" />
+                            </Grid>
+
+                            <!-- Meeting Summary Output Box (When Phi-4-mini summarizes) -->
+                            <Border Grid.Row="4" x:Name="BorderSummary" Background="#070D18" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,10,0,0" Visibility="Collapsed">
+                                <StackPanel>
+                                    <TextBlock x:Name="LblSummaryTitle" Text="✨ SYNTHÈSE EXÉCUTIVE DES DÉCISIONS (GÉNÉRÉE PAR PHI-4-MINI SUR LE NPU) :" FontSize="10" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" Margin="0,0,0,6" />
+                                    <TextBlock x:Name="TxtMeetingSummary" Text="" FontSize="11" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Right Column: 100% Real Hardware Telemetry & Energy Scorecard -->
+                    <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}" Padding="16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Dynamic Hardware Status Pill -->
+                            <Border Grid.Row="0" x:Name="PillAudioStatus" Background="#0F172A" BorderBrush="{StaticResource NpuGreenBrush}" BorderThickness="1" CornerRadius="18" Padding="12,6" HorizontalAlignment="Center" Margin="0,0,0,14">
+                                <TextBlock x:Name="TxtAudioStatus" Text="⚡ MODE NPU ACTIF : TRANSCRIPTION ULTRA-SOBRE (~5.5W)" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                            </Border>
+
+                            <!-- Big Watts & Joules Metrics -->
+                            <Border Grid.Row="1" Background="#0A101D" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,14">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <Grid Grid.Row="0">
+                                        <TextBlock x:Name="LblLiveEnergyHeader" Text="⚡ COMPTEUR ÉNERGÉTIQUE EN DIRECT" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                                        <TextBlock x:Name="LblLiveTelemetrySub" Text="100% Télémétrie Windows" FontSize="9" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" />
+                                    </Grid>
+
+                                    <Grid Grid.Row="1" Margin="0,10,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="8" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Watts -->
+                                        <Border Grid.Column="0" Background="#050811" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10">
+                                            <StackPanel HorizontalAlignment="Center">
+                                                <TextBlock x:Name="LblInstantWattsTitle" Text="PUISSANCE INSTANTANÉE" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" />
+                                                <TextBlock x:Name="LblInstantWatts" Text="5.5 W" FontSize="20" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                                <TextBlock x:Name="LblPowerSub" Text="NPU ultra-sobre" FontSize="8.5" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Joules -->
+                                        <Border Grid.Column="2" Background="#050811" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10">
+                                            <StackPanel HorizontalAlignment="Center">
+                                                <TextBlock x:Name="LblJoulesTitle" Text="ÉNERGIE CONSOMMÉE" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" />
+                                                <TextBlock x:Name="LblJoulesCounter" Text="0 J" FontSize="20" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                                                <TextBlock x:Name="LblJoulesSub" Text="Watts × Secondes" FontSize="8.5" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <!-- Hardware Gauges (NPU / GPU / CPU) -->
+                            <Grid Grid.Row="2" Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Background="#0A101D" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="8,8">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="⚡ NPU" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" HorizontalAlignment="Center" />
+                                        <TextBlock x:Name="LblNpuLoad" Text="0 %" FontSize="15" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                        <TextBlock Text="Intel AI Boost" FontSize="8" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="2" Background="#0A101D" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="8,8">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="🎮 GPU" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource GpuAmberBrush}" HorizontalAlignment="Center" />
+                                        <TextBlock x:Name="LblGpuLoad" Text="0 %" FontSize="15" FontWeight="Bold" Foreground="{StaticResource GpuAmberBrush}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                        <TextBlock Text="Intel Arc 140V" FontSize="8" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="4" Background="#0A101D" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="8,8">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="💻 CPU" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" HorizontalAlignment="Center" />
+                                        <TextBlock x:Name="LblCpuLoad" Text="0 %" FontSize="15" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                        <TextBlock Text="Intel Core Ultra" FontSize="8" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <!-- Latency & Speed Benchmark Card -->
+                            <Border Grid.Row="3" Background="#0A101D" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                                <StackPanel>
+                                    <TextBlock x:Name="LblChronoTitle" Text="⚡ CHRONOMÉTRAGE DE L'INFÉRENCE WHISPER" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" Margin="0,0,0,8" />
+                                    <Grid Margin="0,0,0,4">
+                                        <TextBlock x:Name="LblInferTimeLabel" Text="Temps de calcul IA :" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                        <TextBlock x:Name="LblInferTime" Text="-- ms" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right" />
+                                    </Grid>
+                                    <Grid Margin="0,0,0,4">
+                                        <TextBlock x:Name="LblSpeedRelativeLabel" Text="Accélération relative :" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                        <TextBlock x:Name="LblSpeedRelative" Text="-- x temps réel" FontSize="10" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" HorizontalAlignment="Right" />
+                                    </Grid>
+                                    <Grid Margin="0,0,0,8">
+                                        <TextBlock x:Name="LblModelLoadedLabel" Text="Modèle IA chargé :" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
+                                        <TextBlock x:Name="LblModelLoadedValue" Text="Whisper Small FP16 (OpenVINO NPU)" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
+                                    </Grid>
+                                    <ProgressBar x:Name="PrgTranscription" Height="4" Minimum="0" Maximum="100" Value="0" Foreground="{StaticResource NpuGreenBrush}" Background="#1E293B" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- 4. Bottom Scorecard for DSI -->
+                <Border Grid.Row="3" Style="{StaticResource CardBorderStyle}" Padding="16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" x:Name="LblDsiScorecardTitle" Text="BILAN COMPARATIF DSI : POURQUOI EXÉCUTER WHISPER SUR LE NPU INTEL ?"
+                                   FontSize="13" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" Margin="0,0,0,12" />
+
+                        <Grid Grid.Row="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="280" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Header -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" x:Name="LblDsiCol1" Text="CRITÈRE ENTREPRISE" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" Margin="0,0,0,8" />
+                            <TextBlock Grid.Row="0" Grid.Column="1" x:Name="LblDsiCol2" Text="GPU INTEL ARC (Partagé)" FontWeight="Bold" Foreground="{StaticResource DangerRedBrush}" Margin="0,0,0,8" />
+                            <TextBlock Grid.Row="0" Grid.Column="2" x:Name="LblDsiCol3" Text="NPU INTEL AI BOOST (Dédié)" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" Margin="0,0,0,8" />
+
+                            <!-- Row 1: Vitesse -->
+                            <TextBlock Grid.Row="1" Grid.Column="0" x:Name="LblDsiRow1Crit" Text="Vitesse de transcription (Whisper Small)" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,5" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" x:Name="LblDsiRow1Gpu" Text="~ 15 - 20x temps réel (~ 700 ms)" Foreground="{StaticResource DangerRedBrush}" Margin="0,5" />
+                            <TextBlock Grid.Row="1" Grid.Column="2" x:Name="LblDsiRow1Npu" Text="~ 25 - 30x temps réel (~ 500 ms • 100% Hors-ligne)" Foreground="{StaticResource NpuGreenBrush}" FontWeight="SemiBold" Margin="0,5" />
+
+                            <!-- Row 2: Puissance -->
+                            <TextBlock Grid.Row="2" Grid.Column="0" x:Name="LblDsiRow2Crit" Text="Puissance moyenne absorbée" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,5" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" x:Name="LblDsiRow2Gpu" Text="28 - 35 Watts (Surchauffe GPU &amp; ventilation)" Foreground="{StaticResource DangerRedBrush}" Margin="0,5" />
+                            <TextBlock Grid.Row="2" Grid.Column="2" x:Name="LblDsiRow2Npu" Text="5 - 6 Watts (Régime ultra-sobre • Châssis froid)" Foreground="{StaticResource NpuGreenBrush}" FontWeight="SemiBold" Margin="0,5" />
+
+                            <!-- Row 3: Souveraineté & Multitâche -->
+                            <TextBlock Grid.Row="3" Grid.Column="0" x:Name="LblDsiRow3Crit" Text="Disponibilité pour les autres apps" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,5" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" x:Name="LblDsiRow3Gpu" Text="GPU monopolisé par l'audio (Risque de saccades écran)" Foreground="{StaticResource DangerRedBrush}" Margin="0,5" />
+                            <TextBlock Grid.Row="3" Grid.Column="2" x:Name="LblDsiRow3Npu" Text="GPU 100% libre pour l'affichage, Teams et Windows" Foreground="{StaticResource NpuGreenBrush}" FontWeight="SemiBold" Margin="0,5" />
+
+                            <!-- Row 4: Sécurité biométrique & RGPD -->
+                            <TextBlock Grid.Row="4" Grid.Column="0" x:Name="LblDsiRow4Crit" Text="Sécurité biométrique &amp; RGPD (Art. 9)" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,5" />
+                            <TextBlock Grid.Row="4" Grid.Column="1" x:Name="LblDsiRow4Gpu" Text="Cloud / Fichiers non-chiffrés (Risque d'exfiltration &amp; vol)" Foreground="{StaticResource DangerRedBrush}" Margin="0,5" />
+                            <TextBlock Grid.Row="4" Grid.Column="2" x:Name="LblDsiRow4Npu" Text="100% Scellé au TPM 2.0 du PC • Clé matérielle inviolable" Foreground="{StaticResource NpuGreenBrush}" FontWeight="SemiBold" Margin="0,5" />
+                        </Grid>
+
+                        <!-- Takeaway banner -->
+                        <Border Grid.Row="2" Background="#0C192E" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,14,0,0">
+                            <TextBlock x:Name="LblDsiTakeaway" Text="SYNTHÈSE DSI : La transcription de réunions et d'appels clients est le cas d'usage n°1 de l'IA vocale en entreprise. Avec le NPU Intel AI Boost et la puce de sécurité matérielle TPM 2.0 (Microsoft Pluton) du Copilot+ PC, la transcription s'exécute localement à plus de 25x la vitesse réelle en consommant seulement 5.5W. Les empreintes vocales biométriques sont scellées au matériel, garantissant une conformité native RGPD (Art. 9) sans aucune fuite cloud."
+                                       Foreground="{StaticResource CopilotCyanBrush}" FontWeight="SemiBold" FontSize="11" TextWrapping="Wrap" />
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+
+        <!-- Overlay: Modal Rename Speaker -->
+        <Grid x:Name="OverlayRenameSpeaker" Background="#CC070B14" Visibility="Collapsed">
+            <Border Background="#131B2E" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1.5" CornerRadius="12"
+                    Width="490" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="24">
+                <StackPanel>
+                    <Grid Margin="0,0,0,8">
+                        <TextBlock x:Name="LblModalRenameTitle" Text="🎙️ ASSOCIER UN NOM &amp; SCELLER DANS LE TPM 2.0" FontSize="14" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                        <Border Background="#10B981" Opacity="0.15" CornerRadius="10" Padding="6,2" HorizontalAlignment="Right">
+                            <TextBlock Text="🔒 TPM 2.0" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                        </Border>
+                    </Grid>
+
+                    <TextBlock x:Name="LblModalRenameDesc" Text="Attribuez le nom de la personne à cette prise de parole. Son empreinte acoustique (vecteur 192D) sera chiffrée avec la clé matérielle unique de ce PC et automatiquement reconnue lors des prochaines réunions."
+                               FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,12" />
+
+                    <Border Background="#0A101D" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,0,12">
+                        <TextBlock x:Name="LblRenameSnippetInfo" Text="Extrait sélectionné : [00:00 - 00:05]" FontSize="11" Foreground="{StaticResource CopilotCyanBrush}" />
+                    </Border>
+
+                    <TextBlock x:Name="LblModalRenameInputLabel" Text="Prénom ou Nom de la personne :" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6" />
+                    <TextBox x:Name="TxtSpeakerName" Height="34" FontSize="13" Background="#1E293B" Foreground="White" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" Padding="8,4" VerticalContentAlignment="Center" Margin="0,0,0,14" />
+
+                    <!-- GDPR Article 9 explicit consent banner -->
+                    <Border Background="#0C192E" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10,8" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock x:Name="LblModalRenameRgpdTitle" Text="⚖️ CONFORMITÉ RGPD (ARTICLE 9 - DONNÉES BIOMÉTRIQUES) :" FontSize="10" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" Margin="0,0,0,2" />
+                            <TextBlock x:Name="LblModalRenameRgpdDesc" Text="L'empreinte vocale est une donnée biométrique. Le consentement préalable de la personne doit être recueilli. Les données restent scellées au TPM de ce PC et sont supprimables à tout moment." FontSize="9.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                            <CheckBox x:Name="ChkConsentRename" Content="Accord préalable du locuteur recueilli (Conformité RGPD Art. 9)" IsChecked="True" Foreground="{StaticResource TextPrimaryBrush}" FontSize="10.5" FontWeight="SemiBold" Margin="0,6,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" x:Name="BtnCancelRename" Content="Annuler" Style="{StaticResource ModernButtonStyle}" Background="#334155" Height="34" Click="BtnCancelRename_Click" />
+                        <Button Grid.Column="2" x:Name="BtnConfirmRename" Content="🔒 Sceller dans le TPM 2.0" Style="{StaticResource ModernButtonStyle}" Background="{StaticResource CopilotBlueBrush}" FontWeight="Bold" Height="34" Click="BtnConfirmRename_Click" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Overlay: Modal Voice Profiles List & Direct Enrollment -->
+        <Grid x:Name="OverlayVoiceProfiles" Background="#CC070B14" Visibility="Collapsed">
+            <Border Background="#131B2E" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1.5" CornerRadius="12"
+                    Width="580" MaxHeight="600" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="24">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,4">
+                        <TextBlock x:Name="LblModalProfilesTitle" Text="🔒 COFFRE-FORT D'EMPREINTES VOCALES (TPM 2.0)" FontSize="15" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                        <Border Background="#10B981" Opacity="0.15" CornerRadius="12" Padding="8,3" HorizontalAlignment="Right">
+                            <TextBlock x:Name="LblModalProfilesBadge" Text="● MATÉRIEL SCELLÉ" FontSize="10" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" />
+                        </Border>
+                    </Grid>
+
+                    <TextBlock Grid.Row="1" x:Name="LblModalProfilesDesc" Text="Base biométrique chiffrée par la clé matérielle unique de ce PC (Microsoft Pluton / PTT). Aucune donnée ne quitte la machine."
+                               FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,14" />
+
+                    <!-- Quick Enrollment Form inside Modal -->
+                    <Border Grid.Row="2" Background="#0C1424" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,0,12">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,8">
+                                <TextBlock x:Name="LblModalProfilesEnrollTitle" Text="➕ ENRÔLER UNE NOUVELLE VOIX (ACCORD RGPD)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                                <TextBlock x:Name="LblModalProfilesEnrollBadge" Text="🔒 Scellé TPM 2.0" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </Grid>
+
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox x:Name="TxtEnrollName" Height="30" FontSize="12" Background="#060C18" Foreground="White" BorderBrush="#2A3B5C" BorderThickness="1" Padding="8,0" VerticalContentAlignment="Center" ToolTip="Prénom ou nom de la personne à enrôler" />
+
+                                <Button Grid.Column="2" x:Name="BtnEnrollMic" Content="🎙️ Parler (5s)" Style="{StaticResource ModernButtonStyle}" Background="#DC2626" Foreground="White" FontWeight="Bold" Height="30" Padding="12,0" Click="BtnEnrollMic_Click" ToolTip="Enregistrer 5 secondes d'échantillon au microphone pour extraire l'empreinte" />
+
+                                <Button Grid.Column="4" x:Name="BtnEnrollFile" Content="📁 Fichier Audio" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="10,0" Click="BtnEnrollFile_Click" ToolTip="Importer un extrait audio (.wav, .mp3) pour extraire l'empreinte" />
+                            </Grid>
+
+                            <CheckBox x:Name="ChkConsentEnroll" Content="Accord explicite recueilli : la personne consent à la conservation locale de son empreinte (RGPD Art. 9)" IsChecked="True" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Scrollable List of Enrolled Profiles -->
+                    <Border Grid.Row="3" Background="#0A101D" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" MinHeight="160" MaxHeight="240">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="StackProfilesList">
+                                <TextBlock x:Name="TxtNoProfiles" Text="Aucune empreinte vocale enregistrée. Utilisez le formulaire ci-dessus ou cliquez sur 'Nommer' à côté d'un locuteur dans la transcription pour en sceller une."
+                                           FontSize="11.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" FontStyle="Italic" Margin="8" />
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                    <Button Grid.Row="4" x:Name="BtnCloseProfiles" Content="Fermer" Style="{StaticResource ModernButtonStyle}" Background="#334155" Height="34" Margin="0,14,0,0" Click="BtnCloseProfiles_Click" />
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

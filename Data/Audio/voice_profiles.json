@@ -1,0 +1,6 @@
+{
+  "security": "TPM_2_0_SEALED",
+  "gdpr_compliance": "RGPD Article 9 - Biometric Data Protected by Hardware TPM",
+  "notice": "Plaintext storage disabled. Biometric voice vectors are encrypted in voice_profiles.tpm via Windows TPM 2.0 Hardware DPAPI.",
+  "last_updated": "2026-09-17T09:55:47.638265"
+}
