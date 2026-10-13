@@ -207,6 +207,8 @@ public partial class OperationsView : UserControl
         string alarmCode = TxtAlarmCode.Text.Trim();
         string symptoms = TxtSymptoms.Text.Trim();
         string targetDevice = _getDeviceFunc();
+        string initialEffective = _getEffectiveDeviceFunc();
+        string displayChip = targetDevice.Equals("AUTO", StringComparison.OrdinalIgnoreCase) ? initialEffective : targetDevice;
 
         _stopwatch = Stopwatch.StartNew();
         _tokenCount = 0;
@@ -214,7 +216,7 @@ public partial class OperationsView : UserControl
         _hasReceivedFirstToken = false;
 
         LblLatency.Text = "0.0 s";
-        LblThroughput.Text = isEn ? "⚡ NPU Prefill..." : "⚡ Pré-calcul NPU...";
+        LblThroughput.Text = isEn ? $"⚡ {displayChip} Prefill..." : $"⚡ Pré-calcul {displayChip}...";
         LblTokens.Text = "0 tok";
 
         SetPipelineStep(1, isEn
@@ -222,8 +224,8 @@ public partial class OperationsView : UserControl
             : "📁 Ingestion télémétrie : Fiche incident P1045, déficit -34% débit & vibration RMS 7.8 mm/s chargées");
 
         TxtOutput.Text = isEn
-            ? "⚡ Initializing Phi-4-mini on local device silicon...\n📊 Ingesting sensor telemetry and HVAC incident report (Alarm P1045)...\n"
-            : "⚡ Initialisation de Phi-4-mini sur le Silicium local...\n📊 Analyse des données capteurs et de la fiche incident CVC (Alarme P1045)...\n";
+            ? $"⚡ Initializing Phi-4-mini on local {displayChip}...\n📊 Ingesting sensor telemetry and HVAC incident report (Alarm P1045)...\n"
+            : $"⚡ Initialisation de Phi-4-mini sur le {displayChip} local...\n📊 Analyse des données capteurs et de la fiche incident CVC (Alarme P1045)...\n";
 
         _liveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(75) };
         _liveTimer.Tick += (s, args) =>

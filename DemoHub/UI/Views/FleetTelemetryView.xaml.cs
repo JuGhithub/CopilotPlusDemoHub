@@ -178,6 +178,27 @@ public partial class FleetTelemetryView : UserControl, IDisposable
         LblFilterSilicon.Text = _localizer.Get("Fleet_FilterSilicon");
         ChkAnomaliesOnly.Content = _localizer.Get("Fleet_ChkAnomaliesOnly");
 
+        bool isEn = _localizer.CurrentLanguage == "en";
+        if (CmbFilterDemo != null && CmbFilterDemo.Items.Count >= 9)
+        {
+            ((ComboBoxItem)CmbFilterDemo.Items[0]).Content = isEn ? "All Demos" : "Toutes les démos";
+            ((ComboBoxItem)CmbFilterDemo.Items[1]).Content = isEn ? "🧹 Magic Eraser" : "🧹 Gomme Magique";
+            ((ComboBoxItem)CmbFilterDemo.Items[2]).Content = isEn ? "🎨 3D Avatar Studio" : "🎨 Studio Avatar 3D";
+            ((ComboBoxItem)CmbFilterDemo.Items[3]).Content = isEn ? "🎙️ Audio Whisper Studio" : "🎙️ Audio Studio Whisper";
+            ((ComboBoxItem)CmbFilterDemo.Items[4]).Content = isEn ? "🏢 HVAC Operations" : "🏢 Opérations CVC";
+            ((ComboBoxItem)CmbFilterDemo.Items[5]).Content = isEn ? "⚙️ RAG Engineering" : "⚙️ Ingénierie RAG";
+            ((ComboBoxItem)CmbFilterDemo.Items[6]).Content = isEn ? "📋 Insurance Claims" : "📋 Assurance Sinistres";
+            ((ComboBoxItem)CmbFilterDemo.Items[7]).Content = isEn ? "💼 Financial Services" : "💼 Services Financiers";
+            ((ComboBoxItem)CmbFilterDemo.Items[8]).Content = isEn ? "🔋 Energy Benchmark" : "🔋 Benchmark Énergie";
+        }
+        if (CmbFilterSilicon != null && CmbFilterSilicon.Items.Count >= 4)
+        {
+            ((ComboBoxItem)CmbFilterSilicon.Items[0]).Content = isEn ? "All Chips" : "Toutes les puces";
+            ((ComboBoxItem)CmbFilterSilicon.Items[1]).Content = isEn ? "⚡ NPU only" : "⚡ NPU uniquement";
+            ((ComboBoxItem)CmbFilterSilicon.Items[2]).Content = isEn ? "🎮 GPU only" : "🎮 GPU uniquement";
+            ((ComboBoxItem)CmbFilterSilicon.Items[3]).Content = isEn ? "💻 CPU only" : "💻 CPU uniquement";
+        }
+
         BtnRefresh.Content = "🔄 " + _localizer.Get("Fleet_BtnRefresh");
         BtnExportCsv.Content = "📥 " + _localizer.Get("Fleet_BtnExportCsv");
         BtnExportCsvHeader.Content = "📥 " + _localizer.Get("Fleet_BtnExportCsv");

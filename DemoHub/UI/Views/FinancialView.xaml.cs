@@ -198,6 +198,8 @@ public partial class FinancialView : UserControl
         string financialData = TxtFinancialData.Text.Trim();
         string instruction = TxtInstruction.Text.Trim();
         string targetDevice = _getDeviceFunc();
+        string initialEffective = _getEffectiveDeviceFunc();
+        string displayChip = targetDevice.Equals("AUTO", StringComparison.OrdinalIgnoreCase) ? initialEffective : targetDevice;
 
         _stopwatch = Stopwatch.StartNew();
         _tokenCount = 0;
@@ -205,7 +207,7 @@ public partial class FinancialView : UserControl
         _hasReceivedFirstToken = false;
 
         LblLatency.Text = "0.0 s";
-        LblThroughput.Text = isEn ? "⚡ NPU Prefill..." : "⚡ Pré-calcul NPU...";
+        LblThroughput.Text = isEn ? $"⚡ {displayChip} Prefill..." : $"⚡ Pré-calcul {displayChip}...";
         LblTokens.Text = "0 tok";
 
         SetPipelineStep(1, isEn
@@ -213,8 +215,8 @@ public partial class FinancialView : UserControl
             : "📁 Ingestion du dossier : 70 lignes de bilan comptable, liasse fiscale & notation BdF 3+ chargées");
 
         TxtOutput.Text = isEn
-            ? "⚡ Initializing Phi-4-mini on local device silicon...\n📊 Parsing balance sheets and corporate tax filings (SIREN 849 201 932)...\n"
-            : "⚡ Initialisation de Phi-4-mini sur le Silicium local...\n📊 Analyse des bilans comptables et de la liasse fiscale (SIREN 849 201 932)...\n";
+            ? $"⚡ Initializing Phi-4-mini on local {displayChip}...\n📊 Parsing balance sheets and corporate tax filings (SIREN 849 201 932)...\n"
+            : $"⚡ Initialisation de Phi-4-mini sur le {displayChip} local...\n📊 Analyse des bilans comptables et de la liasse fiscale (SIREN 849 201 932)...\n";
 
         _liveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(75) };
         _liveTimer.Tick += (s, args) =>

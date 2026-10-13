@@ -267,8 +267,8 @@ public partial class InsuranceView : UserControl
             if (BadgeModelContainer != null)
             {
                 BadgeModelContainer.ToolTip = isEn
-                    ? "Damage photo inspection coupled with claim qualification and repair quoting by Phi-4-mini on NPU."
-                    : "Inspection des photos de dommages couplée à la qualification et au chiffrage des réparations par Phi-4-mini sur NPU.";
+                    ? "Damage photo inspection coupled with claim qualification and repair quoting by Phi-4-mini on local silicon."
+                    : "Inspection des photos de dommages couplée à la qualification et au chiffrage des réparations par Phi-4-mini sur silicium local.";
             }
         }
 
@@ -295,11 +295,15 @@ public partial class InsuranceView : UserControl
     private async void BtnRun_Click(object sender, RoutedEventArgs e)
     {
         bool isEn = _localizer.CurrentLanguage == "en";
+        string targetDevice = _getDeviceFunc();
+        string initialEffective = _getEffectiveDeviceFunc();
+        string displayChip = targetDevice.Equals("AUTO", StringComparison.OrdinalIgnoreCase) ? initialEffective : targetDevice;
+
         BtnRun.IsEnabled = false;
         PrgBusy.Visibility = Visibility.Visible;
         TxtOutput.Text = isEn
-            ? "⚡ Analyzing claim declaration & photo evidence on local NPU..."
-            : "⚡ Analyse du constat amiable & expertise photo sur le NPU local...";
+            ? $"⚡ Analyzing claim declaration & photo evidence on local {displayChip}..."
+            : $"⚡ Analyse du constat amiable & expertise photo sur le {displayChip} local...";
         LblLatency.Text = "0 ms";
         LblThroughput.Text = "...";
         LblTokens.Text = "0 tok";
@@ -334,7 +338,7 @@ public partial class InsuranceView : UserControl
                 }
                 else
                 {
-                    LblThroughput.Text = isEn ? "TTFT prefill..." : "Prefill NPU...";
+                    LblThroughput.Text = isEn ? $"⚡ {displayChip} Prefill..." : $"⚡ Pré-calcul {displayChip}...";
                 }
             }
         };
@@ -346,7 +350,6 @@ public partial class InsuranceView : UserControl
 
         string circumstances = TxtCircumstances.Text.Trim();
         string instruction = TxtInstruction.Text.Trim();
-        string targetDevice = _getDeviceFunc();
 
         try
         {

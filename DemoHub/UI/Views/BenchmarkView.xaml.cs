@@ -147,7 +147,13 @@ public partial class BenchmarkView : UserControl, IDisposable
 
             if (rawDevice.Equals("AUTO", StringComparison.OrdinalIgnoreCase))
             {
-                LblActiveDevice.Text = $"🤖 Auto ➔ {effectiveDevice} ({SiliconDetector.NpuName})";
+                string effectiveName = device switch
+                {
+                    "GPU" => SiliconDetector.GpuName,
+                    "CPU" => SiliconDetector.CpuName,
+                    _ => SiliconDetector.NpuName
+                };
+                LblActiveDevice.Text = $"🤖 Auto ➔ {effectiveDevice} ({effectiveName})";
             }
             else if (device == "NPU")
             {
@@ -271,9 +277,15 @@ public partial class BenchmarkView : UserControl, IDisposable
         DateTime endTime = startTime.AddSeconds(durationSeconds);
         string rawDevice = _getDeviceFunc();
         string effectiveDevice = _getEffectiveDeviceFunc();
+        string effectiveName = effectiveDevice.ToUpperInvariant() switch
+        {
+            "GPU" => SiliconDetector.GpuName,
+            "CPU" => SiliconDetector.CpuName,
+            _ => SiliconDetector.NpuName
+        };
         string deviceDisplayName = rawDevice.Equals("AUTO", StringComparison.OrdinalIgnoreCase)
-            ? $"Auto ➔ {effectiveDevice} ({SiliconDetector.NpuName})"
-            : $"{effectiveDevice} ({SiliconDetector.Vendor})";
+            ? $"Auto ➔ {effectiveDevice} ({effectiveName})"
+            : $"{effectiveDevice} ({effectiveName})";
 
         AppendLog(string.Format(_localizer.Get("Benchmark_LogStart"), durationSeconds, deviceDisplayName));
 

@@ -330,11 +330,17 @@ public partial class MainWindow : Window
 
         if (RadAuto.IsChecked == true)
         {
-            RadAuto.ToolTip = _localizer.CurrentLanguage == "en"
-                ? $"Automatic selection: Foundry Local dynamically chose {_autoResolvedDevice} ({SiliconDetector.NpuName})"
-                : $"Sélection automatique : Foundry Local a dynamiquement sélectionné {_autoResolvedDevice} ({SiliconDetector.NpuName})";
+            string autoName = _autoResolvedDevice.Equals("GPU", StringComparison.OrdinalIgnoreCase)
+                ? SiliconDetector.GpuName
+                : _autoResolvedDevice.Equals("CPU", StringComparison.OrdinalIgnoreCase)
+                    ? SiliconDetector.CpuName
+                    : SiliconDetector.NpuName;
 
-            TxtArchitecture.Text = $"Auto ➔ {_autoResolvedDevice} ({SiliconDetector.NpuName})";
+            RadAuto.ToolTip = _localizer.CurrentLanguage == "en"
+                ? $"Automatic selection: Foundry Local dynamically chose {_autoResolvedDevice} ({autoName})"
+                : $"Sélection automatique : Foundry Local a dynamiquement sélectionné {_autoResolvedDevice} ({autoName})";
+
+            TxtArchitecture.Text = $"Auto ➔ {_autoResolvedDevice} ({autoName})";
             DotArchitecture.Fill = _autoResolvedDevice.Equals("GPU", StringComparison.OrdinalIgnoreCase)
                 ? gpuBrush
                 : _autoResolvedDevice.Equals("CPU", StringComparison.OrdinalIgnoreCase)

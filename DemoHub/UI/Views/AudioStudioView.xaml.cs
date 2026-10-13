@@ -250,6 +250,19 @@ public partial class AudioStudioView : UserControl, IDisposable
             LblPowerSub.Text = (_localizer?.CurrentLanguage == "en") ? "High-power GPU" : "GPU haute puissance";
             PrgTranscription.Foreground = (Brush)FindResource("DangerRedBrush");
         }
+
+        if (TxtLiveIndicator != null && !_isLiveActive && _localizer != null)
+        {
+            TxtLiveIndicator.Text = string.Format(_localizer.Get("Audio_LiveMicIndicator"), mode);
+        }
+        if (BtnSummarizeMeeting != null && _localizer != null)
+        {
+            BtnSummarizeMeeting.Content = string.Format(_localizer.Get("Audio_BtnSummarize"), mode);
+        }
+        if (LblSummaryTitle != null && _localizer != null)
+        {
+            LblSummaryTitle.Text = string.Format(_localizer.Get("Audio_SummaryHeader"), mode);
+        }
     }
 
     #region Real-Time Live Microphone Streaming Transcription & Diarization
@@ -358,7 +371,7 @@ public partial class AudioStudioView : UserControl, IDisposable
             _fullAccumulatedTranscript = string.Empty;
 
             TxtTranscriptPlaceholder.Visibility = Visibility.Visible;
-            TxtTranscriptPlaceholder.Text = _localizer.Get("Audio_InitializingPrompt");
+            TxtTranscriptPlaceholder.Text = string.Format(_localizer.Get("Audio_InitializingPrompt"), deviceStr);
             LblTranscriptionStatus.Text = string.Format(_localizer.Get("Audio_StatusLoadingWhisper"), deviceStr);
 
             BadgeLiveIndicator.Visibility = Visibility.Visible;
@@ -453,7 +466,7 @@ public partial class AudioStudioView : UserControl, IDisposable
                                         }
 
                                         LblInferTime.Text = $"{inferMs} ms";
-                                        LblSpeedRelative.Text = _localizer.Get("Audio_SpeedDirectNpu");
+                                        LblSpeedRelative.Text = string.Format(_localizer.Get("Audio_SpeedDirectNpu"), deviceStr);
                                         LblSpeedFactor.Text = string.Format(_localizer.Get("Audio_SpeedLatency"), inferMs);
                                         BadgeSpeedFactor.Visibility = Visibility.Visible;
                                         LblTranscriptionStatus.Text = string.Format(_localizer.Get("Audio_StatusSegmentDone"), speakerName);
@@ -468,11 +481,11 @@ public partial class AudioStudioView : UserControl, IDisposable
                                 {
                                     if (isSpeaking)
                                     {
-                                        TxtLiveIndicator.Text = _localizer.Get("Audio_SpeechDetected");
+                                        TxtLiveIndicator.Text = string.Format(_localizer.Get("Audio_SpeechDetected"), deviceStr);
                                     }
                                     else
                                     {
-                                        TxtLiveIndicator.Text = _localizer.Get("Audio_LiveMicIndicator");
+                                        TxtLiveIndicator.Text = string.Format(_localizer.Get("Audio_LiveMicIndicator"), deviceStr);
                                     }
                                 });
                             }
@@ -1493,11 +1506,12 @@ public partial class AudioStudioView : UserControl, IDisposable
             return;
         }
 
+        string targetSilicon = _selectedSilicon.ToString();
         BtnSummarizeMeeting.IsEnabled = false;
         BorderSummary.Visibility = Visibility.Visible;
         TxtMeetingSummary.Text = isEn
-            ? "⏳ Generating executive summary with Phi-4-mini on NPU..."
-            : "⏳ Synthèse exécutive en cours avec Phi-4-mini sur le NPU...";
+            ? $"⏳ Generating executive summary with Phi-4-mini on {targetSilicon}..."
+            : $"⏳ Synthèse exécutive en cours avec Phi-4-mini sur {targetSilicon}...";
 
         try
         {
@@ -1519,7 +1533,7 @@ public partial class AudioStudioView : UserControl, IDisposable
                   $"2. Points clés et décisions prises par chaque intervenant\n" +
                   $"3. Plan d'actions et prochaines étapes";
 
-            var selectedModel = await _foundryClient.GetBestModelAsync("phi-4-mini", "NPU");
+            var selectedModel = await _foundryClient.GetBestModelAsync("phi-4-mini", targetSilicon);
             var result = await _foundryClient.AskAsync(
                 selectedModel,
                 systemPrompt,
@@ -1530,7 +1544,7 @@ public partial class AudioStudioView : UserControl, IDisposable
 
             _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
                 demoName: "Audio Studio - Synthèse Réunion",
-                requestedSilicon: "NPU",
+                requestedSilicon: targetSilicon,
                 effectiveSilicon: result.TargetDevice,
                 siliconDeviceName: result.ModelId,
                 latencyMs: (int)result.LatencyMilliseconds,
@@ -1776,7 +1790,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         if (LblLiveHeader != null) LblLiveHeader.Text = _localizer.Get("Audio_HeaderTranscript");
         if (TxtLiveIndicator != null && !_isLiveActive)
         {
-            TxtLiveIndicator.Text = _localizer.Get("Audio_LiveMicIndicator");
+            TxtLiveIndicator.Text = string.Format(_localizer.Get("Audio_LiveMicIndicator"), _selectedSilicon);
         }
         if (LblTranscriptionStatus != null && string.IsNullOrWhiteSpace(_fullAccumulatedTranscript))
         {
@@ -1787,8 +1801,8 @@ public partial class AudioStudioView : UserControl, IDisposable
             TxtTranscriptPlaceholder.Text = _localizer.Get("Audio_Placeholder");
         }
         if (BtnCopyText != null) BtnCopyText.Content = _localizer.Get("Audio_BtnCopyText");
-        if (BtnSummarizeMeeting != null) BtnSummarizeMeeting.Content = _localizer.Get("Audio_BtnSummarize");
-        if (LblSummaryTitle != null) LblSummaryTitle.Text = _localizer.Get("Audio_SummaryHeader");
+        if (BtnSummarizeMeeting != null) BtnSummarizeMeeting.Content = string.Format(_localizer.Get("Audio_BtnSummarize"), _selectedSilicon);
+        if (LblSummaryTitle != null) LblSummaryTitle.Text = string.Format(_localizer.Get("Audio_SummaryHeader"), _selectedSilicon);
 
         // Telemetry section
         if (TxtAudioStatus != null)

@@ -149,7 +149,7 @@
                             <!-- Filter Demo -->
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,18,6">
                                 <TextBlock x:Name="LblFilterDemo" Text="Démo :" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                                <ComboBox x:Name="CmbFilterDemo" Width="175" Height="30" FontSize="11" Background="#0C1424" Foreground="{StaticResource TextPrimaryBrush}" SelectionChanged="Filter_Changed">
+                                <ComboBox x:Name="CmbFilterDemo" Width="195" Height="30" FontSize="11" Background="#0C1424" Foreground="{StaticResource TextPrimaryBrush}" SelectionChanged="Filter_Changed">
                                     <ComboBoxItem Content="Toutes les démos" Tag="ALL" IsSelected="True" />
                                     <ComboBoxItem Content="🧹 Gomme Magique" Tag="Gomme" />
                                     <ComboBoxItem Content="🎨 Studio Avatar 3D" Tag="Avatar" />

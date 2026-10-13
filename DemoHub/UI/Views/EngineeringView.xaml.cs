@@ -299,6 +299,8 @@ public partial class EngineeringView : UserControl
 
         string question = TxtQuestion.Text.Trim();
         string targetDevice = _getDeviceFunc();
+        string initialEffective = _getEffectiveDeviceFunc();
+        string displayChip = targetDevice.Equals("AUTO", StringComparison.OrdinalIgnoreCase) ? initialEffective : targetDevice;
 
         _stopwatch = Stopwatch.StartNew();
         _tokenCount = 0;
@@ -306,7 +308,7 @@ public partial class EngineeringView : UserControl
         _hasReceivedFirstToken = false;
 
         LblLatency.Text = "0.0 s";
-        LblThroughput.Text = isEn ? "⚡ NPU Prefill..." : "⚡ Pré-calcul NPU...";
+        LblThroughput.Text = isEn ? $"⚡ {displayChip} Prefill..." : $"⚡ Pré-calcul {displayChip}...";
         LblTokens.Text = "0 tok";
 
         SetPipelineStep(1, isEn
@@ -314,8 +316,8 @@ public partial class EngineeringView : UserControl
             : "📁 Recherche RAG dans le manuel technique interne : 150+ lignes indexées chargées");
 
         TxtOutput.Text = isEn
-            ? "⚡ Initializing Phi-4-mini on local device silicon...\n📖 Searching indexed HVAC technical manual and specifications...\n"
-            : "⚡ Initialisation de Phi-4-mini sur le Silicium local...\n📖 Recherche dans le manuel technique CVC indexé et extraction des tolérances...\n";
+            ? $"⚡ Initializing Phi-4-mini on local {displayChip}...\n📖 Searching indexed HVAC technical manual and specifications...\n"
+            : $"⚡ Initialisation de Phi-4-mini sur le {displayChip} local...\n📖 Recherche dans le manuel technique CVC indexé et extraction des tolérances...\n";
 
         _liveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(75) };
         _liveTimer.Tick += (s, args) =>

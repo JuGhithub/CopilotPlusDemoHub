@@ -111,7 +111,13 @@ public partial class PdfStudioView : UserControl, IDisposable
         if (dev.Equals("AUTO", StringComparison.OrdinalIgnoreCase))
         {
             string eff = _getEffectiveDevice?.Invoke() ?? "NPU";
-            TxtActiveDevice.Text = $"🤖 Auto ➔ {eff} ({SiliconDetector.NpuName})";
+            string effName = eff.ToUpperInvariant() switch
+            {
+                "GPU" => SiliconDetector.GpuName,
+                "CPU" => SiliconDetector.CpuName,
+                _ => SiliconDetector.NpuName
+            };
+            TxtActiveDevice.Text = $"🤖 Auto ➔ {eff} ({effName})";
         }
         else if (dev.Equals("NPU", StringComparison.OrdinalIgnoreCase))
         {
@@ -124,6 +130,13 @@ public partial class PdfStudioView : UserControl, IDisposable
         else
         {
             TxtActiveDevice.Text = $"💻 CPU ({SiliconDetector.CpuName})";
+        }
+
+        if (BtnRunOcr != null)
+        {
+            string ocrTargetDev = GetTargetDevice();
+            bool isEn = _localizer?.CurrentLanguage == "en";
+            BtnRunOcr.Content = isEn ? $"🚀 Run Local Neural OCR ({ocrTargetDev})" : $"🚀 Lancer l'Extraction OCR Locale ({ocrTargetDev})";
         }
     }
 
@@ -1304,7 +1317,8 @@ public partial class PdfStudioView : UserControl, IDisposable
         BtnQuickExecuteReplace.Content = isEn ? "✏️ Replace (Enter)" : "✏️ Remplacer (Entrée)";
         BtnQuickExecuteRedact.Content = isEn ? "🛡️ Redact" : "🛡️ Caviarder";
 
-        BtnRunOcr.Content = isEn ? "🚀 Run Local Neural OCR (NPU)" : "🚀 Lancer l'Extraction OCR Locale (NPU)";
+        string ocrTargetDev = GetTargetDevice();
+        BtnRunOcr.Content = isEn ? $"🚀 Run Local Neural OCR ({ocrTargetDev})" : $"🚀 Lancer l'Extraction OCR Locale ({ocrTargetDev})";
         BtnMakeSearchablePdf.Content = isEn
             ? "📄 Convert to Searchable PDF (Text Layer Ctrl+F)"
             : "📄 Convertir en PDF Rechercheable (Couche Texte Ctrl+F)";
