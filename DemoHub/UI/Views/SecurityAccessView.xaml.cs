@@ -412,7 +412,7 @@ public partial class SecurityAccessView : UserControl, IDisposable
         OverlayScanning.Visibility = Visibility.Visible;
         string engineLabel = engine.Equals("onnx_olive", StringComparison.OrdinalIgnoreCase)
             ? "ONNX Runtime (Olive FP16)"
-            : (engine.Equals("onnx", StringComparison.OrdinalIgnoreCase) ? "ONNX Runtime (DirectML)" : "Intel OpenVINO");
+            : (engine.Equals("onnx", StringComparison.OrdinalIgnoreCase) ? "ONNX Runtime (DirectML)" : (SiliconDetector.Vendor == SiliconVendor.Intel ? "Intel OpenVINO" : "OpenVINO Native"));
         TxtScanningDevice.Text = $"Inférence {engineLabel} sur {device}";
         PanelFeedPlaceholder.Visibility = Visibility.Collapsed;
         BadgeSpeed.Visibility = Visibility.Collapsed;

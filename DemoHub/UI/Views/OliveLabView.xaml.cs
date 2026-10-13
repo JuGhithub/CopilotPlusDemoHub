@@ -206,7 +206,7 @@ public partial class OliveLabView : UserControl, IDisposable
         {
             _selectedModel = "phi4";
             if (TxtModelBadge != null) TxtModelBadge.Text = "Pipeline: Phi-4-mini (3.8B SLM • Fused Attention Kernels)";
-            if (TxtActiveDevice != null) TxtActiveDevice.Text = "⚡ NPU / DirectML (Intel AI Boost • Fused Attention)";
+            if (TxtActiveDevice != null) TxtActiveDevice.Text = $"⚡ NPU / DirectML ({SiliconDetector.NpuName} • Fused Attention)";
             if (BtnSample1 != null) BtnSample1.Content = isEn ? "📋 Prompt 1: CSRD Audit" : "📋 Prompt 1 : Audit CSRD";
             if (BtnSample2 != null) BtnSample2.Content = isEn ? "🔒 Prompt 2: Cyber Incident" : "🔒 Prompt 2 : Incident Cyber";
             if (BtnImportImage != null) BtnImportImage.Content = isEn ? "✏️ Custom Prompt" : "✏️ Prompt Personnalisé";
@@ -231,7 +231,7 @@ public partial class OliveLabView : UserControl, IDisposable
         {
             _selectedModel = "multi_agent_mcp";
             if (TxtModelBadge != null) TxtModelBadge.Text = "Pipeline: Multi-Agent MCP Fleet (3 JSON-RPC 2.0 Tools)";
-            if (TxtActiveDevice != null) TxtActiveDevice.Text = "⚡ NPU (Intel AI Boost • 48 TOPS)";
+            if (TxtActiveDevice != null) TxtActiveDevice.Text = $"⚡ NPU ({SiliconDetector.NpuName})";
             if (BtnSample1 != null) BtnSample1.Content = isEn ? "🤖 Default Fleet (Access + Invoice + Field)" : "🤖 Flotte Standard (Accès + Facture + Chantier)";
             if (BtnSample2 != null) BtnSample2.Content = isEn ? "🤖 Alternate Fleet (Desk + Invoice + Field)" : "🤖 Flotte Alternative (Bureau + Facture + Chantier)";
             LoadDefaultMcpTrio();
@@ -831,7 +831,7 @@ public partial class OliveLabView : UserControl, IDisposable
                 if (BorderMcpSummary != null) BorderMcpSummary.Visibility = Visibility.Visible;
             }
 
-            string device = data.TryGetProperty("device", out var devElem) ? (devElem.GetString() ?? "NPU (Intel AI Boost)") : "NPU (Intel AI Boost)";
+            string device = data.TryGetProperty("device", out var devElem) ? (devElem.GetString() ?? $"NPU ({SiliconDetector.NpuName})") : $"NPU ({SiliconDetector.NpuName})";
 
             if (LblStatus != null)
             {

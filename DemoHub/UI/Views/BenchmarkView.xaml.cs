@@ -147,19 +147,19 @@ public partial class BenchmarkView : UserControl, IDisposable
 
             if (rawDevice.Equals("AUTO", StringComparison.OrdinalIgnoreCase))
             {
-                LblActiveDevice.Text = $"🤖 Auto ➔ {effectiveDevice} (Intel AI Boost)";
+                LblActiveDevice.Text = $"🤖 Auto ➔ {effectiveDevice} ({SiliconDetector.NpuName})";
             }
             else if (device == "NPU")
             {
-                LblActiveDevice.Text = "⚡ NPU (Intel AI Boost)";
+                LblActiveDevice.Text = $"⚡ NPU ({SiliconDetector.NpuName})";
             }
             else if (device == "GPU")
             {
-                LblActiveDevice.Text = "🎮 GPU (Intel Arc Graphics)";
+                LblActiveDevice.Text = $"🎮 GPU ({SiliconDetector.GpuName})";
             }
             else
             {
-                LblActiveDevice.Text = "💻 CPU (Intel Core Ultra)";
+                LblActiveDevice.Text = $"💻 CPU ({SiliconDetector.CpuName})";
             }
 
             var npuBrush = (System.Windows.Media.Brush)FindResource("NpuGreenBrush");
@@ -272,8 +272,8 @@ public partial class BenchmarkView : UserControl, IDisposable
         string rawDevice = _getDeviceFunc();
         string effectiveDevice = _getEffectiveDeviceFunc();
         string deviceDisplayName = rawDevice.Equals("AUTO", StringComparison.OrdinalIgnoreCase)
-            ? $"Auto ➔ {effectiveDevice} (Intel AI Boost)"
-            : $"{effectiveDevice} (Intel)";
+            ? $"Auto ➔ {effectiveDevice} ({SiliconDetector.NpuName})"
+            : $"{effectiveDevice} ({SiliconDetector.Vendor})";
 
         AppendLog(string.Format(_localizer.Get("Benchmark_LogStart"), durationSeconds, deviceDisplayName));
 
@@ -619,8 +619,8 @@ public partial class BenchmarkView : UserControl, IDisposable
 
             AppendLog("==========================================================");
             AppendLog(isEn 
-                ? "🏆 NPU SILICIUM DUEL: OPENVINO IR vs RAW ONNX vs OLIVE NPU" 
-                : "🏆 RÉSULTATS DU DUEL SILICIUM NPU (INTEL AI BOOST) :");
+                ? $"🏆 NPU SILICIUM DUEL: OPENVINO IR vs RAW ONNX vs OLIVE ({SiliconDetector.NpuName})" 
+                : $"🏆 RÉSULTATS DU DUEL SILICIUM NPU ({SiliconDetector.NpuName}) :");
             AppendLog("==========================================================");
             AppendLog(isEn ? $"🔹 1. OPENVINO IR NATIVE ({ov.GetProperty("target").GetString()}):" : $"🔹 1. OPENVINO IR NATIF ({ov.GetProperty("target").GetString()}):");
             AppendLog($"   • {(isEn ? "Model size" : "Poids du modèle")}    : {ov_size:F2} MB (OpenVINO IR .xml)");
@@ -658,8 +658,8 @@ public partial class BenchmarkView : UserControl, IDisposable
                     : $"📦 GAIN MÉMOIRE OLIVE    : -{memSavedOlive:F1}% d'empreinte RAM & Disque ({olive_size:F1} Mo vs {onnx_size:F1} Mo)");
             }
             AppendLog(isEn
-                ? $"⚡ PURE NPU EXECUTION   : 100% on Intel AI Boost (1.6W, ~0.012 Joules/frame)"
-                : $"⚡ EXÉCUTION 100% NPU    : 100% sur Intel AI Boost (1.6W, ~0.012 Joules/inférence)");
+                ? $"⚡ PURE NPU EXECUTION   : 100% on {SiliconDetector.NpuName} (1.6W, ~0.012 Joules/frame)"
+                : $"⚡ EXÉCUTION 100% NPU    : 100% sur {SiliconDetector.NpuName} (1.6W, ~0.012 Joules/inférence)");
             AppendLog("----------------------------------------------------------");
             AppendLog(isEn
                 ? $"💡 ARCHITECTURAL INSIGHT:\n{insight}"
@@ -677,7 +677,7 @@ public partial class BenchmarkView : UserControl, IDisposable
             _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
                 demoName: "Duel NPU : IR vs Brut vs Olive",
                 requestedSilicon: "NPU",
-                effectiveSilicon: "Intel AI Boost NPU",
+                effectiveSilicon: SiliconDetector.NpuName,
                 siliconDeviceName: "YOLOv8n-Seg (OpenVINO IR vs Raw ONNX vs Olive NPU)",
                 latencyMs: (int)ov.GetProperty("mean_ms").GetDouble(),
                 tokensPerSecond: ov.GetProperty("fps").GetDouble()

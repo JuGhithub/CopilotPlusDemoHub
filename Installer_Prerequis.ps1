@@ -138,13 +138,32 @@ if (-not (Get-Command foundry -ErrorAction SilentlyContinue)) {
 
 if (Get-Command foundry -ErrorAction SilentlyContinue) {
     Write-Host "  [OK] Microsoft Foundry Local CLI est prêt." -ForegroundColor Green
+    
+    # Détection dynamique du processeur (Intel, AMD, Qualcomm)
+    $procName = (Get-CimInstance Win32_Processor -ErrorAction SilentlyContinue).Name
+    if (-not $procName) { $procName = $env:PROCESSOR_IDENTIFIER }
+    Write-Host "  Matériel détecté : $procName" -ForegroundColor Cyan
     Write-Host "  Mise en cache des modèles Phi-4 pour Foundry Local..." -ForegroundColor Yellow
-    Write-Host "  - Téléchargement du modèle NPU [Intel AI Boost]..."
-    & foundry model download phi-4-mini-instruct-openvino-npu
-    Write-Host "  - Téléchargement du modèle GPU [Intel Arc Graphics]..."
-    & foundry model download phi-4-mini-instruct-openvino-gpu
-    Write-Host "  - Téléchargement du modèle CPU [Générique]..."
+
+    # Modèle CPU universel (garantit 100% de fonctionnement sur toutes les machines)
+    Write-Host "  - Téléchargement du modèle de repli universel [CPU]..."
     & foundry model download Phi-4-mini-instruct-generic-cpu
+
+    if ($procName -match "Intel") {
+        Write-Host "  - Téléchargement du modèle NPU [Intel AI Boost via OpenVINO]..."
+        & foundry model download phi-4-mini-instruct-openvino-npu 2>$null
+        Write-Host "  - Téléchargement du modèle GPU [Intel Arc Graphics via OpenVINO]..."
+        & foundry model download phi-4-mini-instruct-openvino-gpu 2>$null
+    }
+    elseif ($procName -match "AMD" -or $procName -match "Ryzen") {
+        Write-Host "  - Téléchargement du modèle accéléré DirectML [AMD Ryzen AI / Radeon]..."
+        & foundry model download phi-4-mini-instruct-directml-npu 2>$null
+    }
+    elseif ($procName -match "Snapdragon" -or $procName -match "Qualcomm" -or $env:PROCESSOR_ARCHITECTURE -eq "ARM64") {
+        Write-Host "  - Téléchargement du modèle NPU [Qualcomm Hexagon]..."
+        & foundry model download phi-4-mini-instruct-qualcomm-npu 2>$null
+        & foundry model download phi-4-mini-instruct-directml-npu 2>$null
+    }
 } else {
     Write-Host "  [ATTENTION] Commande 'foundry' indisponible dans ce terminal. Relancez la session après installation." -ForegroundColor Yellow
 }

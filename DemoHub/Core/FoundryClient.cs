@@ -289,16 +289,10 @@ public sealed class FoundryClient : IDisposable
             }
             else
             {
-                string availableDevices =
-                    string.Join(
-                        ", ",
-                        candidates
-                            .Select(m => m.TargetDevice)
-                            .Where(d => !string.IsNullOrWhiteSpace(d))
-                            .Distinct(StringComparer.OrdinalIgnoreCase));
-
-                throw new FoundryClientException(
-                    $"No Foundry Local model found targeting '{preferredDevice.ToUpperInvariant()}'. Available device(s): {availableDevices}.");
+                // Fallback matériel universel : si le device demandé (ex: NPU) n'a pas de modèle chargé,
+                // on bascule de manière fluide sur le meilleur modèle disponible (GPU puis CPU) au lieu de lever une exception.
+                System.Diagnostics.Debug.WriteLine(
+                    $"[FoundryClient] Périphérique '{preferredDevice}' indisponible pour ce modèle. Repli automatique sur le matériel actif.");
             }
         }
 

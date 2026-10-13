@@ -62,11 +62,23 @@ def find_olive_model_path(base_dir):
 
 def resolve_ov_device(req_device):
     req = (req_device or "GPU").upper()
-    if "GPU" in req:
-        return "intel:gpu"
-    elif "NPU" in req:
-        return "intel:gpu"
-    return "intel:cpu"
+    try:
+        import openvino as ov
+        core = ov.Core()
+        avail = [d.upper() for d in core.available_devices]
+        if "NPU" in req and "NPU" in avail:
+            return "NPU"
+        if "GPU" in req and "GPU" in avail:
+            try:
+                gpu_name = core.get_property("GPU", "FULL_DEVICE_NAME").upper()
+                return "intel:gpu" if "INTEL" in gpu_name else "GPU"
+            except Exception:
+                return "GPU"
+        if "GPU" in avail:
+            return "GPU"
+        return "CPU"
+    except Exception:
+        return "cpu"
 
 def draw_hud_box(img, box, label, color, conf):
     x1, y1, x2, y2 = [int(v) for v in box]

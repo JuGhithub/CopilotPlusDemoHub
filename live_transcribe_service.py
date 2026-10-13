@@ -51,8 +51,28 @@ def main():
                 break
     os.makedirs(cache_dir, exist_ok=True)
 
+    target_device = args.device
+    pipe = None
     try:
-        pipe = ovg.WhisperPipeline(model_path, args.device, CACHE_DIR=cache_dir)
+        pipe = ovg.WhisperPipeline(model_path, target_device, CACHE_DIR=cache_dir)
+    except Exception as e_initial:
+        # Fallback automatique matériel universel si le NPU ou le GPU n'est pas disponible (ex: AMD, Qualcomm)
+        print(json.dumps({"type": "info", "message": f"Périphérique '{target_device}' non disponible sous OpenVINO ({e_initial}). Repli fluide en cours..."}, ensure_ascii=False), flush=True)
+        fallback_devices = ["GPU", "CPU"] if target_device == "NPU" else ["CPU"]
+        for fb in fallback_devices:
+            try:
+                pipe = ovg.WhisperPipeline(model_path, fb)
+                target_device = fb
+                args.device = fb
+                print(json.dumps({"type": "info", "message": f"Whisper chargé avec succès sur le matériel alternatif '{fb}'."}, ensure_ascii=False), flush=True)
+                break
+            except Exception:
+                pass
+        if pipe is None:
+            print(json.dumps({"type": "error", "message": f"Échec d'initialisation Whisper : {e_initial}"}, ensure_ascii=False), flush=True)
+            sys.exit(1)
+
+    try:
         config = pipe.get_generation_config()
         if args.language and args.language.lower() not in ("auto", "<|auto|>", "none", ""):
             config.language = args.language if args.language.startswith("<|") else f"<|{args.language}|>"
@@ -61,7 +81,7 @@ def main():
         config.task = "transcribe"
         config.return_timestamps = False
     except Exception as e:
-        print(json.dumps({"type": "error", "message": f"Failed to load Whisper on {args.device}: {e}"}), flush=True)
+        print(json.dumps({"type": "error", "message": f"Configuration Whisper : {e}"}, ensure_ascii=False), flush=True)
         sys.exit(1)
 
     load_time_ms = int((time.perf_counter() - load_start) * 1000)

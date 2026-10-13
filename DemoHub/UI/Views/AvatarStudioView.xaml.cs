@@ -188,19 +188,19 @@ public partial class AvatarStudioView : UserControl, IDisposable
         string dev = GetSelectedDevice();
         if (dev == "NPU")
         {
-            BtnGenerateAvatar.Content = _localizer?.Get("Avatar_BtnGenerateNpu") ?? "✨ Générer l'Avatar 3D (⚡ NPU Intel AI Boost)";
+            BtnGenerateAvatar.Content = _localizer?.Get("Avatar_BtnGenerateNpu") ?? $"✨ Générer l'Avatar 3D (⚡ {SiliconDetector.NpuName})";
             BtnGenerateAvatar.ToolTip = _localizer?.CurrentLanguage == "en"
-                ? "Run ultra-fast Image-to-Image inference on 48 TOPS NPU (1.3s, ~5W)"
-                : "Lancer l'inférence Image-to-Image ultra-rapide sur NPU 48 TOPS (1.3s, ~5W)";
-            if (LblResultCardTitle != null) LblResultCardTitle.Text = _localizer?.Get("Avatar_CardResultNpu") ?? "✨ AVATAR 3D GÉNÉRÉ (NPU INTEL AI BOOST)";
+                ? $"Run ultra-fast Image-to-Image inference on {SiliconDetector.NpuName} (1.3s, ~5W)"
+                : $"Lancer l'inférence Image-to-Image ultra-rapide sur {SiliconDetector.NpuName} (1.3s, ~5W)";
+            if (LblResultCardTitle != null) LblResultCardTitle.Text = _localizer?.Get("Avatar_CardResultNpu") ?? $"✨ AVATAR 3D GÉNÉRÉ ({SiliconDetector.NpuName.ToUpperInvariant()})";
         }
         else
         {
-            BtnGenerateAvatar.Content = _localizer?.Get("Avatar_BtnGenerateGpu") ?? "✨ Générer l'Avatar 3D (🎮 GPU Intel Arc)";
+            BtnGenerateAvatar.Content = _localizer?.Get("Avatar_BtnGenerateGpu") ?? $"✨ Générer l'Avatar 3D (🎮 {SiliconDetector.GpuName})";
             BtnGenerateAvatar.ToolTip = _localizer?.CurrentLanguage == "en"
-                ? "Run 4-step local Image-to-Image inference on Intel Arc 140V GPU (~4.7s)"
-                : "Lancer l'inférence Image-to-Image locale en 4 étapes sur le GPU Intel Arc 140V (~4.7s)";
-            if (LblResultCardTitle != null) LblResultCardTitle.Text = _localizer?.Get("Avatar_CardResultGpu") ?? "✨ AVATAR 3D GÉNÉRÉ (INTEL ARC GPU)";
+                ? $"Run 4-step local Image-to-Image inference on {SiliconDetector.GpuName} (~4.7s)"
+                : $"Lancer l'inférence Image-to-Image locale en 4 étapes sur {SiliconDetector.GpuName} (~4.7s)";
+            if (LblResultCardTitle != null) LblResultCardTitle.Text = _localizer?.Get("Avatar_CardResultGpu") ?? $"✨ AVATAR 3D GÉNÉRÉ ({SiliconDetector.GpuName.ToUpperInvariant()})";
         }
     }
 
@@ -246,7 +246,7 @@ public partial class AvatarStudioView : UserControl, IDisposable
         OverlayGenerating.Visibility = Visibility.Visible;
         PanelResultPlaceholder.Visibility = Visibility.Collapsed;
 
-        string devLabel = device == "NPU" ? "NPU Intel AI Boost (48 TOPS)" : "GPU Intel Arc 140V (Xe2)";
+        string devLabel = device == "NPU" ? SiliconDetector.NpuName : SiliconDetector.GpuName;
         LblResultStatus.Text = string.Format(_localizer.Get("Avatar_StatusInferring"), devLabel);
         LblGeneratingStatus.Text = string.Format(_localizer.Get("Avatar_StatusInferring"), devLabel);
         BadgeSpeed.Visibility = Visibility.Collapsed;
@@ -357,8 +357,8 @@ public partial class AvatarStudioView : UserControl, IDisposable
                 BadgeWatts.Visibility = Visibility.Visible;
 
                 string targetName = completedDevice.Equals("NPU", StringComparison.OrdinalIgnoreCase)
-                    ? "NPU Intel AI Boost (~5W)"
-                    : "GPU Intel Arc 140V (Xe2)";
+                    ? $"{SiliconDetector.NpuName} (~5W)"
+                    : $"{SiliconDetector.GpuName} (~15W)";
                 LblResultStatus.Text = string.Format(_localizer.Get("Avatar_StatusSuccess"), sec, targetName);
 
                 _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(

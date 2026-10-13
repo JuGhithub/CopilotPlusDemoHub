@@ -243,7 +243,7 @@ public partial class AudioStudioView : UserControl, IDisposable
 
             PillAudioStatus.BorderBrush = (Brush)FindResource("GpuAmberBrush");
             TxtAudioStatus.Foreground = (Brush)FindResource("GpuAmberBrush");
-            TxtAudioStatus.Text = _localizer?.Get("Audio_StatusGpu") ?? "🎮 MODE GPU INTEL ARC : PUISSANCE ÉLEVÉE (~32W) • VENTILATION & CHAUFFE";
+            TxtAudioStatus.Text = _localizer?.Get("Audio_StatusGpu") ?? $"🎮 MODE GPU ({SiliconDetector.GpuName.ToUpperInvariant()}) : PUISSANCE ÉLEVÉE (~32W) • VENTILATION & CHAUFFE";
 
             LblInstantWatts.Text = "32.0 W";
             LblInstantWatts.Foreground = (Brush)FindResource("DangerRedBrush");
@@ -707,7 +707,7 @@ public partial class AudioStudioView : UserControl, IDisposable
                                 demoName: "Audio Studio - Transcription Diarisation",
                                 requestedSilicon: deviceStr,
                                 effectiveSilicon: deviceStr,
-                                siliconDeviceName: deviceStr == "NPU" ? "Intel AI Boost (Whisper Small)" : "Intel Arc 140V (Whisper Small)",
+                                siliconDeviceName: deviceStr == "NPU" ? $"{SiliconDetector.NpuName} (Whisper Small)" : $"{SiliconDetector.GpuName} (Whisper Small)",
                                 latencyMs: inferTimeMs,
                                 customPowerWatts: deviceStr == "NPU" ? 2.5 : 15.0
                             );
@@ -1724,8 +1724,8 @@ public partial class AudioStudioView : UserControl, IDisposable
             if (BadgeModelContainer != null)
             {
                 BadgeModelContainer.ToolTip = isEn
-                    ? "OpenAI Whisper FP16 speech recognition and transcription model compiled for Intel NPU/GPU."
-                    : "Modèle de reconnaissance vocale et transcription automatique OpenAI Whisper FP16 compilé pour NPU/GPU Intel.";
+                    ? "OpenAI Whisper FP16 speech recognition and transcription model compiled for Copilot+ NPU/GPU."
+                    : "Modèle de reconnaissance vocale et transcription automatique OpenAI Whisper FP16 compilé pour NPU/GPU Copilot+ PC.";
             }
         }
         if (LblTpmBadge != null)
@@ -1809,11 +1809,11 @@ public partial class AudioStudioView : UserControl, IDisposable
 
         // DSI Scorecard
         if (LblDsiScorecardTitle != null) LblDsiScorecardTitle.Text = isEn
-            ? "DSI COMPARATIVE MATRIX: WHY RUN WHISPER ON THE INTEL NPU?"
-            : "BILAN COMPARATIF DSI : POURQUOI EXÉCUTER WHISPER SUR LE NPU INTEL ?";
+            ? $"DSI COMPARATIVE MATRIX: WHY RUN SPEECH AI ON THE DEDICATED NPU ({SiliconDetector.EstimatedNpuTops}+ TOPS)?"
+            : $"BILAN COMPARATIF DSI : POURQUOI EXÉCUTER L'IA VOCALE SUR LE NPU DÉDIÉ ({SiliconDetector.EstimatedNpuTops}+ TOPS) ?";
         if (LblDsiCol1 != null) LblDsiCol1.Text = isEn ? "ENTERPRISE CRITERION" : "CRITÈRE ENTREPRISE";
-        if (LblDsiCol2 != null) LblDsiCol2.Text = isEn ? "INTEL ARC GPU (Shared)" : "GPU INTEL ARC (Partagé)";
-        if (LblDsiCol3 != null) LblDsiCol3.Text = isEn ? "INTEL AI BOOST NPU (Dedicated)" : "NPU INTEL AI BOOST (Dédié)";
+        if (LblDsiCol2 != null) LblDsiCol2.Text = isEn ? $"{SiliconDetector.GpuName} (Shared)" : $"{SiliconDetector.GpuName} (Partagé)";
+        if (LblDsiCol3 != null) LblDsiCol3.Text = isEn ? $"{SiliconDetector.NpuName} (Dedicated)" : $"{SiliconDetector.NpuName} (Dédié)";
 
         if (LblDsiRow1Crit != null) LblDsiRow1Crit.Text = isEn ? "Transcription speed (Whisper Small)" : "Vitesse de transcription (Whisper Small)";
         if (LblDsiRow1Gpu != null) LblDsiRow1Gpu.Text = isEn ? "~ 15 - 20x real-time (~ 700 ms)" : "~ 15 - 20x temps réel (~ 700 ms)";
@@ -1832,8 +1832,8 @@ public partial class AudioStudioView : UserControl, IDisposable
         if (LblDsiRow4Npu != null) LblDsiRow4Npu.Text = isEn ? "100% Sealed into PC TPM 2.0 • Hardware master key" : "100% Scellé au TPM 2.0 du PC • Clé matérielle inviolable";
 
         if (LblDsiTakeaway != null) LblDsiTakeaway.Text = isEn
-            ? "DSI EXECUTIVE SUMMARY: Meeting and client call transcription is enterprise AI use case #1. With Intel AI Boost NPU and hardware TPM 2.0 (Microsoft Pluton) security chip on Copilot+ PCs, transcription executes locally at over 25x real-time speed consuming just 5.5W. Biometric voiceprints are hardware-sealed, ensuring native GDPR (Art. 9) compliance with zero cloud exfiltration."
-            : "SYNTHÈSE DSI : La transcription de réunions et d'appels clients est le cas d'usage n°1 de l'IA vocale en entreprise. Avec le NPU Intel AI Boost et la puce de sécurité matérielle TPM 2.0 (Microsoft Pluton) du Copilot+ PC, la transcription s'exécute localement à plus de 25x la vitesse réelle en consommant seulement 5.5W. Les empreintes vocales biométriques sont scellées au matériel, garantissant une conformité native RGPD (Art. 9) sans aucune fuite cloud.";
+            ? $"DSI EXECUTIVE SUMMARY: Meeting and client call transcription is enterprise AI use case #1. With dedicated NPU ({SiliconDetector.NpuName}) and hardware TPM 2.0 (Microsoft Pluton) security chip on Copilot+ PCs, transcription executes locally at over 25x real-time speed consuming just 5.5W. Biometric voiceprints are hardware-sealed, ensuring native GDPR (Art. 9) compliance with zero cloud exfiltration."
+            : $"SYNTHÈSE DSI : La transcription de réunions et d'appels clients est le cas d'usage n°1 de l'IA vocale en entreprise. Avec le NPU dédié ({SiliconDetector.NpuName}) et la puce de sécurité matérielle TPM 2.0 (Microsoft Pluton) du Copilot+ PC, la transcription s'exécute localement à plus de 25x la vitesse réelle en consommant seulement 5.5W. Les empreintes vocales biométriques sont scellées au matériel, garantissant une conformité native RGPD (Art. 9) sans aucune fuite cloud.";
 
         // Modals
         if (LblModalRenameTitle != null) LblModalRenameTitle.Text = _localizer.Get("Audio_RenameTitle");

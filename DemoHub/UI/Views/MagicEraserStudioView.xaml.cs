@@ -152,8 +152,8 @@ public partial class MagicEraserStudioView : UserControl, IDisposable
             brush = (System.Windows.Media.Brush)FindResource("GpuAmberBrush");
             label = isEn ? "Modéré (~16.5W)" : "Modérée (~16.5W)";
             tooltip = isEn
-                ? $"GPU Power Draw: ~{watts:F1} W during inference. Intel Arc GPU delivers heavy graphics throughput at moderate energy cost."
-                : $"Consommation GPU : ~{watts:F1} W durant l'inférence. L'iGPU Intel Arc offre une forte puissance graphique pour une consommation modérée.";
+                ? $"GPU Power Draw: ~{watts:F1} W during inference. {SiliconDetector.GpuName} delivers heavy graphics throughput at moderate energy cost."
+                : $"Consommation GPU : ~{watts:F1} W durant l'inférence. Le {SiliconDetector.GpuName} offre une forte puissance graphique pour une consommation modérée.";
         }
         else if (devUpper.Contains("CPU"))
         {
@@ -170,8 +170,8 @@ public partial class MagicEraserStudioView : UserControl, IDisposable
             brush = (System.Windows.Media.Brush)FindResource("NpuGreenBrush");
             label = isEn ? "Ultra-low power (~2.2W)" : "Ultra-sobre (~2.2W)";
             tooltip = isEn
-                ? $"NPU Power Draw: ~{watts:F1} W during inference. Intel AI Boost consumes up to 8x less energy than GPU, preserving battery life."
-                : $"Consommation NPU : ~{watts:F1} W durant l'inférence. Le NPU Intel AI Boost consomme jusqu'à 8x moins d'énergie qu'un GPU et préserve la batterie.";
+                ? $"NPU Power Draw: ~{watts:F1} W during inference. {SiliconDetector.NpuName} consumes up to 8x less energy than GPU, preserving battery life."
+                : $"Consommation NPU : ~{watts:F1} W durant l'inférence. Le {SiliconDetector.NpuName} consomme jusqu'à 8x moins d'énergie qu'un GPU et préserve la batterie.";
         }
 
         double joules = watts * (inferMs / 1000.0);
@@ -279,7 +279,7 @@ public partial class MagicEraserStudioView : UserControl, IDisposable
             {
                 "onnx_olive" => "ONNX Olive FP16",
                 "onnx" => "ONNX DirectML",
-                _ => "Intel OpenVINO"
+                _ => SiliconDetector.Vendor == SiliconVendor.Intel ? "Intel OpenVINO" : "OpenVINO Native"
             };
             string dev = GetActiveDevice();
             LblStatus.Text = $"Moteur {eng} actif sur {dev}";
@@ -486,7 +486,7 @@ public partial class MagicEraserStudioView : UserControl, IDisposable
         {
             "onnx_olive" => "ONNX Olive FP16",
             "onnx" => "ONNX DirectML",
-            _ => "Intel OpenVINO"
+            _ => SiliconDetector.Vendor == SiliconVendor.Intel ? "Intel OpenVINO" : "OpenVINO Native"
         };
         TxtOverlaySub.Text = $"{engineDisplay} • {targetDevice}";
 

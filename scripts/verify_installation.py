@@ -118,46 +118,77 @@ def check_runtimes():
 def check_hardware_ai():
     section("3. Moteurs d'Acceleration IA (NPU, GPU, DirectML)")
     
-    # OpenVINO
+    # 1. Identification du fondeur processeur (Intel / AMD / Qualcomm)
+    cpu_vendor = "Intel"
+    try:
+        cmd = ['powershell', '-NoProfile', '-Command', '(Get-CimInstance Win32_Processor).Name']
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+        cpu_name = res.stdout.strip()
+        if "AMD" in cpu_name or "Ryzen" in cpu_name:
+            cpu_vendor = "AMD"
+        elif "Snapdragon" in cpu_name or "Qualcomm" in cpu_name:
+            cpu_vendor = "Qualcomm"
+    except Exception:
+        pass
+
+    # 2. OpenVINO
+    has_ov_npu = False
+    has_ov_gpu = False
     try:
         import openvino as ov
         core = ov.Core()
         devices = core.available_devices
         log_ok("OpenVINO Core", f"Version {ov.__version__} - Peripheriques : {', '.join(devices)}")
-        
-        has_npu = any("NPU" in d for d in devices)
-        has_gpu = any("GPU" in d for d in devices)
-        
-        if has_npu:
+        has_ov_npu = any("NPU" in d for d in devices)
+        has_ov_gpu = any("GPU" in d for d in devices)
+        if has_ov_npu:
             npu_dev = [d for d in devices if "NPU" in d][0]
             try:
                 npu_name = core.get_property(npu_dev, "FULL_DEVICE_NAME")
             except Exception:
                 npu_name = npu_dev
             log_ok("NPU Detecte (Copilot+ PC)", f"{npu_name} ({npu_dev})")
-        else:
-            log_warn("NPU Non Detecte", "Aucun NPU n'est visible via OpenVINO. Verifiez les pilotes Intel NPU Compute Driver")
-
-        if has_gpu:
+        if has_ov_gpu:
             gpu_dev = [d for d in devices if "GPU" in d][0]
             try:
                 gpu_name = core.get_property(gpu_dev, "FULL_DEVICE_NAME")
             except Exception:
                 gpu_name = gpu_dev
             log_ok("GPU Detecte", f"{gpu_name} ({gpu_dev})")
-        else:
-            log_warn("GPU Non Detecte", "Aucun GPU OpenVINO disponible")
     except ImportError:
         log_fail("OpenVINO", "Module non installe (pip install openvino)")
     except Exception as e:
-        log_fail("OpenVINO", str(e))
+        log_warn("OpenVINO", str(e))
 
-    # ONNX Runtime DirectML
+    # 3. Detection universelle du NPU si non detecte par OpenVINO (AMD Ryzen AI / Qualcomm Hexagon)
+    if not has_ov_npu:
+        pnp_found = False
+        try:
+            cmd = ['powershell', '-NoProfile', '-Command', 
+                   "Get-CimInstance Win32_PnPEntity | Where-Object { $_.Name -match 'NPU|AI Boost|Neural|IPU' -and $_.Name -notmatch 'Configuration' } | Select-Object -ExpandProperty Name"]
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+            names = [n.strip() for n in res.stdout.strip().split('\n') if n.strip()]
+            if names:
+                log_ok("NPU Detecte (Copilot+ PC)", f"{names[0]} (Accelerateur NPU {cpu_vendor})")
+                pnp_found = True
+        except Exception:
+            pass
+        if not pnp_found:
+            if cpu_vendor == "Intel":
+                log_warn("NPU Non Detecte", "Pilote Intel NPU Compute Driver non actif ou NPU absent")
+            elif cpu_vendor == "AMD":
+                log_warn("NPU Non Detecte", "Pilote AMD Ryzen AI NPU non actif ou NPU absent")
+            elif cpu_vendor == "Qualcomm":
+                log_warn("NPU Non Detecte", "Pilote Qualcomm Hexagon NPU non actif ou NPU absent")
+            else:
+                log_warn("NPU Non Detecte", "Aucun NPU Copilot+ PC detecte")
+
+    # 4. ONNX Runtime DirectML (Moteur universel DirectX 12)
     try:
         import onnxruntime as ort
         providers = ort.get_available_providers()
         if "DmlExecutionProvider" in providers:
-            log_ok("DirectML Execution Provider", "Disponible (Acceleration materielle GPU/NPU)")
+            log_ok("DirectML Execution Provider", "Disponible (Acceleration universelle GPU/NPU DirectX 12)")
         else:
             log_warn("DirectML Execution Provider", f"Non disponible. Providers presents : {', '.join(providers)}")
     except ImportError:

@@ -89,11 +89,27 @@ def main():
                     break
         os.makedirs(cache_dir, exist_ok=True)
 
-        pipe = ovg.WhisperPipeline(model_path, args.device, CACHE_DIR=cache_dir)
+        target_device = args.device
+        pipe = None
+        try:
+            pipe = ovg.WhisperPipeline(model_path, target_device, CACHE_DIR=cache_dir)
+        except Exception as e_initial:
+            fallback_devices = ["GPU", "CPU"] if target_device == "NPU" else ["CPU"]
+            for fb in fallback_devices:
+                try:
+                    pipe = ovg.WhisperPipeline(model_path, fb)
+                    target_device = fb
+                    args.device = fb
+                    break
+                except Exception:
+                    pass
+            if pipe is None:
+                raise e_initial
+
         load_time_ms = int((time.perf_counter() - load_start) * 1000)
         print(json.dumps({
             "type": "model_loaded",
-            "device": args.device,
+            "device": target_device,
             "model": os.path.basename(model_path),
             "load_time_ms": load_time_ms
         }), flush=True)

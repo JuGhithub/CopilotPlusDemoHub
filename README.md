@@ -1,34 +1,54 @@
-# 🚀 Copilot+ PC Demo Hub
+# 🚀 Copilot+ PC Demo Hub — Suite Universelle Multi-Constructeurs
 
 [![Windows 11](https://img.shields.io/badge/OS-Windows_11_24H2_%7C_Copilot%2B_PC-0078D4?logo=windows)](https://microsoft.com)
 [![.NET 8](https://img.shields.io/badge/Platform-.NET_8.0_WPF-512BD4?logo=dotnet)](https://dotnet.microsoft.com)
 [![Python 3.12](https://img.shields.io/badge/Backend-Python_3.12-3776AB?logo=python)](https://python.org)
-[![Intel Lunar Lake](https://img.shields.io/badge/Hardware-Intel_Core_Ultra_Série_2-0071C5?logo=intel)](https://intel.com)
-[![NPU Intel AI Boost](https://img.shields.io/badge/NPU-Intel_AI_Boost_48_TOPS-005A9C?logo=intel)](https://intel.com)
-[![OpenVINO](https://img.shields.io/badge/Engine-OpenVINO_GenAI-00C7FD)](https://openvino.ai)
+[![Silicium Universel](https://img.shields.io/badge/Hardware-Intel_%7C_AMD_%7C_Qualcomm-blue)]()
+[![NPU Copilot+](https://img.shields.io/badge/NPU-40_à_50%2B_TOPS-success)]()
+[![Moteurs d'IA](https://img.shields.io/badge/Engines-OpenVINO_%7C_DirectML_%7C_Olive-9cf)]()
 [![100% Offline](https://img.shields.io/badge/Confidentialité-100%25_Local_&_Souverain-success)]()
 
-Une suite complète d'expériences logicielles d'**Intelligence Artificielle 100% locales, privées et souveraines**, spécialement conçues pour exploiter au maximum le silicium des **PC Copilot+** équipés des processeurs **Intel Core Ultra Série 2 (Lunar Lake)** et de leur accélérateur neuronal **NPU Intel AI Boost (40 à 48 TOPS)**.
+Une suite complète d'expériences logicielles d'**Intelligence Artificielle 100% locales, privées et souveraines**, universellement compatible avec l'ensemble de l'écosystème des **PC Copilot+** :
+- 🔵 **Intel Core Ultra (Lunar Lake & Meteor Lake)** via **Intel AI Boost (48 TOPS)** & iGPU Arc.
+- 🔴 **AMD Ryzen AI Série 300 (Strix Point)** via **AMD XDNA 2 (50 TOPS)** & GPU Radeon.
+- 🟣 **Qualcomm Snapdragon X Elite / Plus** via **Qualcomm Hexagon (45 TOPS)** & GPU Adreno.
+- ⚪ **Fallback Universel Automatique** sur GPU DirectX 12 (DirectML) et CPU multithread AVX-512 / ARM64.
 
 ---
 
-## 🏗️ Architecture Matérielle & Répartition Neuronale
+## 🏗️ Architecture Silicium Universelle & Auto-Détection
 
-Le **Copilot+ Demo Hub** répartit intelligemment les charges d'inférence en fonction des spécialisations matérielles du SoC :
+Le **Copilot+ Demo Hub** embarque un composant d'auto-détection matérielle en temps réel (`SiliconDetector.cs`) qui analyse le processeur, le GPU et les co-processeurs neuronaux, et commute dynamiquement sur le runtime d'IA le plus efficient :
 
 ```mermaid
 flowchart TD
     App["🖥️ Application Copilot+ Demo Hub (WPF .NET 8)"]
+    Detect["🔍 Détecteur Silicium Dynamique (SiliconDetector)"]
+    App --> Detect
     
-    subgraph SoC["⚡ SoC Intel Core Ultra Série 2 (Lunar Lake)"]
-        NPU["🧠 NPU Intel AI Boost (48 TOPS - Ultra Basse Énergie)"]
-        GPU["🎮 iGPU Intel Arc 140V Xe2 (Haute Bande Passante)"]
-        CPU["⚙️ CPU x86-64 (P-Cores & LP E-Cores)"]
+    subgraph Intel["🔵 Intel Core Ultra (Lunar Lake / Meteor Lake)"]
+        IntelNPU["🧠 NPU Intel AI Boost (48 TOPS - OpenVINO VPUX)"]
+        IntelGPU["🎮 iGPU Intel Arc 140V (OpenVINO / DirectML)"]
     end
     
-    App -->|"LLM Phi-4 (NPU) & Vision YOLOv8-Seg (84ms) & Whisper STT"| NPU
-    App -->|"Diffusion d'images LCM 8-bit & RapidOCR DirectML"| GPU
-    App -->|"Capture Audio/Vidéo & Coffre-fort cryptographique TPM"| CPU
+    subgraph AMD["🔴 AMD Ryzen AI (XDNA / XDNA 2)"]
+        AmdNPU["🧠 NPU AMD XDNA (50 TOPS - DirectML / Vitis)"]
+        AmdGPU["🎮 GPU Radeon 890M (DirectML)"]
+    end
+    
+    subgraph Qualcomm["🟣 Qualcomm Snapdragon X (ARM64)"]
+        QcomNPU["🧠 NPU Hexagon (45 TOPS - DirectML / QNN)"]
+        QcomGPU["🎮 GPU Adreno (DirectML)"]
+    end
+    
+    subgraph Universal["⚪ Fallback Universel Silicium"]
+        UnivCPU["⚙️ CPU Multithread (x86_64 AVX-VNNI / ARM64 NEON)"]
+    end
+    
+    Detect --> Intel
+    Detect --> AMD
+    Detect --> Qualcomm
+    Detect --> Universal
 ```
 
 ---
@@ -36,8 +56,8 @@ flowchart TD
 ## 🌟 Catalogue des Démonstrations Métiers
 
 ### 1. 🏢 Assistant Métier & Business (LLM Local Phi-4)
-- **Modèle** : `Phi-4-mini-instruct` (Microsoft Foundry Local & OpenVINO GenAI).
-- **Accélération** : Compilé nativement pour le **NPU Intel AI Boost** avec fallback iGPU Arc.
+- **Modèle** : `Phi-4-mini-instruct` (Microsoft Foundry Local & OpenVINO / DirectML).
+- **Accélération** : Compilé nativement pour le NPU détecté (**Intel AI Boost**, **AMD Ryzen AI** ou **Qualcomm Hexagon**), avec fallback automatique et transparent sur GPU DirectML puis CPU.
 - **Pipeline de Raisonnement en 4 étapes** : Décomposition dynamique en temps réel (`1. Analyse contextuelle`, `2. Vérification réglementaire`, `3. Synthèse opérationnelle`, `4. Recommandations`).
 - **Télémétrie en direct** : Chronomètre à 75ms, jauge de débit d'inférence en temps réel (`tok/s`), compteur de tokens générés et surveillance de la charge SoC.
 - **4 Personas Métiers intégrés** :
@@ -143,17 +163,18 @@ Pour les collègues qui ne souhaitent pas installer Git ni compiler le code :
 
 ---
 
-## 💻 Configuration Matérielle & Logicielle
+## 💻 Configuration Matérielle & Runtimes par Constructeur
 
-| Composant | Recommandé (Copilot+ PC) | Minimal |
-| :--- | :--- | :--- |
-| **Processeur** | **Intel Core Ultra Série 2 (Lunar Lake : 258V, 268V, 288V)** | Intel Core Ultra Série 1 (Meteor Lake) |
-| **NPU** | **Intel AI Boost (40 à 48 TOPS)** | NPU >= 40 TOPS |
-| **GPU** | Intel Arc Graphics (140V Xe2 intégrée) | GPU compatible DirectX 12 / DirectML |
-| **RAM** | **32 Go LPDDR5X** | 16 Go |
-| **Stockage** | SSD NVMe avec 20 Go libres | SSD avec 15 Go libres |
-| **Système** | **Windows 11 64-bit 24H2 (Build 26100+)** | Windows 11 23H2 |
-| **Pilotes** | Intel NPU Compute Driver (VPUX 32.0+) & Pilote graphique Intel Arc à jour | Pilotes constructeur |
+| Constructeur | Processeur | NPU (40+ TOPS) | GPU & Accélération | Runtime Recommandé |
+| :--- | :--- | :--- | :--- | :--- |
+| **Intel** | Core Ultra Série 2 (Lunar Lake 258V/268V/288V) ou Série 1 | **Intel AI Boost (48 TOPS)** | Intel Arc Graphics (140V Xe2) | OpenVINO IR natif + DirectML |
+| **AMD** | Ryzen AI Série 300 (ex: AI 9 HX 370 / Strix Point) | **AMD Ryzen AI / XDNA 2 (50 TOPS)** | AMD Radeon 890M / 880M | DirectML + Olive FP16 |
+| **Qualcomm** | Snapdragon X Elite / Plus (X1E-80, X1P) | **Qualcomm Hexagon (45 TOPS)** | Qualcomm Adreno GPU | DirectML / QNN + Olive FP16 |
+| **Universel** | Tout PC Windows 11 avec CPU 64-bit | Emulation logicielle CPU | GPU DirectX 12 (DirectML) | Fallback CPU AVX / ARM64 |
+
+- **Mémoire Vive (RAM)** : 32 Go LPDDR5X recommandé (16 Go minimum).
+- **Stockage** : SSD NVMe avec 15 à 20 Go libres pour les poids de modèles d'IA locaux.
+- **Système d'exploitation** : **Windows 11 64-bit version 24H2 (Build 26100+)** requis pour le badge Copilot+.
 
 ---
 

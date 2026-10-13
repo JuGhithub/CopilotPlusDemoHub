@@ -239,11 +239,11 @@ public sealed class EnterpriseTelemetryService
 
             var seedEntries = new[]
             {
-                new { Demo = "Gomme Magique - Détection", Req = "AUTO", Eff = "NPU", Name = "NPU (Intel AI Boost)", Ms = 13, Tok = 0.0, W = 2.2, J = 0.029, Saved = 0.185, Fallback = 0, Drift = 0.0, MinOffset = 42 },
+                new { Demo = "Gomme Magique - Détection", Req = "AUTO", Eff = "NPU", Name = $"NPU ({SiliconDetector.NpuName})", Ms = 13, Tok = 0.0, W = 2.2, J = 0.029, Saved = 0.185, Fallback = 0, Drift = 0.0, MinOffset = 42 },
                 new { Demo = "Gomme Magique - Effacement", Req = "AUTO", Eff = "NPU", Name = "Inpainting (NPU)", Ms = 45, Tok = 0.0, W = 2.2, J = 0.099, Saved = 0.643, Fallback = 0, Drift = 0.0, MinOffset = 40 },
-                new { Demo = "Avatar Studio 3D", Req = "GPU", Eff = "GPU", Name = "GPU Intel Arc 140V (Xe2)", Ms = 4680, Tok = 0.0, W = 15.2, J = 71.136, Saved = 0.0, Fallback = 0, Drift = 0.0, MinOffset = 32 },
-                new { Demo = "Audio Studio - Diarisation", Req = "AUTO", Eff = "NPU", Name = "Intel AI Boost (Whisper)", Ms = 850, Tok = 0.0, W = 2.5, J = 2.125, Saved = 11.900, Fallback = 0, Drift = 0.0, MinOffset = 25 },
-                new { Demo = "Audio Studio - Diarisation", Req = "AUTO", Eff = "CPU", Name = "Intel Core Ultra (CPU Fallback)", Ms = 3450, Tok = 0.0, W = 26.0, J = 89.700, Saved = 0.0, Fallback = 1, Drift = 0.0, MinOffset = 18 },
+                new { Demo = "Avatar Studio 3D", Req = "GPU", Eff = "GPU", Name = $"GPU ({SiliconDetector.GpuName})", Ms = 4680, Tok = 0.0, W = 15.2, J = 71.136, Saved = 0.0, Fallback = 0, Drift = 0.0, MinOffset = 32 },
+                new { Demo = "Audio Studio - Diarisation", Req = "AUTO", Eff = "NPU", Name = $"{SiliconDetector.NpuName} (Whisper)", Ms = 850, Tok = 0.0, W = 2.5, J = 2.125, Saved = 11.900, Fallback = 0, Drift = 0.0, MinOffset = 25 },
+                new { Demo = "Audio Studio - Diarisation", Req = "AUTO", Eff = "CPU", Name = $"{SiliconDetector.CpuName} (CPU Fallback)", Ms = 3450, Tok = 0.0, W = 26.0, J = 89.700, Saved = 0.0, Fallback = 1, Drift = 0.0, MinOffset = 18 },
                 new { Demo = "Opérations Industrielles", Req = "AUTO", Eff = "NPU", Name = "phi-4-mini (NPU DirectML)", Ms = 420, Tok = 34.2, W = 2.2, J = 0.924, Saved = 6.006, Fallback = 0, Drift = 0.0, MinOffset = 12 },
                 new { Demo = "Ingénierie & RAG Technique", Req = "AUTO", Eff = "NPU", Name = "phi-4-mini (NPU DirectML)", Ms = 910, Tok = 24.1, W = 2.2, J = 2.002, Saved = 13.013, Fallback = 0, Drift = 29.2, MinOffset = 4 }
             };

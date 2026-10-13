@@ -43,14 +43,36 @@ if (Get-Command foundry -ErrorAction SilentlyContinue) {
         Write-Host "      [INFO] Le service Foundry tourne déjà ou est autonome." -ForegroundColor DarkGray
     }
 
-    # 2. Préchauffage des modèles en mémoire vive
+    # 2. Préchauffage dynamique des modèles en mémoire vive (RAM / VPU)
     Write-Host ""
     Write-Host "[2/3] Préchauffage des modèles d'IA en mémoire vive (RAM / VPU)..." -ForegroundColor Cyan
-    Write-Host "      * Modèle NPU [Intel AI Boost]..." -ForegroundColor Yellow
-    & foundry model load phi-4-mini-instruct-openvino-npu 2>$null | Out-Null
-    Write-Host "      * Modèle GPU [Intel Arc Graphics]..." -ForegroundColor Yellow
-    & foundry model load phi-4-mini-instruct-openvino-gpu 2>$null | Out-Null
-    Write-Host "      [OK] Modèles préchargés pour démarrage instantané." -ForegroundColor Green
+    
+    $procName = (Get-CimInstance Win32_Processor -ErrorAction SilentlyContinue).Name
+    if (-not $procName) { $procName = $env:PROCESSOR_IDENTIFIER }
+
+    $loaded = $false
+    if ($procName -match "Intel") {
+        Write-Host "      * Modèle NPU [Intel AI Boost]..." -ForegroundColor Yellow
+        try { & foundry model load phi-4-mini-instruct-openvino-npu 2>$null | Out-Null; $loaded = $true } catch {}
+        try { & foundry model load phi-4-mini-instruct-openvino-gpu 2>$null | Out-Null } catch {}
+    }
+    elseif ($procName -match "AMD" -or $procName -match "Ryzen") {
+        Write-Host "      * Modèle Accéléré DirectML [AMD Ryzen AI / Radeon]..." -ForegroundColor Yellow
+        try { & foundry model load phi-4-mini-instruct-directml-npu 2>$null | Out-Null; $loaded = $true } catch {}
+    }
+    elseif ($procName -match "Snapdragon" -or $procName -match "Qualcomm" -or $env:PROCESSOR_ARCHITECTURE -eq "ARM64") {
+        Write-Host "      * Modèle NPU [Qualcomm Hexagon]..." -ForegroundColor Yellow
+        try { & foundry model load phi-4-mini-instruct-qualcomm-npu 2>$null | Out-Null; $loaded = $true } catch {}
+        try { & foundry model load phi-4-mini-instruct-directml-npu 2>$null | Out-Null } catch {}
+    }
+
+    # Repli systématique sur le modèle CPU si aucun accélérateur propriétaire n'a pu être chargé
+    if (-not $loaded) {
+        Write-Host "      * Modèle Universel CPU..." -ForegroundColor Yellow
+        try { & foundry model load Phi-4-mini-instruct-generic-cpu 2>$null | Out-Null; $loaded = $true } catch {}
+    }
+
+    Write-Host "      [OK] Modèles d'IA prêts pour un démarrage instantané." -ForegroundColor Green
 } else {
     Write-Host "      [INFO] Foundry Local CLI non détecté dans le PATH." -ForegroundColor DarkGray
     Write-Host "      Les démonstrations de vision, audio et OCR restent 100% fonctionnelles." -ForegroundColor DarkGray

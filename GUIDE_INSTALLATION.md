@@ -1,25 +1,30 @@
-# 🚀 Guide d'Installation Complet sur un Autre PC — Copilot+ PC Demo
+# 🚀 Guide d'Installation Complet sur un Autre PC — Copilot+ PC Demo (Multi-Constructeurs)
 
-Ce guide détaille l'intégralité des prérequis matériels, logiciels, modèles d'IA et pilotes nécessaires pour installer et faire fonctionner **Copilot+ PC Demo** sur un nouveau PC en mode 100% autonome et local.
+Ce guide détaille l'intégralité des prérequis matériels, logiciels, modèles d'IA et pilotes nécessaires pour installer et faire fonctionner **Copilot+ PC Demo** sur n'importe quel PC Copilot+ (**Intel**, **AMD**, ou **Qualcomm Snapdragon**) en mode 100% autonome et local.
 
 ---
 
-## 1. 💻 Prérequis Matériels & Système
+## 1. 💻 Prérequis Matériels & Silicium Supporté
 
-| Composant | Spécification Recommandée | Spécification Minimale |
-| :--- | :--- | :--- |
-| **Processeur** | Intel Core Ultra Série 2 (Lunar Lake ex: 258V / 268V / 288V) | Intel Core Ultra Série 1 (Meteor Lake / Arrow Lake) ou Snapdragon X |
-| **NPU (Accélérateur IA)** | **Intel AI Boost (40 à 48 TOPS)** | NPU >= 40 TOPS (Label Copilot+ PC) |
-| **GPU** | Intel Arc Graphics (Xe2 intégrée) | GPU compatible DirectX 12 / OpenVINO / DirectML |
-| **Mémoire Vive (RAM)** | **32 Go LPDDR5X** | 16 Go |
-| **Stockage** | **SSD NVMe avec 20 Go libres** | 15 Go libres |
-| **Périphériques** | Webcam intégrée ou USB + Microphone | Webcam & Micro fonctionnels |
-| **Système d'exploitation**| **Windows 11 64-bit version 24H2 (Build 26100+)** | Windows 11 23H2 avec mise à jour Copilot+ |
+L'application intègre une détection automatique (`SiliconDetector.cs`) et supporte nativement toutes les architectures Copilot+ PC :
 
-> ⚠️ **Pilotes Intel officiels recommandés** :
-> Pour bénéficier de l'accélération matérielle maximale sur le NPU et le GPU, installez les derniers pilotes via l'[Assistant pilotes et support Intel (IDSA)](https://www.intel.fr/content/www/fr/fr/support/detect.html) :
-> - **Pilote Intel NPU Compute Driver** (VPUX version 32.0.100 ou supérieure)
-> - **Pilote graphique Intel Arc & Iris Xe Graphics**
+| Constructeur | Processeur | NPU Dédié (40+ TOPS) | GPU & Accélération | Mode d'Inférence Recommandé |
+| :--- | :--- | :--- | :--- | :--- |
+| **Intel** | Core Ultra Série 2 (Lunar Lake 258V/268V/288V) ou Série 1 | **Intel AI Boost (48 TOPS)** | Intel Arc Graphics (140V Xe2) | OpenVINO IR natif + DirectML |
+| **AMD** | Ryzen AI Série 300 (ex: AI 9 HX 370 / Strix Point) | **AMD Ryzen AI / XDNA 2 (50 TOPS)** | AMD Radeon 890M / 880M | ONNX DirectML + Olive FP16 |
+| **Qualcomm** | Snapdragon X Elite / Plus (X1E-80, X1P / ARM64) | **Qualcomm Hexagon (45 TOPS)** | Qualcomm Adreno GPU | ONNX DirectML / QNN + Olive FP16 |
+| **Universel** | Tout PC Windows 11 64-bit | Emulation logicielle CPU | GPU DirectX 12 compatible | Fallback CPU AVX-512 / ARM64 |
+
+- **Mémoire Vive (RAM)** : **32 Go LPDDR5X** recommandé (16 Go minimum).
+- **Stockage** : **SSD NVMe avec 15 à 20 Go libres** pour héberger les modèles d'IA locaux.
+- **Périphériques** : Webcam intégrée ou USB + Microphone.
+- **Système d'exploitation** : **Windows 11 64-bit version 24H2 (Build 26100+)**.
+
+> 💡 **Pilotes constructeurs recommandés selon votre machine** :
+> - **PC Intel** : Installez le dernier pilote NPU VPUX et le pilote Intel Arc via l'[Assistant Pilotes Intel (IDSA)](https://www.intel.fr/content/www/fr/fr/support/detect.html).
+> - **PC AMD** : Installez les pilotes AMD Adrenalin et le pilote AMD NPU IPU via l'[AMD Software Installer](https://www.amd.com/fr/support/download/drivers.html).
+> - **PC Qualcomm** : Assurez-vous que les mises à jour Windows Update de votre fabricant (Surface, Dell, Lenovo, ASUS...) sont appliquées pour le NPU Hexagon et le GPU Adreno.
+> - **Fallback universel** : Si aucun NPU n'est présent ou activé, le Demo Hub bascule automatiquement sur le GPU DirectML puis sur le CPU sans aucun plantage.
 
 ---
 

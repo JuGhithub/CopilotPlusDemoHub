@@ -111,19 +111,19 @@ public partial class PdfStudioView : UserControl, IDisposable
         if (dev.Equals("AUTO", StringComparison.OrdinalIgnoreCase))
         {
             string eff = _getEffectiveDevice?.Invoke() ?? "NPU";
-            TxtActiveDevice.Text = $"🤖 Auto ➔ {eff} (Intel AI Boost)";
+            TxtActiveDevice.Text = $"🤖 Auto ➔ {eff} ({SiliconDetector.NpuName})";
         }
         else if (dev.Equals("NPU", StringComparison.OrdinalIgnoreCase))
         {
-            TxtActiveDevice.Text = "⚡ NPU (Intel AI Boost - 48 TOPS)";
+            TxtActiveDevice.Text = $"⚡ NPU ({SiliconDetector.NpuName})";
         }
         else if (dev.Equals("GPU", StringComparison.OrdinalIgnoreCase))
         {
-            TxtActiveDevice.Text = "🎮 GPU (Intel Arc 140V Graphics)";
+            TxtActiveDevice.Text = $"🎮 GPU ({SiliconDetector.GpuName})";
         }
         else
         {
-            TxtActiveDevice.Text = "💻 CPU (Intel Core Ultra 7)";
+            TxtActiveDevice.Text = $"💻 CPU ({SiliconDetector.CpuName})";
         }
     }
 

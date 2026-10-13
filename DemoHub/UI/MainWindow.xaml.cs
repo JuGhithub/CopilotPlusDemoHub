@@ -331,10 +331,10 @@ public partial class MainWindow : Window
         if (RadAuto.IsChecked == true)
         {
             RadAuto.ToolTip = _localizer.CurrentLanguage == "en"
-                ? $"Automatic selection: Foundry Local dynamically chose {_autoResolvedDevice} (Intel Lunar Lake)"
-                : $"Sélection automatique : Foundry Local a dynamiquement sélectionné {_autoResolvedDevice} (Intel Lunar Lake)";
+                ? $"Automatic selection: Foundry Local dynamically chose {_autoResolvedDevice} ({SiliconDetector.NpuName})"
+                : $"Sélection automatique : Foundry Local a dynamiquement sélectionné {_autoResolvedDevice} ({SiliconDetector.NpuName})";
 
-            TxtArchitecture.Text = $"Auto ➔ {_autoResolvedDevice} (Intel Lunar Lake)";
+            TxtArchitecture.Text = $"Auto ➔ {_autoResolvedDevice} ({SiliconDetector.NpuName})";
             DotArchitecture.Fill = _autoResolvedDevice.Equals("GPU", StringComparison.OrdinalIgnoreCase)
                 ? gpuBrush
                 : _autoResolvedDevice.Equals("CPU", StringComparison.OrdinalIgnoreCase)
@@ -343,19 +343,17 @@ public partial class MainWindow : Window
         }
         else if (RadNpu.IsChecked == true)
         {
-            TxtArchitecture.Text = "Intel Lunar Lake • NPU 48 TOPS";
+            TxtArchitecture.Text = $"{SiliconDetector.NpuName}";
             DotArchitecture.Fill = npuBrush;
         }
         else if (RadGpu.IsChecked == true)
         {
-            TxtArchitecture.Text = _localizer.CurrentLanguage == "en"
-                ? "Intel Arc Graphics • Integrated GPU"
-                : "Intel Arc Graphics • GPU Intégré";
+            TxtArchitecture.Text = $"{SiliconDetector.GpuName}";
             DotArchitecture.Fill = gpuBrush;
         }
         else if (RadCpu.IsChecked == true)
         {
-            TxtArchitecture.Text = "Intel Core Ultra • CPU x86_64";
+            TxtArchitecture.Text = $"{SiliconDetector.CpuName}";
             DotArchitecture.Fill = cpuBrush;
         }
 
