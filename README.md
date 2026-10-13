@@ -69,23 +69,23 @@ flowchart TD
 ---
 
 ### 2. 🪄 Gomme Magique Studio (Segmentation Sémantique Instantanée)
-- **Modèle** : `YOLOv8n-Seg` OpenVINO IR.
-- **Accélération** : Inférence 100% sur **NPU Intel AI Boost**.
+- **Modèle** : `YOLOv8n-Seg` (OpenVINO IR, ONNX DirectML ou Microsoft Olive FP16).
+- **Accélération** : Inférence sur **NPU Copilot+ (Intel / AMD / Qualcomm)** ou GPU DirectML.
 - **Architecture Daemon IPC Résident** : Travailleur d'arrière-plan préchargé réduisant la latence de détection de **4 500 ms à seulement 84 ms (accélération x53)**.
 - **Fonctionnalités** : Détection automatique des personnes et objets gênants, masque de segmentation précis au pixel près, et inpainting haute fidélité sans altérer le fond.
 
 ---
 
-### 3. 🛡️ Contrôle d'Accès Zero-Trust (Vision par Ordinateur Temps Réel)
-- **Modèle** : `YOLOv8s-World` OpenVINO IR (Détection ouverte Zero-Shot).
-- **Accélération** : Pipeline hybride **NPU / GPU**.
+### 3. 🛡️ Contrôle d'Accès Zero-Trust (Vision par Ordinateur Temps Réel & Démineur)
+- **Modèle** : `YOLOv8s-World` (OpenVINO IR, ONNX DirectML ou Microsoft Olive FP16).
+- **Accélération** : Pipeline hybride **NPU / GPU DirectML**.
 - **Flux Vidéo** : Capture webcam fluide à 30 IPS.
-- **Matrice de Conformité de Sécurité** : Détection simultanée et sans entraînement préalable de badges professionnels, casques de chantier, lunettes de protection et tasses/objets interdits dans les zones sécurisées.
+- **Matrice de Conformité de Sécurité** : Détection simultanée 3/3 (Tasse ☕, Lunettes 👓, Casque 🎧) pour déverrouiller la console exécutive et dévoiler le jeu de Démineur souverain.
 
 ---
 
 ### 4. 🎙️ Audio Studio & Locuteurs (STT & Biométrie Vocale)
-- **Transcription** : Modèles `Whisper-Tiny` et `Whisper-Base` quantifiés FP16 OpenVINO pour une retranscription vocale ultra-rapide en français et en anglais.
+- **Transcription** : Modèles `Whisper-Tiny` et `Whisper-Base` quantifiés FP16 pour une retranscription vocale ultra-rapide en français et en anglais.
 - **Biométrie du Locuteur** : Réseau neuronal profond `VoxCeleb ECAPA-TDNN ONNX` extrayant l'empreinte acoustique unique de chaque participant.
 - **Sécurité TPM 2.0** : Scellement cryptographique des profils biométriques dans le matériel Windows via DPAPI / TPM.
 
@@ -93,21 +93,35 @@ flowchart TD
 
 ### 5. 📄 PDF Studio & OCR Intelligent
 - **Moteur Vectoriel** : `PyMuPDF` haute performance pour l'extraction de texte et la manipulation de structures PDF.
-- **OCR Neuronal Hybride** : `RapidOCR` accéléré par **DirectML / GPU** pour les scans et documents numérisés dégradés.
+- **OCR Neuronal Hybride** : `RapidOCR` accéléré par **NPU / GPU DirectML** pour les scans et documents numérisés dégradés.
 - **Anonymisation & Conformité RGPD** : Détection et caviardage automatique des données sensibles (IBAN, numéros de sécurité sociale, noms, montants).
 
 ---
 
 ### 6. 🎨 Studio Avatar (Génération & Diffusion d'Images)
-- **Modèle** : `LCM DreamShaper v7` quantifié en 8-bit OpenVINO (Latent Consistency Model).
-- **Accélération** : **NPU Intel AI Boost** et **iGPU Arc**.
-- **Performance** : Génération d'images photoréalistes et stylisées (Pixar, Cyberpunk, Rétro) en seulement 4 à 8 étapes d'inférence (~3 secondes).
+- **Modèle** : `LCM DreamShaper v7` quantifié en 8-bit (Latent Consistency Model).
+- **Accélération** : **NPU Copilot+** et **GPU DirectML**.
+- **Performance** : Génération d'images photoréalistes et stylisées (Pixar 3D, Cyberpunk, Années 60) en seulement 4 à 8 étapes d'inférence (~3 secondes).
 
 ---
 
-### 7. ⚡ Benchmark Énergétique & Hardware
+### 7. ⚡ Duel Silicium & Benchmark Énergétique Hardware
 - **Télémétrie Matérielle** : Mesure en temps réel de la consommation énergétique (Watts), de la fréquence et de la température.
-- **Duel Comparatif** : Démonstration visuelle de l'efficience énergétique du **NPU Intel AI Boost (48 TOPS)** face à l'iGPU et au CPU classique.
+- **Duel Comparatif Tri-États** : Démonstration visuelle de l'efficience énergétique du **NPU Copilot+ (40 à 50+ TOPS)** confrontant le modèle natif, le modèle brut ONNX et la variante optimisée Microsoft Olive.
+
+---
+
+### 8. 🧪 Laboratoire d'Optimisation Microsoft Olive & Trio Multi-Agents MCP
+- **Banc d'Essai Scientifique** : Duel comparatif en temps réel entre modèles bruts FP32 et modèles compilés par Microsoft Olive (FP16 / fusion de graphe) sur la Vision, la Segmentation et l'OCR.
+- **Gains Mesurés en Direct** : Division par deux de l'empreinte mémoire (-50% RAM et SSD), accélération de la latence (+40% à +80%) et réduction de la dépense énergétique en Joules avec 100% de fidélité conservée.
+- **Flotte Multi-Agents MCP** : 3 agents autonomes exécutant en parallèle des outils neuronaux via un serveur local Model Context Protocol (MCP) conforme JSON-RPC 2.0.
+
+---
+
+### 9. 📊 Console de Gouvernance & Audit Flotte DSI
+- **Supervision d'Entreprise** : Tableau de bord centralisé pour les directeurs informatiques (DSI) et responsables sécurité (RSSI).
+- **Traçabilité & Conformité** : Journalisation locale de chaque inférence (modèle exécuté, coprocesseur sollicité, latences P50/P90, statut Zero-Trust).
+- **Bilan Carbone & Green IT** : Calcul automatisé des kWh économisés et des émissions de CO2 évitées par rapport à un traitement distant en data centers hyperscalers.
 
 ---
 
