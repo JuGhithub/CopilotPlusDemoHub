@@ -35,12 +35,46 @@ Write-Host ""
 
 # 1. Vérification et démarrage du service Microsoft Foundry Local
 Write-Host "[1/3] Vérification du service Microsoft Foundry Local..." -ForegroundColor Cyan
+
+# Détection de foundry dans les chemins standards
+$foundryInstalled = $false
 if (Get-Command foundry -ErrorAction SilentlyContinue) {
+    $foundryInstalled = $true
+} elseif (Test-Path "$env:LOCALAPPDATA\Microsoft\WindowsApps\foundry.exe") {
+    $env:PATH = "$env:LOCALAPPDATA\Microsoft\WindowsApps;$env:PATH"
+    $foundryInstalled = $true
+} elseif (Test-Path "$env:ProgramFiles\Microsoft Foundry\foundry.exe") {
+    $env:PATH = "$env:ProgramFiles\Microsoft Foundry;$env:PATH"
+    $foundryInstalled = $true
+}
+
+if ($foundryInstalled) {
+    # Démarrage du serveur s'il n'est pas déjà actif
     try {
         & foundry server start 2>$null | Out-Null
-        Write-Host "      [OK] Moteur d'inférence Foundry Local actif." -ForegroundColor Green
-    } catch {
-        Write-Host "      [INFO] Le service Foundry tourne déjà ou est autonome." -ForegroundColor DarkGray
+    } catch {}
+
+    # Attente active du port d'écoute réel du démon (jusqu'à 6 secondes)
+    $foundryUrl = $null
+    for ($i = 0; $i -lt 12; $i++) {
+        Start-Sleep -Milliseconds 500
+        try {
+            $statusJson = & foundry server status -o json 2>$null
+            if ($statusJson) {
+                $statusObj = $statusJson | ConvertFrom-Json -ErrorAction SilentlyContinue
+                if ($statusObj -and $statusObj.running -and $statusObj.webUrls -and $statusObj.webUrls.Count -gt 0) {
+                    $foundryUrl = $statusObj.webUrls[0]
+                    break
+                }
+            }
+        } catch {}
+    }
+
+    if ($foundryUrl) {
+        $env:FOUNDRY_BASE_URL = $foundryUrl
+        Write-Host "      [OK] Moteur d'inférence Foundry Local actif sur $foundryUrl." -ForegroundColor Green
+    } else {
+        Write-Host "      [OK] Moteur d'inférence Foundry Local démarré." -ForegroundColor Green
     }
 
     # 2. Préchauffage dynamique des modèles en mémoire vive (RAM / VPU)
@@ -72,7 +106,8 @@ if (Get-Command foundry -ErrorAction SilentlyContinue) {
 
     Write-Host "      [OK] Modèles d'IA prêts pour un démarrage instantané." -ForegroundColor Green
 } else {
-    Write-Host "      [INFO] Foundry Local CLI non détecté dans le PATH." -ForegroundColor DarkGray
+    Write-Host "      [ATTENTION] Microsoft Foundry Local CLI n'est pas installé sur ce poste." -ForegroundColor Yellow
+    Write-Host "      -> Pour activer les assistants LLM (Finance, Assurance, Opérations), lancez : .\Installer_Prerequis.ps1" -ForegroundColor Yellow
     Write-Host "      Les démonstrations de vision, audio et OCR restent 100% fonctionnelles." -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "[2/3] Étape passée." -ForegroundColor DarkGray

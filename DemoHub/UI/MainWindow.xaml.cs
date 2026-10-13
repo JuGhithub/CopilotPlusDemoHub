@@ -224,6 +224,18 @@ public partial class MainWindow : Window
     {
         try
         {
+            if (!FoundryClient.IsFoundryInstalled())
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    LblServerStatus.Text = _localizer?.CurrentLanguage == "en"
+                        ? "⚠️ Microsoft Foundry Local not installed (run Installer_Prerequis.ps1)"
+                        : "⚠️ Microsoft Foundry Local non installé (lancez Installer_Prerequis.ps1)";
+                    UpdateAcceleratorUi();
+                });
+                return;
+            }
+
             bool available = await _foundryClient.IsServerAvailableAsync();
             if (!available)
             {
@@ -266,7 +278,9 @@ public partial class MainWindow : Window
             {
                 Dispatcher.Invoke(() =>
                 {
-                    LblServerStatus.Text = _localizer.Get("Status_Unavailable");
+                    LblServerStatus.Text = _localizer?.CurrentLanguage == "en"
+                        ? "⚠️ Foundry Local service stopped (launch via Lancer_DemoHub.ps1)"
+                        : "⚠️ Service Foundry Local arrêté (lancez via Lancer_DemoHub.ps1)";
                     UpdateAcceleratorUi();
                 });
             }

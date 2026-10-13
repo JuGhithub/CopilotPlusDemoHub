@@ -19,19 +19,18 @@ public sealed class FoundryClient : IDisposable
 
     private readonly HttpClient _httpClient;
     private readonly JsonSerializerOptions _jsonOptions;
+    private string _currentBaseUrl;
+    private readonly string? _configuredBaseUrl;
     private bool _disposed;
 
     public FoundryClient(
         string? baseUrl = null)
     {
-        string effectiveUrl =
-            ResolveBaseUrl(baseUrl);
+        _configuredBaseUrl = baseUrl;
+        _currentBaseUrl = ResolveBaseUrl(baseUrl);
 
         _httpClient = new HttpClient
         {
-            BaseAddress = new Uri(
-                effectiveUrl.TrimEnd('/')),
-
             Timeout = TimeSpan.FromMinutes(10)
         };
 
@@ -42,11 +41,22 @@ public sealed class FoundryClient : IDisposable
         };
     }
 
-    private static string ResolveBaseUrl(string? baseUrl)
+    public string BaseUrl => _currentBaseUrl;
+
+    public Uri GetEndpointUri(string endpoint)
     {
-        if (!string.IsNullOrWhiteSpace(baseUrl) && baseUrl != DefaultBaseUrl)
+        string baseUrl = _currentBaseUrl.TrimEnd('/');
+        string rel = endpoint.StartsWith('/') ? endpoint : "/" + endpoint;
+        return new Uri(baseUrl + rel);
+    }
+
+    public bool RefreshBaseUrl()
+    {
+        string? activeUrl = GetActiveServerUrl();
+        if (!string.IsNullOrWhiteSpace(activeUrl))
         {
-            return baseUrl;
+            _currentBaseUrl = activeUrl;
+            return true;
         }
 
         string? envUrl =
@@ -55,9 +65,51 @@ public sealed class FoundryClient : IDisposable
 
         if (!string.IsNullOrWhiteSpace(envUrl))
         {
-            return envUrl;
+            _currentBaseUrl = envUrl;
+            return true;
         }
 
+        return false;
+    }
+
+    public async Task<bool> EnsureServerReadyAsync(CancellationToken cancellationToken = default)
+    {
+        // 1. Essai sur l'URL actuelle
+        try
+        {
+            using var ping1 = await _httpClient.GetAsync(GetEndpointUri(ModelsEndpoint), cancellationToken);
+            if (ping1.IsSuccessStatusCode) return true;
+        }
+        catch { }
+
+        // 2. Détection du port dynamique actif
+        if (RefreshBaseUrl())
+        {
+            try
+            {
+                using var ping2 = await _httpClient.GetAsync(GetEndpointUri(ModelsEndpoint), cancellationToken);
+                if (ping2.IsSuccessStatusCode) return true;
+            }
+            catch { }
+        }
+
+        // 3. Auto-démarrage du serveur si Foundry est installé
+        if (await TryStartServerAsync(cancellationToken))
+        {
+            RefreshBaseUrl();
+            try
+            {
+                using var ping3 = await _httpClient.GetAsync(GetEndpointUri(ModelsEndpoint), cancellationToken);
+                return ping3.IsSuccessStatusCode;
+            }
+            catch { }
+        }
+
+        return false;
+    }
+
+    public static string? GetActiveServerUrl()
+    {
         try
         {
             using var process = new Process();
@@ -78,6 +130,11 @@ public sealed class FoundryClient : IDisposable
                 if (!string.IsNullOrWhiteSpace(json))
                 {
                     using var doc = JsonDocument.Parse(json);
+                    if (doc.RootElement.TryGetProperty("running", out var runningProp) && !runningProp.GetBoolean())
+                    {
+                        return null;
+                    }
+
                     if (doc.RootElement.TryGetProperty("webUrls", out var urls) &&
                         urls.GetArrayLength() > 0)
                     {
@@ -90,23 +147,36 @@ public sealed class FoundryClient : IDisposable
                 }
             }
         }
-        catch
+        catch { }
+
+        return null;
+    }
+
+    private static string ResolveBaseUrl(string? baseUrl)
+    {
+        if (!string.IsNullOrWhiteSpace(baseUrl) && baseUrl != DefaultBaseUrl)
         {
-            // Fallback to default port if discovery fails
+            return baseUrl;
+        }
+
+        string? envUrl =
+            Environment.GetEnvironmentVariable("FOUNDRY_BASE_URL")
+            ?? Environment.GetEnvironmentVariable("FOUNDRY_URL");
+
+        if (!string.IsNullOrWhiteSpace(envUrl))
+        {
+            return envUrl;
+        }
+
+        string? activeUrl = GetActiveServerUrl();
+        if (!string.IsNullOrWhiteSpace(activeUrl))
+        {
+            return activeUrl;
         }
 
         return !string.IsNullOrWhiteSpace(baseUrl)
             ? baseUrl
             : DefaultBaseUrl;
-    }
-
-    public string BaseUrl
-    {
-        get
-        {
-            return _httpClient.BaseAddress?.ToString()
-                ?? string.Empty;
-        }
     }
 
     public async Task<bool> IsServerAvailableAsync(
@@ -118,15 +188,29 @@ public sealed class FoundryClient : IDisposable
         {
             using HttpResponseMessage response =
                 await _httpClient.GetAsync(
-                    ModelsEndpoint,
+                    GetEndpointUri(ModelsEndpoint),
                     cancellationToken);
 
-            return response.IsSuccessStatusCode;
+            if (response.IsSuccessStatusCode) return true;
         }
-        catch
+        catch { }
+
+        // Si le port dynamique a changé, rafraîchir l'URL
+        if (RefreshBaseUrl())
         {
-            return false;
+            try
+            {
+                using HttpResponseMessage response =
+                    await _httpClient.GetAsync(
+                        GetEndpointUri(ModelsEndpoint),
+                        cancellationToken);
+
+                return response.IsSuccessStatusCode;
+            }
+            catch { }
         }
+
+        return false;
     }
 
     public async Task<IReadOnlyList<FoundryModel>> GetModelsAsync(
@@ -134,10 +218,30 @@ public sealed class FoundryClient : IDisposable
     {
         ThrowIfDisposed();
 
-        using HttpResponseMessage response =
-            await _httpClient.GetAsync(
-                ModelsEndpoint,
-                cancellationToken);
+        HttpResponseMessage? response = null;
+        try
+        {
+            response =
+                await _httpClient.GetAsync(
+                    GetEndpointUri(ModelsEndpoint),
+                    cancellationToken);
+        }
+        catch (HttpRequestException ex)
+        {
+            // Tentative de récupération automatique : port dynamique ou serveur éteint
+            bool recovered = await EnsureServerReadyAsync(cancellationToken);
+            if (recovered)
+            {
+                response =
+                    await _httpClient.GetAsync(
+                        GetEndpointUri(ModelsEndpoint),
+                        cancellationToken);
+            }
+            else
+            {
+                throw CreateConnectionException(ex);
+            }
+        }
 
         string responseJson =
             await response.Content.ReadAsStringAsync(
@@ -474,8 +578,37 @@ public sealed class FoundryClient : IDisposable
         return false;
     }
 
+    public static bool IsFoundryInstalled()
+    {
+        string exe = FindFoundryExecutable();
+        if (File.Exists(exe)) return true;
+        try
+        {
+            using var p = Process.Start(new ProcessStartInfo
+            {
+                FileName = "where.exe",
+                Arguments = "foundry",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true
+            });
+            if (p != null)
+            {
+                p.WaitForExit(1000);
+                return p.ExitCode == 0;
+            }
+        }
+        catch { }
+        return false;
+    }
+
     public static async Task<bool> TryStartServerAsync(CancellationToken cancellationToken = default)
     {
+        if (!IsFoundryInstalled())
+        {
+            return false;
+        }
+
         try
         {
             using var proc = new Process
@@ -493,11 +626,44 @@ public sealed class FoundryClient : IDisposable
             if (proc.Start())
             {
                 await proc.WaitForExitAsync(cancellationToken);
+
+                // Attente active jusqu'à 6 secondes que le démon soit prêt avec une URL valide
+                for (int i = 0; i < 12; i++)
+                {
+                    await Task.Delay(500, cancellationToken);
+                    string? url = GetActiveServerUrl();
+                    if (!string.IsNullOrWhiteSpace(url))
+                    {
+                        return true;
+                    }
+                }
+
                 return proc.ExitCode == 0;
             }
         }
         catch { }
         return false;
+    }
+
+    public static FoundryClientException CreateConnectionException(Exception inner)
+    {
+        if (!IsFoundryInstalled())
+        {
+            return new FoundryClientException(
+                "Microsoft Foundry Local n'est pas installé sur cet ordinateur.\n\n" +
+                "💡 Pour l'installer automatiquement avec tous les prérequis, exécutez dans PowerShell :\n" +
+                "   .\\Installer_Prerequis.ps1\n\n" +
+                "Ou installez manuellement le package officiel :\n" +
+                "   winget install Microsoft.FoundryLocal",
+                inner);
+        }
+
+        return new FoundryClientException(
+            "Impossible d'établir la connexion avec le service Microsoft Foundry Local (127.0.0.1).\n\n" +
+            "💡 Le démon d'inférence local n'est pas encore actif.\n" +
+            "1. Démarrez l'application via le lanceur : .\\Lancer_DemoHub.ps1\n" +
+            "2. Ou démarrez manuellement le serveur dans PowerShell : foundry server start",
+            inner);
     }
 
     public async Task<FoundryInferenceResult> AskAsync(
@@ -584,12 +750,23 @@ public sealed class FoundryClient : IDisposable
             {
                 response =
                     await _httpClient.PostAsync(
-                        ChatCompletionsEndpoint,
+                        GetEndpointUri(ChatCompletionsEndpoint),
                         requestContent,
                         cancellationToken);
             }
             catch (Exception ex) when (!isRetry && (ex is HttpRequestException || ex is IOException || ex.Message.Contains("ResponseEnded", StringComparison.OrdinalIgnoreCase) || ex.Message.Contains("prematurely", StringComparison.OrdinalIgnoreCase)))
             {
+                // Si la connexion a été refusée (serveur éteint ou port dynamique)
+                if (ex is HttpRequestException)
+                {
+                    bool recovered = await EnsureServerReadyAsync(cancellationToken);
+                    if (recovered)
+                    {
+                        return await AskAsync(model, systemPrompt, userPrompt, temperature, maxTokens, cancellationToken, isRetry: true);
+                    }
+                    throw CreateConnectionException(ex);
+                }
+
                 bool loaded = await TryLoadModelAsync(model.Id, cancellationToken);
                 if (loaded)
                 {
@@ -770,7 +947,7 @@ public sealed class FoundryClient : IDisposable
         using var requestMessage =
             new HttpRequestMessage(
                 HttpMethod.Post,
-                ChatCompletionsEndpoint)
+                GetEndpointUri(ChatCompletionsEndpoint))
             {
                 Content = new StringContent(
                     requestJson,
@@ -798,6 +975,17 @@ public sealed class FoundryClient : IDisposable
             }
             catch (Exception ex) when (!isRetry && (ex is HttpRequestException || ex is IOException || ex.Message.Contains("ResponseEnded", StringComparison.OrdinalIgnoreCase) || ex.Message.Contains("prematurely", StringComparison.OrdinalIgnoreCase)))
             {
+                // Si la connexion a été refusée (serveur éteint ou port dynamique)
+                if (ex is HttpRequestException)
+                {
+                    bool recovered = await EnsureServerReadyAsync(cancellationToken);
+                    if (recovered)
+                    {
+                        return await AskStreamingAsync(model, systemPrompt, userPrompt, onChunkReceived, temperature, maxTokens, cancellationToken, isRetry: true);
+                    }
+                    throw CreateConnectionException(ex);
+                }
+
                 // Modèle non chargé ou fermeture abrupte du flux par Foundry Local
                 bool loaded = await TryLoadModelAsync(model.Id, cancellationToken);
                 if (loaded)

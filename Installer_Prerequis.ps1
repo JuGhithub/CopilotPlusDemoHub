@@ -129,14 +129,34 @@ if ($LASTEXITCODE -eq 0) {
 # -------------------------------------------------------------------
 Write-Host ""
 Write-Host "[5/7] Vérification de Microsoft Foundry Local CLI et modèles LLM..." -ForegroundColor Cyan
-$env:PATH = "$env:LOCALAPPDATA\Microsoft\WindowsApps;$env:PATH"
 
-if (-not (Get-Command foundry -ErrorAction SilentlyContinue)) {
-    Write-Host "  Installation de Microsoft Foundry Local via winget..." -ForegroundColor Yellow
-    & winget install Microsoft.FoundryLocal --accept-source-agreements --accept-package-agreements
+$windowsApps = "$env:LOCALAPPDATA\Microsoft\WindowsApps"
+$progFilesFoundry = "$env:ProgramFiles\Microsoft Foundry"
+if (Test-Path "$windowsApps\foundry.exe") {
+    $env:PATH = "$windowsApps;$env:PATH"
+}
+if (Test-Path "$progFilesFoundry\foundry.exe") {
+    $env:PATH = "$progFilesFoundry;$env:PATH"
 }
 
-if (Get-Command foundry -ErrorAction SilentlyContinue) {
+if (-not (Get-Command foundry -ErrorAction SilentlyContinue) -and -not (Test-Path "$windowsApps\foundry.exe")) {
+    Write-Host "  Installation de Microsoft Foundry Local via winget..." -ForegroundColor Yellow
+    & winget install Microsoft.FoundryLocal --accept-source-agreements --accept-package-agreements
+    
+    if (Test-Path "$windowsApps\foundry.exe") {
+        $env:PATH = "$windowsApps;$env:PATH"
+    }
+    if (Test-Path "$progFilesFoundry\foundry.exe") {
+        $env:PATH = "$progFilesFoundry;$env:PATH"
+    }
+}
+
+$foundryReady = (Get-Command foundry -ErrorAction SilentlyContinue) -ne $null
+if (-not $foundryReady -and (Test-Path "$windowsApps\foundry.exe")) {
+    $foundryReady = $true
+}
+
+if ($foundryReady) {
     Write-Host "  [OK] Microsoft Foundry Local CLI est prêt." -ForegroundColor Green
     
     # Détection dynamique du processeur (Intel, AMD, Qualcomm)
