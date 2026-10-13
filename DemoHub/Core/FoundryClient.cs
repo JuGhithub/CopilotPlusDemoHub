@@ -63,7 +63,7 @@ public sealed class FoundryClient : IDisposable
             using var process = new Process();
             process.StartInfo = new ProcessStartInfo
             {
-                FileName = "foundry.exe",
+                FileName = FindFoundryExecutable(),
                 Arguments = "server status -o json",
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
@@ -404,19 +404,64 @@ public sealed class FoundryClient : IDisposable
             cancellationToken);
     }
 
+    public static string FindFoundryExecutable()
+    {
+        // 1. AppExecutionAlias (WindowsApps)
+        string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string windowsAppsExe = Path.Combine(localAppData, "Microsoft", "WindowsApps", "foundry.exe");
+        if (File.Exists(windowsAppsExe))
+        {
+            return windowsAppsExe;
+        }
+
+        // 2. Program Files
+        string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        string pfExe = Path.Combine(programFiles, "Microsoft Foundry", "foundry.exe");
+        if (File.Exists(pfExe))
+        {
+            return pfExe;
+        }
+
+        // 3. System and User PATH
+        string? pathEnv = Environment.GetEnvironmentVariable("PATH");
+        if (!string.IsNullOrEmpty(pathEnv))
+        {
+            foreach (var part in pathEnv.Split(';', StringSplitOptions.RemoveEmptyEntries))
+            {
+                try
+                {
+                    string candidate = Path.Combine(part.Trim(), "foundry.exe");
+                    if (File.Exists(candidate))
+                    {
+                        return candidate;
+                    }
+                }
+                catch { }
+            }
+        }
+
+        return "foundry.exe";
+    }
+
     public static async Task<bool> TryLoadModelAsync(string modelId, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(modelId))
+        {
+            return false;
+        }
+
         try
         {
             using var proc = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "foundry.exe",
-                    Arguments = $"model load {modelId}",
+                    FileName = FindFoundryExecutable(),
+                    Arguments = $"model load \"{modelId}\"",
                     UseShellExecute = false,
                     CreateNoWindow = true,
-                    RedirectStandardOutput = true
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 }
             };
             if (proc.Start())
@@ -437,11 +482,12 @@ public sealed class FoundryClient : IDisposable
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "foundry.exe",
+                    FileName = FindFoundryExecutable(),
                     Arguments = "server start",
                     UseShellExecute = false,
                     CreateNoWindow = true,
-                    RedirectStandardOutput = true
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 }
             };
             if (proc.Start())
@@ -534,11 +580,26 @@ public sealed class FoundryClient : IDisposable
 
         try
         {
-            response =
-                await _httpClient.PostAsync(
-                    ChatCompletionsEndpoint,
-                    requestContent,
-                    cancellationToken);
+            try
+            {
+                response =
+                    await _httpClient.PostAsync(
+                        ChatCompletionsEndpoint,
+                        requestContent,
+                        cancellationToken);
+            }
+            catch (Exception ex) when (!isRetry && (ex is HttpRequestException || ex is IOException || ex.Message.Contains("ResponseEnded", StringComparison.OrdinalIgnoreCase) || ex.Message.Contains("prematurely", StringComparison.OrdinalIgnoreCase)))
+            {
+                bool loaded = await TryLoadModelAsync(model.Id, cancellationToken);
+                if (loaded)
+                {
+                    return await AskAsync(model, systemPrompt, userPrompt, temperature, maxTokens, cancellationToken, isRetry: true);
+                }
+
+                throw new FoundryClientException(
+                    $"Le modèle local '{model.Id}' n'a pas répondu ({ex.Message}). Le modèle n'était probablement pas chargé en mémoire vive.",
+                    ex);
+            }
 
             string responseJson =
                 await response.Content.ReadAsStringAsync(
@@ -548,7 +609,7 @@ public sealed class FoundryClient : IDisposable
 
             if (!response.IsSuccessStatusCode)
             {
-                if (!isRetry && responseJson.Contains("not loaded", StringComparison.OrdinalIgnoreCase))
+                if (!isRetry && (responseJson.Contains("not loaded", StringComparison.OrdinalIgnoreCase) || responseJson.Contains("Please load the model", StringComparison.OrdinalIgnoreCase)))
                 {
                     bool loaded = await TryLoadModelAsync(model.Id, cancellationToken);
                     if (loaded)
@@ -727,11 +788,42 @@ public sealed class FoundryClient : IDisposable
 
         try
         {
-            response =
-                await _httpClient.SendAsync(
-                    requestMessage,
-                    HttpCompletionOption.ResponseHeadersRead,
-                    cancellationToken);
+            try
+            {
+                response =
+                    await _httpClient.SendAsync(
+                        requestMessage,
+                        HttpCompletionOption.ResponseHeadersRead,
+                        cancellationToken);
+            }
+            catch (Exception ex) when (!isRetry && (ex is HttpRequestException || ex is IOException || ex.Message.Contains("ResponseEnded", StringComparison.OrdinalIgnoreCase) || ex.Message.Contains("prematurely", StringComparison.OrdinalIgnoreCase)))
+            {
+                // Modèle non chargé ou fermeture abrupte du flux par Foundry Local
+                bool loaded = await TryLoadModelAsync(model.Id, cancellationToken);
+                if (loaded)
+                {
+                    return await AskStreamingAsync(model, systemPrompt, userPrompt, onChunkReceived, temperature, maxTokens, cancellationToken, isRetry: true);
+                }
+
+                // Repli automatique sur un modèle actif (ex: NPU ou GPU déjà en mémoire) si le modèle demandé ne peut pas être chargé
+                try
+                {
+                    var fallbackCandidates = await GetModelsAsync(cancellationToken);
+                    var fallback = fallbackCandidates.FirstOrDefault(m => !string.Equals(m.Id, model.Id, StringComparison.OrdinalIgnoreCase));
+                    if (fallback != null)
+                    {
+                        onChunkReceived($"[Note: Modèle '{model.Id}' non chargé en mémoire. Bascule automatique sur {fallback.TargetDevice} ({fallback.Id})...]\n\n");
+                        return await AskStreamingAsync(fallback, systemPrompt, userPrompt, onChunkReceived, temperature, maxTokens, cancellationToken, isRetry: true);
+                    }
+                }
+                catch { }
+
+                throw new FoundryClientException(
+                    $"Le modèle local '{model.Id}' n'a pas répondu ({ex.Message}).\n" +
+                    "Le modèle n'était probablement pas encore chargé en mémoire vive par Microsoft Foundry Local.\n" +
+                    "💡 Vous pouvez basculer sur le NPU ou le GPU dans la barre de sélection ou précharger le modèle (`foundry model load " + model.Id + "`).",
+                    ex);
+            }
 
             if (!response.IsSuccessStatusCode)
             {
@@ -741,7 +833,7 @@ public sealed class FoundryClient : IDisposable
 
                 stopwatch.Stop();
 
-                if (!isRetry && errorBody.Contains("not loaded", StringComparison.OrdinalIgnoreCase))
+                if (!isRetry && (errorBody.Contains("not loaded", StringComparison.OrdinalIgnoreCase) || errorBody.Contains("Please load the model", StringComparison.OrdinalIgnoreCase)))
                 {
                     bool loaded = await TryLoadModelAsync(model.Id, cancellationToken);
                     if (loaded)
@@ -785,7 +877,7 @@ public sealed class FoundryClient : IDisposable
                 {
                     line = await reader.ReadLineAsync(cancellationToken);
                 }
-                catch (Exception ex) when (ex is HttpRequestException || ex is IOException)
+                catch (Exception ex) when (ex is HttpRequestException || ex is IOException || ex.Message.Contains("ResponseEnded", StringComparison.OrdinalIgnoreCase))
                 {
                     if (accumulatedContent.Length > 0)
                     {
@@ -800,6 +892,18 @@ public sealed class FoundryClient : IDisposable
                         {
                             return await AskStreamingAsync(model, systemPrompt, userPrompt, onChunkReceived, temperature, maxTokens, cancellationToken, isRetry: true);
                         }
+
+                        try
+                        {
+                            var fallbackCandidates = await GetModelsAsync(cancellationToken);
+                            var fallback = fallbackCandidates.FirstOrDefault(m => !string.Equals(m.Id, model.Id, StringComparison.OrdinalIgnoreCase));
+                            if (fallback != null)
+                            {
+                                onChunkReceived($"\n\n[Note: Flux interrompu. Bascule automatique sur {fallback.TargetDevice} ({fallback.Id})...]\n\n");
+                                return await AskStreamingAsync(fallback, systemPrompt, userPrompt, onChunkReceived, temperature, maxTokens, cancellationToken, isRetry: true);
+                            }
+                        }
+                        catch { }
                     }
 
                     throw new FoundryClientException(

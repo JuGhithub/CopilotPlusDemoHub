@@ -66,11 +66,9 @@ if (Get-Command foundry -ErrorAction SilentlyContinue) {
         try { & foundry model load phi-4-mini-instruct-directml-npu 2>$null | Out-Null } catch {}
     }
 
-    # Repli systématique sur le modèle CPU si aucun accélérateur propriétaire n'a pu être chargé
-    if (-not $loaded) {
-        Write-Host "      * Modèle Universel CPU..." -ForegroundColor Yellow
-        try { & foundry model load Phi-4-mini-instruct-generic-cpu 2>$null | Out-Null; $loaded = $true } catch {}
-    }
+    # Préchauffage du modèle universel CPU (permet les tests comparatifs NPU vs CPU immédiats)
+    Write-Host "      * Modèle Universel CPU [Comparatif NPU vs CPU]..." -ForegroundColor Yellow
+    try { & foundry model load Phi-4-mini-instruct-generic-cpu 2>$null | Out-Null; $loaded = $true } catch {}
 
     Write-Host "      [OK] Modèles d'IA prêts pour un démarrage instantané." -ForegroundColor Green
 } else {
