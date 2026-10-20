@@ -123,10 +123,10 @@ def main():
     # VAD & Streaming Settings
     FRAME_SIZE = 1600  # 100ms at 16kHz
     PRE_SPEECH_FRAMES = 3   # 300ms pre-buffer
-    SILENCE_TRIGGER_FRAMES = 5  # 500ms pause triggers phrase end
-    MAX_PHRASE_SAMPLES = int(args.samplerate * 4.5)  # 4.5s max phrase length
-    MIN_PHRASE_SAMPLES = int(args.samplerate * 0.6)  # 0.6s min phrase length
-    SPEECH_RMS_THRESHOLD = 0.015  # Minimum energy for speech
+    SILENCE_TRIGGER_FRAMES = 4  # 400ms pause triggers phrase end
+    MAX_PHRASE_SAMPLES = int(args.samplerate * 6.0)  # 6.0s max phrase length
+    MIN_PHRASE_SAMPLES = int(args.samplerate * 0.55)  # 0.55s min phrase length
+    SPEECH_RMS_THRESHOLD = 0.014  # Minimum energy for speech
 
     # Ring buffer for pre-speech frames
     pre_speech_ring = collections.deque(maxlen=PRE_SPEECH_FRAMES)
@@ -206,76 +206,86 @@ def main():
     def process_and_emit_segment(samples_list, start_sample, end_sample):
         if not samples_list:
             return
-        audio_chunk = np.concatenate(samples_list).astype(np.float32)
-        if len(audio_chunk) < MIN_PHRASE_SAMPLES:
+        full_chunk = np.concatenate(samples_list).astype(np.float32)
+        if len(full_chunk) < MIN_PHRASE_SAMPLES:
             return
 
-        start_sec = round(start_sample / float(args.samplerate), 2)
-        end_sec = round(end_sample / float(args.samplerate), 2)
-
-        t0 = time.perf_counter()
-        detected_lang = "fr"
-        try:
-            res = pipe.generate(audio_chunk.tolist(), config)
-            text = str(res).strip()
-            # openvino_genai n'expose pas la langue détectée : langue forcée, sinon déduite du texte transcrit
-            forced = lang_code(config.language)
-            detected_lang = forced if forced else detect_language(text, fallback="fr")
-        except Exception as ex:
-            text = ""
-
-        infer_ms = int((time.perf_counter() - t0) * 1000)
-
-        # Ignore empty or hallmark hallucinations
-        clean_text = text.strip()
-        if not clean_text or clean_text.lower() in ("sous-titres réalisés par", "merci d'avoir regardé cette vidéo", "sous-titres", "merci."):
-            return
-
-        spk_id = "spk_1"
-        spk_name = "Intervenant 1"
-        spk_color = "#3B82F6"
-        is_known = False
-        confidence = 1.0
-        embedding = None
-
+        sub_turns = [(0, len(full_chunk))]
         if spk_mgr is not None:
             try:
-                spk_info = spk_mgr.identify_or_cluster(audio_chunk, sr=args.samplerate)
-                spk_id = spk_info["speaker_id"]
-                spk_name = spk_info["speaker_name"]
-                spk_color = spk_info["speaker_color"]
-                is_known = spk_info.get("is_known", False)
-                is_tpm_certified = spk_info.get("is_tpm_certified", False)
-                confidence = spk_info.get("confidence", 1.0)
-                embedding = spk_info.get("embedding", None)
+                sub_turns = spk_mgr.split_speaker_turns_live(full_chunk, sr=args.samplerate)
             except Exception:
-                is_tpm_certified = False
+                sub_turns = [(0, len(full_chunk))]
 
-        # Traduction native Whisper vers l'anglais (les autres cibles sont traduites par le LLM côté application)
-        translation = None
-        translation_lang = None
-        if translate_state["to"] == "en" and detected_lang != "en":
-            translation = whisper_translate_to_english(pipe, audio_chunk.tolist(), detected_lang)
-            if translation:
-                translation_lang = "en"
+        for s_off, e_off in sub_turns:
+            audio_chunk = full_chunk[s_off:e_off]
+            if len(audio_chunk) < int(args.samplerate * 0.35):
+                continue
 
-        print(json.dumps({
-            "type": "live_segment",
-            "start_ts": start_sec,
-            "end_ts": end_sec,
-            "speaker_id": spk_id,
-            "speaker_name": spk_name,
-            "speaker_color": spk_color,
-            "is_known": is_known,
-            "is_tpm_certified": is_tpm_certified,
-            "confidence": confidence,
-            "embedding": embedding,
-            "infer_ms": infer_ms,
-            "detected_language": detected_lang,
-            "translation": translation,
-            "translation_lang": translation_lang,
-            "text": clean_text
-        }, ensure_ascii=False), flush=True)
+            start_sec = round((start_sample + s_off) / float(args.samplerate), 2)
+            end_sec = round((start_sample + e_off) / float(args.samplerate), 2)
+
+            t0 = time.perf_counter()
+            detected_lang = "fr"
+            try:
+                res = pipe.generate(audio_chunk.tolist(), config)
+                text = str(res).strip()
+                forced = lang_code(config.language)
+                detected_lang = forced if forced else detect_language(text, fallback="fr")
+            except Exception:
+                text = ""
+
+            infer_ms = int((time.perf_counter() - t0) * 1000)
+
+            clean_text = text.strip()
+            if not clean_text or clean_text.lower() in ("...", "…", "sous-titres réalisés par", "merci d'avoir regardé cette vidéo", "sous-titres", "merci."):
+                continue
+
+            spk_id = "spk_1"
+            spk_name = "Intervenant 1"
+            spk_color = "#3B82F6"
+            is_known = False
+            is_tpm_certified = False
+            confidence = 1.0
+            embedding = None
+
+            if spk_mgr is not None:
+                try:
+                    spk_info = spk_mgr.identify_or_cluster(audio_chunk, sr=args.samplerate)
+                    spk_id = spk_info["speaker_id"]
+                    spk_name = spk_info["speaker_name"]
+                    spk_color = spk_info["speaker_color"]
+                    is_known = spk_info.get("is_known", False)
+                    is_tpm_certified = spk_info.get("is_tpm_certified", False)
+                    confidence = spk_info.get("confidence", 1.0)
+                    embedding = spk_info.get("embedding", None)
+                except Exception:
+                    is_tpm_certified = False
+
+            translation = None
+            translation_lang = None
+            if translate_state["to"] == "en" and detected_lang != "en":
+                translation = whisper_translate_to_english(pipe, audio_chunk.tolist(), detected_lang)
+                if translation:
+                    translation_lang = "en"
+
+            print(json.dumps({
+                "type": "live_segment",
+                "start_ts": start_sec,
+                "end_ts": end_sec,
+                "speaker_id": spk_id,
+                "speaker_name": spk_name,
+                "speaker_color": spk_color,
+                "is_known": is_known,
+                "is_tpm_certified": is_tpm_certified,
+                "confidence": confidence,
+                "embedding": embedding,
+                "infer_ms": infer_ms,
+                "detected_language": detected_lang,
+                "translation": translation,
+                "translation_lang": translation_lang,
+                "text": clean_text
+            }, ensure_ascii=False), flush=True)
 
     while not stop_event.is_set() or not audio_queue.empty():
         try:

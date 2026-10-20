@@ -120,7 +120,7 @@ def main():
         print(json.dumps({"type": "error", "message": f"Error loading model on {args.device}: {str(e)}"}), flush=True)
         return
 
-    # 4. Transcribe with Timestamps & Speaker Diarization
+    # 4. Transcribe with Speaker-Aware Turn Diarization
     infer_start = time.perf_counter()
     try:
         config = pipe.get_generation_config()
@@ -128,100 +128,97 @@ def main():
             config.language = args.language if args.language.startswith("<|") else f"<|{args.language}|>"
         else:
             config.language = None
-        config.return_timestamps = True
         config.task = "transcribe"
-
-        results = pipe.generate(audio.tolist(), config)
-        infer_time_ms = int((time.perf_counter() - infer_start) * 1000)
-        # openvino_genai n'expose pas la langue détectée : langue forcée, sinon déduite du texte transcrit
         forced_lang = lang_code(config.language)
-        full_text_guess = " ".join(c.text for c in results.chunks) if hasattr(results, "chunks") and results.chunks else str(results)
-        detected_lang = forced_lang if forced_lang else detect_language(full_text_guess, fallback="fr")
 
+        turns = spk_mgr.diarize_audio_turns(audio, sr=16000) if spk_mgr is not None else []
         accumulated_text = ""
-        if hasattr(results, "chunks") and results.chunks:
-            for chunk in results.chunks:
-                text = chunk.text.strip()
-                if not text:
-                    continue
-                accumulated_text += " " + text
+        lang_votes = []
 
-                # Langue de la phrase (mélange FR/EN possible) + traduction Whisper vers l'anglais
-                chunk_lang = forced_lang if forced_lang else detect_language(text, fallback=detected_lang)
+        if turns:
+            config.return_timestamps = False
+            hallucinations = {"...", "…", "sous-titres réalisés par", "merci d'avoir regardé cette vidéo", "sous-titres", "merci."}
+            for turn in turns:
+                s_idx = turn["start_sample"]
+                e_idx = turn["end_sample"]
+                if e_idx <= s_idx:
+                    continue
+                turn_audio = audio[s_idx:e_idx]
+                res = pipe.generate(turn_audio.tolist(), config)
+                text = str(res).strip()
+                if not text or text.lower() in hallucinations:
+                    continue
+
+                accumulated_text += " " + text
+                chunk_lang = forced_lang if forced_lang else detect_language(text, fallback=lang_votes[-1] if lang_votes else "fr")
+                lang_votes.append(chunk_lang)
+
                 translation = None
                 translation_lang = None
                 if translate_to == "en" and chunk_lang != "en":
-                    ts_i = max(0, int(chunk.start_ts * 16000))
-                    te_i = min(len(audio), int(chunk.end_ts * 16000))
-                    if te_i > ts_i:
-                        translation = whisper_translate_to_english(pipe, audio[ts_i:te_i].tolist(), chunk_lang)
-                        if translation:
-                            translation_lang = "en"
-
-                is_tpm_certified = False
-                spk_id = "spk_1"
-                spk_name = "Intervenant 1"
-                spk_color = "#3B82F6"
-                is_known = False
-                confidence = 1.0
-                embedding = None
-
-                if spk_mgr is not None:
-                    s_idx = max(0, int(chunk.start_ts * 16000))
-                    e_idx = min(len(audio), int(chunk.end_ts * 16000))
-                    if e_idx > s_idx:
-                        chunk_audio = audio[s_idx:e_idx]
-                        spk_info = spk_mgr.identify_or_cluster(chunk_audio, sr=16000)
-                        spk_id = spk_info["speaker_id"]
-                        spk_name = spk_info["speaker_name"]
-                        spk_color = spk_info["speaker_color"]
-                        is_known = spk_info.get("is_known", False)
-                        is_tpm_certified = spk_info.get("is_tpm_certified", False)
-                        confidence = spk_info.get("confidence", 1.0)
-                        embedding = spk_info.get("embedding", None)
+                    translation = whisper_translate_to_english(pipe, turn_audio.tolist(), chunk_lang)
+                    if translation:
+                        translation_lang = "en"
 
                 print(json.dumps({
                     "type": "chunk",
-                    "start_ts": round(chunk.start_ts, 2),
-                    "end_ts": round(chunk.end_ts, 2),
-                    "speaker_id": spk_id,
-                    "speaker_name": spk_name,
-                    "speaker_color": spk_color,
-                    "is_known": is_known,
-                    "is_tpm_certified": is_tpm_certified,
-                    "confidence": confidence,
-                    "embedding": embedding,
+                    "start_ts": turn["start_ts"],
+                    "end_ts": turn["end_ts"],
+                    "speaker_id": turn["speaker_id"],
+                    "speaker_name": turn["speaker_name"],
+                    "speaker_color": turn["speaker_color"],
+                    "is_known": turn["is_known"],
+                    "is_tpm_certified": turn["is_tpm_certified"],
+                    "confidence": turn["confidence"],
+                    "embedding": turn["embedding"],
                     "detected_language": chunk_lang,
                     "translation": translation,
                     "translation_lang": translation_lang,
                     "text": text
                 }, ensure_ascii=False), flush=True)
-        else:
-            accumulated_text = str(results).strip()
-            spk_id = "spk_1"
-            spk_name = "Intervenant 1"
-            spk_color = "#3B82F6"
-            is_known = False
-            embedding = None
-            if spk_mgr is not None:
-                spk_info = spk_mgr.identify_or_cluster(audio, sr=16000)
-                spk_id = spk_info["speaker_id"]
-                spk_name = spk_info["speaker_name"]
-                spk_color = spk_info["speaker_color"]
-                is_known = spk_info.get("is_known", False)
-                embedding = spk_info.get("embedding", None)
 
-            print(json.dumps({
-                "type": "chunk",
-                "start_ts": 0.0,
-                "end_ts": round(audio_duration_sec, 2),
-                "speaker_id": spk_id,
-                "speaker_name": spk_name,
-                "speaker_color": spk_color,
-                "is_known": is_known,
-                "embedding": embedding,
-                "text": accumulated_text
-            }), flush=True)
+            infer_time_ms = int((time.perf_counter() - infer_start) * 1000)
+            detected_lang = forced_lang if forced_lang else detect_language(accumulated_text, fallback=lang_votes[0] if lang_votes else "fr")
+        else:
+            config.return_timestamps = True
+            results = pipe.generate(audio.tolist(), config)
+            infer_time_ms = int((time.perf_counter() - infer_start) * 1000)
+            full_text_guess = " ".join(c.text for c in results.chunks) if hasattr(results, "chunks") and results.chunks else str(results)
+            detected_lang = forced_lang if forced_lang else detect_language(full_text_guess, fallback="fr")
+
+            if hasattr(results, "chunks") and results.chunks:
+                for chunk in results.chunks:
+                    text = chunk.text.strip()
+                    if not text:
+                        continue
+                    accumulated_text += " " + text
+                    chunk_lang = forced_lang if forced_lang else detect_language(text, fallback=detected_lang)
+                    translation = None
+                    translation_lang = None
+                    if translate_to == "en" and chunk_lang != "en":
+                        ts_i = max(0, int(chunk.start_ts * 16000))
+                        te_i = min(len(audio), int(chunk.end_ts * 16000))
+                        if te_i > ts_i:
+                            translation = whisper_translate_to_english(pipe, audio[ts_i:te_i].tolist(), chunk_lang)
+                            if translation:
+                                translation_lang = "en"
+
+                    print(json.dumps({
+                        "type": "chunk",
+                        "start_ts": round(chunk.start_ts, 2),
+                        "end_ts": round(chunk.end_ts, 2),
+                        "speaker_id": "spk_1",
+                        "speaker_name": "Intervenant 1",
+                        "speaker_color": "#3B82F6",
+                        "is_known": False,
+                        "is_tpm_certified": False,
+                        "confidence": 0.90,
+                        "embedding": None,
+                        "detected_language": chunk_lang,
+                        "translation": translation,
+                        "translation_lang": translation_lang,
+                        "text": text
+                    }, ensure_ascii=False), flush=True)
 
         speed_factor = round(audio_duration_sec / max(0.01, (infer_time_ms / 1000.0)), 2)
         print(json.dumps({
