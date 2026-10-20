@@ -507,9 +507,34 @@ def main():
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    if args.engine in ("onnx", "onnx_olive"):
-        is_olive = args.engine == "onnx_olive"
+    selected_engine = args.engine
+    if selected_engine == "openvino":
+        try:
+            import openvino  # noqa: F401
+        except ImportError:
+            # Automatic fallback to ONNX Runtime (DirectML/CPU) when OpenVINO is not installed (e.g. Windows ARM64 / Snapdragon)
+            selected_engine = "onnx_olive" if os.path.exists(find_olive_model_path(script_dir)) else "onnx"
+
+    if selected_engine == "openvino":
+        model_dir = find_model_path(script_dir)
+        if os.path.exists(model_dir):
+            inference_device = resolve_ov_device(args.device)
+            engine_name = "OpenVINO"
+            try:
+                model = YOLO(model_dir)
+                dummy = np.zeros((640, 640, 3), dtype=np.uint8)
+                _ = model(dummy, device=inference_device, verbose=False)
+            except Exception:
+                selected_engine = "onnx_olive" if os.path.exists(find_olive_model_path(script_dir)) else "onnx"
+        else:
+            selected_engine = "onnx_olive" if os.path.exists(find_olive_model_path(script_dir)) else "onnx"
+
+    if selected_engine in ("onnx", "onnx_olive"):
+        is_olive = selected_engine == "onnx_olive"
         model_path = find_olive_model_path(script_dir) if is_olive else find_onnx_model_path(script_dir)
+        if not os.path.exists(model_path):
+            model_path = find_onnx_model_path(script_dir)
+            is_olive = False
         if not os.path.exists(model_path):
             print(json.dumps({
                 "type": "error",
@@ -538,26 +563,6 @@ def main():
             print(json.dumps({
                 "type": "error",
                 "message": f"Impossible de charger le modèle {'Olive FP16' if is_olive else 'ONNX'} ({model_path}) : {e}"
-            }, ensure_ascii=False), flush=True)
-            sys.exit(1)
-    else:
-        model_dir = find_model_path(script_dir)
-        if not os.path.exists(model_dir):
-            print(json.dumps({
-                "type": "error",
-                "message": f"Modèle OpenVINO introuvable : {model_dir}"
-            }, ensure_ascii=False), flush=True)
-            sys.exit(1)
-        inference_device = resolve_ov_device(args.device)
-        engine_name = "Intel OpenVINO"
-        try:
-            model = YOLO(model_dir)
-            dummy = np.zeros((640, 640, 3), dtype=np.uint8)
-            _ = model(dummy, device=inference_device, verbose=False)
-        except Exception as e:
-            print(json.dumps({
-                "type": "error",
-                "message": f"Impossible de charger le modèle OpenVINO ({model_dir}) : {e}"
             }, ensure_ascii=False), flush=True)
             sys.exit(1)
 

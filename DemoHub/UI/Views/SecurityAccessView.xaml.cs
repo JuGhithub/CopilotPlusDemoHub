@@ -61,10 +61,39 @@ public partial class SecurityAccessView : UserControl, IDisposable
         _gameTimer.Tick += GameTimer_Tick;
 
         InitMinesweeperBoard();
+        if (SiliconDetector.Vendor != SiliconVendor.Intel && RadEngineOlive != null)
+        {
+            RadEngineOlive.IsChecked = true;
+        }
+        UpdateSiliconVendorLabels();
         RefreshDeviceUI();
     }
 
     #region Silicon Device Sync
+    private void UpdateSiliconVendorLabels()
+    {
+        if (RadDeviceGpu == null || RadDeviceCpu == null) return;
+        switch (SiliconDetector.Vendor)
+        {
+            case SiliconVendor.Amd:
+                RadDeviceGpu.Content = "🎮 GPU AMD Radeon";
+                RadDeviceCpu.Content = "💻 CPU AMD Ryzen";
+                break;
+            case SiliconVendor.Qualcomm:
+                RadDeviceGpu.Content = "🎮 GPU Qualcomm Adreno";
+                RadDeviceCpu.Content = "💻 CPU Snapdragon X";
+                break;
+            case SiliconVendor.Intel:
+                RadDeviceGpu.Content = "🎮 GPU Intel Arc (18ms)";
+                RadDeviceCpu.Content = "💻 CPU Core Ultra";
+                break;
+            default:
+                RadDeviceGpu.Content = "🎮 GPU DirectML";
+                RadDeviceCpu.Content = "💻 CPU Local";
+                break;
+        }
+    }
+
     public void RefreshDeviceUI()
     {
         if (_isSyncingDevice) return;

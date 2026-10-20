@@ -211,6 +211,10 @@ public partial class MagicEraserStudioView : UserControl, IDisposable
         _getEffectiveDevice = getEffectiveDevice;
         _setSelectedDevice = setSelectedDevice;
 
+        if (SiliconDetector.Vendor != SiliconVendor.Intel && RadEngineOlive != null)
+        {
+            RadEngineOlive.IsChecked = true;
+        }
         RefreshDeviceUI();
 
         // Default to desk sample with coffee cup and phone

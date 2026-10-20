@@ -5,7 +5,10 @@ import sys
 import time
 import cv2
 import numpy as np
-import openvino as ov
+try:
+    import openvino as ov
+except ImportError:
+    ov = None
 
 COCO_CLASSES = [
     'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
@@ -608,12 +611,18 @@ def main():
     sys.stdout.reconfigure(encoding="utf-8")
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
+    if args.engine == "openvino" and ov is None:
+        args.engine = "onnx_olive" if find_olive_model(script_dir) else "onnx"
+
     if args.engine == "onnx":
         model_path = find_onnx_model(script_dir)
     elif args.engine == "onnx_olive":
-        model_path = find_olive_model(script_dir)
+        model_path = find_olive_model(script_dir) or find_onnx_model(script_dir)
     else:
         model_path = find_model_xml(script_dir)
+        if (not model_path or not os.path.exists(model_path)) and find_onnx_model(script_dir):
+            args.engine = "onnx_olive" if find_olive_model(script_dir) else "onnx"
+            model_path = find_olive_model(script_dir) or find_onnx_model(script_dir)
 
     if not model_path or not os.path.exists(model_path):
         print(json.dumps({"type": "error", "message": f"Modèle ({args.engine}) introuvable : {model_path}"}, ensure_ascii=False))
