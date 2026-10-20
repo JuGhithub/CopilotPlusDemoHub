@@ -114,8 +114,15 @@ def draw_hud_box(img, box, label, color, conf):
     cv2.rectangle(img, (x1, badge_y1), (x1 + tw + 10, badge_y2), color, -1)
     cv2.putText(img, text, (x1 + 5, badge_y2 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.50, (10, 15, 25), 2, cv2.LINE_AA)
 
-def analyze_and_draw(model, frame, ov_device, conf_thresh=0.20, is_live=False):
+def smooth_box(old_box, new_box, alpha=0.65):
+    if old_box is None:
+        return new_box
+    return [alpha * n + (1.0 - alpha) * o for o, n in zip(old_box, new_box)]
+
+
+def analyze_and_draw(model, frame, ov_device, conf_thresh=0.20, is_live=False, tracker_state=None, hold_sec=4.5):
     results = model(frame, conf=conf_thresh, device=ov_device, verbose=False)
+    now = time.perf_counter()
 
     cup_detected = False
     cup_conf = 0.0
@@ -164,6 +171,35 @@ def analyze_and_draw(model, frame, ov_device, conf_thresh=0.20, is_live=False):
                 headset_conf = conf
                 headset_box = xyxy
                 headset_name = name
+
+    # Persistance temporelle en mode webcam direct : chaque objet détecté reste verrouillé quelques secondes
+    if is_live and tracker_state is not None:
+        items = [
+            ("cup", cup_detected, cup_conf, cup_box, cup_name),
+            ("glasses", glasses_detected, glasses_conf, glasses_box, glasses_name),
+            ("headset", headset_detected, headset_conf, headset_box, headset_name),
+        ]
+        resolved = {}
+        for key, det, conf, box, name in items:
+            mem = tracker_state.get(key)
+            if det and box is not None:
+                prev_box = mem["box"] if (mem and now - mem["ts"] <= 1.0) else None
+                smoothed = smooth_box(prev_box, box, alpha=0.65)
+                tracker_state[key] = {
+                    "ts": now,
+                    "conf": max(conf, mem["conf"] * 0.95) if (mem and now - mem["ts"] <= 1.0) else conf,
+                    "box": smoothed,
+                    "name": name,
+                }
+                resolved[key] = (True, tracker_state[key]["conf"], smoothed, name, False)
+            elif mem is not None and (now - mem["ts"]) <= hold_sec:
+                resolved[key] = (True, mem["conf"], mem["box"], mem["name"], True)
+            else:
+                resolved[key] = (False, 0.0, None, "", False)
+
+        cup_detected, cup_conf, cup_box, cup_name, cup_held = resolved["cup"]
+        glasses_detected, glasses_conf, glasses_box, glasses_name, glasses_held = resolved["glasses"]
+        headset_detected, headset_conf, headset_box, headset_name, headset_held = resolved["headset"]
 
     # Draw boxes
     if cup_detected and cup_box is not None:
@@ -303,6 +339,7 @@ def main():
 
         t_start = time.perf_counter()
         frame_idx = 0
+        tracker_state = {}
 
         while not stop_event.is_set():
             ret, frame = cap.read()
@@ -314,7 +351,7 @@ def main():
             (annotated, cup_det, cup_conf, cup_box, cup_name,
              glasses_det, glasses_conf, glasses_box, glasses_name,
              headset_det, headset_conf, headset_box, headset_name, granted) = analyze_and_draw(
-                model, frame, inference_device, conf_thresh=args.conf, is_live=True
+                model, frame, inference_device, conf_thresh=args.conf, is_live=True, tracker_state=tracker_state, hold_sec=4.5
             )
             infer_ms = int((time.perf_counter() - t0) * 1000)
 

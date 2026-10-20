@@ -253,19 +253,19 @@
                             <Border x:Name="PanelVaultLocked" Visibility="Visible" Background="#0C1322" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="24">
                                 <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
                                     <StackPanel MaxWidth="400" HorizontalAlignment="Center">
-                                        <Border Width="80" Height="80" CornerRadius="40" Background="#162035" BorderBrush="#334155" BorderThickness="2" HorizontalAlignment="Center" Margin="0,0,0,16">
-                                            <TextBlock Text="🔒" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <Border x:Name="BorderVaultLockIcon" Width="80" Height="80" CornerRadius="40" Background="#162035" BorderBrush="#334155" BorderThickness="2" HorizontalAlignment="Center" Margin="0,0,0,16">
+                                            <TextBlock x:Name="TxtVaultLockIcon" Text="🔒" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         </Border>
-                                        <TextBlock Text="CONSOLE SÉCURISÉE VERROUILLÉE" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
-                                        <TextBlock Text="Authentification Matérielle &amp; Ergonomique Obligatoire" FontSize="12" Foreground="{StaticResource CopilotCyanBrush}" HorizontalAlignment="Center" Margin="0,4,0,14" />
+                                        <TextBlock x:Name="TxtVaultLockTitle" Text="CONSOLE SÉCURISÉE VERROUILLÉE" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
+                                        <TextBlock x:Name="TxtVaultLockSub" Text="Authentification Matérielle &amp; Ergonomique Obligatoire" FontSize="12" Foreground="{StaticResource CopilotCyanBrush}" HorizontalAlignment="Center" Margin="0,4,0,14" />
                                         <TextBlock Text="Pour déverrouiller la console exécutive et lancer la plateforme de déminage, le modèle IA doit attester conjointement 3 équipements :" FontSize="11.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,14" />
 
                                         <!-- Prerequisite Requirements List -->
                                         <Border Background="#10192A" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="14,12" Margin="0,0,0,16">
                                             <StackPanel>
-                                                <TextBlock Text="1. ☕ Tasse de café (Indicateur d'éveil opérationnel)" FontSize="11.5" Foreground="#FDE047" Margin="0,0,0,8" />
-                                                <TextBlock Text="2. 👓 Paire de lunettes (Équipement de précision visuelle)" FontSize="11.5" Foreground="#67E8F9" Margin="0,0,0,8" />
-                                                <TextBlock Text="3. 🎧 Casque audio (Isolation phonique &amp; communication)" FontSize="11.5" Foreground="#F472B6" />
+                                                <TextBlock x:Name="TxtReq1" Text="1. ☕ Tasse de café (Indicateur d'éveil opérationnel)" FontSize="11.5" Foreground="#FDE047" Margin="0,0,0,8" />
+                                                <TextBlock x:Name="TxtReq2" Text="2. 👓 Paire de lunettes (Équipement de précision visuelle)" FontSize="11.5" Foreground="#67E8F9" Margin="0,0,0,8" />
+                                                <TextBlock x:Name="TxtReq3" Text="3. 🎧 Casque audio (Isolation phonique &amp; communication)" FontSize="11.5" Foreground="#F472B6" />
                                             </StackPanel>
                                         </Border>
 
