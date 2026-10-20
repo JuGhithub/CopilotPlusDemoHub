@@ -142,7 +142,14 @@ WORLD_CLASSES = [
 
 def _export_yolo(pt_name, target_dir_name, base_name, force, custom_classes=None):
     """Exporte un modèle YOLO au format OpenVINO (dossier) ET ONNX (fichier brut)."""
+    import torch
+    import torch.nn.functional as F
     from ultralytics import YOLO
+
+    if custom_classes:
+        # Decompose F.normalize so OpenVINO/ONNX exports Multiply+ReduceSum+Sqrt+Divide instead of ReduceL2,
+        # enabling 100% native compilation on the Intel AI Boost NPU (vpux-compiler).
+        F.normalize = lambda x, p=2.0, dim=1, eps=1e-12, out=None: x / torch.sqrt(torch.sum(x * x, dim=dim, keepdim=True) + eps)
 
     ov_target = os.path.join(MODELS_DIR, target_dir_name)
     ov_xml = os.path.join(ov_target, base_name + ".xml")

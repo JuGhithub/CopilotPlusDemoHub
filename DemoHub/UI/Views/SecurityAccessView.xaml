@@ -90,8 +90,9 @@
                             <RadioButton x:Name="RadEngineOlive" GroupName="AccessEngGrp" Content="🟢 Olive FP16" Style="{StaticResource PillButtonStyle}" Margin="0,0,12,0" ToolTip="Moteur ONNX Runtime optimisé par Microsoft Olive (DirectML GPU FP16)" Checked="Engine_Checked" />
 
                             <TextBlock Text="ACCÉLÉRATEUR :" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                            <RadioButton x:Name="RadDeviceGpu" GroupName="AccessDevGrp" Content="🎮 GPU Intel Arc (18ms)" IsChecked="True" Style="{StaticResource PillButtonStyle}" Margin="0,0,4,0" Checked="Device_Checked" ToolTip="Inférence Vision temps réel sur GPU Intel Arc Xe2 (~18 ms, ~14W)" />
-                            <RadioButton x:Name="RadDeviceCpu" GroupName="AccessDevGrp" Content="💻 CPU Core Ultra" Style="{StaticResource PillButtonStyle}" Checked="Device_Checked" ToolTip="Inférence sur processeur Intel Core Ultra" />
+                            <RadioButton x:Name="RadDeviceNpu" GroupName="AccessDevGrp" Content="⚡ NPU AI Boost (17ms)" IsChecked="True" Style="{StaticResource PillButtonStyle}" Margin="0,0,4,0" Checked="Device_Checked" ToolTip="Inférence Vision temps réel sur NPU dédié (~17 ms, ultra-sobre ~2.2W)" />
+                            <RadioButton x:Name="RadDeviceGpu" GroupName="AccessDevGrp" Content="🎮 GPU Intel Arc" Style="{StaticResource PillButtonStyle}" Margin="0,0,4,0" Checked="Device_Checked" ToolTip="Inférence Vision temps réel sur GPU (~18 ms, ~14W)" />
+                            <RadioButton x:Name="RadDeviceCpu" GroupName="AccessDevGrp" Content="💻 CPU Core Ultra" Style="{StaticResource PillButtonStyle}" Checked="Device_Checked" ToolTip="Inférence sur processeur CPU" />
                         </StackPanel>
                     </Grid>
                 </Border>

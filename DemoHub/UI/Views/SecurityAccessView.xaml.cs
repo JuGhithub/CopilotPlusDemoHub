@@ -76,18 +76,22 @@ public partial class SecurityAccessView : UserControl, IDisposable
         switch (SiliconDetector.Vendor)
         {
             case SiliconVendor.Amd:
+                if (RadDeviceNpu != null) RadDeviceNpu.Content = "⚡ NPU Ryzen AI";
                 RadDeviceGpu.Content = "🎮 GPU AMD Radeon";
                 RadDeviceCpu.Content = "💻 CPU AMD Ryzen";
                 break;
             case SiliconVendor.Qualcomm:
+                if (RadDeviceNpu != null) RadDeviceNpu.Content = "⚡ NPU Hexagon";
                 RadDeviceGpu.Content = "🎮 GPU Qualcomm Adreno";
                 RadDeviceCpu.Content = "💻 CPU Snapdragon X";
                 break;
             case SiliconVendor.Intel:
-                RadDeviceGpu.Content = "🎮 GPU Intel Arc (18ms)";
+                if (RadDeviceNpu != null) RadDeviceNpu.Content = "⚡ NPU AI Boost (17ms)";
+                RadDeviceGpu.Content = "🎮 GPU Intel Arc";
                 RadDeviceCpu.Content = "💻 CPU Core Ultra";
                 break;
             default:
+                if (RadDeviceNpu != null) RadDeviceNpu.Content = "⚡ NPU Dédié";
                 RadDeviceGpu.Content = "🎮 GPU DirectML";
                 RadDeviceCpu.Content = "💻 CPU Local";
                 break;
@@ -100,14 +104,18 @@ public partial class SecurityAccessView : UserControl, IDisposable
         _isSyncingDevice = true;
         try
         {
-            string eff = _getEffectiveDevice?.Invoke() ?? "GPU";
+            string eff = _getEffectiveDevice?.Invoke() ?? "NPU";
             if (eff.Equals("CPU", StringComparison.OrdinalIgnoreCase))
             {
                 if (RadDeviceCpu != null && RadDeviceCpu.IsChecked != true) RadDeviceCpu.IsChecked = true;
             }
-            else
+            else if (eff.Equals("GPU", StringComparison.OrdinalIgnoreCase))
             {
                 if (RadDeviceGpu != null && RadDeviceGpu.IsChecked != true) RadDeviceGpu.IsChecked = true;
+            }
+            else
+            {
+                if (RadDeviceNpu != null && RadDeviceNpu.IsChecked != true) RadDeviceNpu.IsChecked = true;
             }
         }
         finally
@@ -121,10 +129,19 @@ public partial class SecurityAccessView : UserControl, IDisposable
         if (_isSyncingDevice) return;
         string dev = GetSelectedDevice();
         _setSelectedDevice?.Invoke(dev);
+        if (_isStreaming)
+        {
+            StartLiveWebcamStream();
+        }
+        else if (!string.IsNullOrEmpty(_currentFeedPath))
+        {
+            _ = RunVerificationAsync(_currentFeedPath, false);
+        }
     }
 
     private string GetSelectedDevice()
     {
+        if (RadDeviceNpu?.IsChecked == true) return "NPU";
         if (RadDeviceCpu?.IsChecked == true) return "CPU";
         return "GPU";
     }
@@ -310,7 +327,7 @@ public partial class SecurityAccessView : UserControl, IDisposable
         UpdateComplianceBadges(cup, cupConf, glasses, glassesConf, headset, headsetConf, granted, cupSpoof, glassesSpoof, headsetSpoof, spoofDetected, spoofReason);
 
         // Hardware & Telemetry
-        double watts = device.ToUpperInvariant().Contains("GPU") ? 14.5 : 2.5;
+        double watts = device.ToUpperInvariant().Contains("NPU") ? 2.2 : (device.ToUpperInvariant().Contains("GPU") ? 14.5 : 24.0);
         double joules = watts * (inferMs / 1000.0);
 
         string engineTag = string.IsNullOrEmpty(engine) ? "" : $" • {engine}";
@@ -597,7 +614,7 @@ public partial class SecurityAccessView : UserControl, IDisposable
         UpdateComplianceBadges(cupDetected, cupConf, glassesDetected, glassesConf, headsetDetected, headsetConf, accessGranted, cupSpoofed, glassesSpoofed, headsetSpoofed, spoofDetected, spoofReason);
 
         // Update Silicon Metrics
-        double watts = device.ToUpperInvariant().Contains("GPU") ? 14.5 : 2.5;
+        double watts = device.ToUpperInvariant().Contains("NPU") ? 2.2 : (device.ToUpperInvariant().Contains("GPU") ? 14.5 : 24.0);
         double joules = watts * (inferMs / 1000.0);
 
         string engineTag = string.IsNullOrEmpty(engineResult) ? "" : $" • {engineResult}";

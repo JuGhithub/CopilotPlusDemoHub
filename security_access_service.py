@@ -77,9 +77,18 @@ def find_olive_model_path(base_dir):
 
 
 def resolve_ov_device(req_device):
+    req = (req_device or "NPU").upper()
+    try:
+        import openvino as ov
+        core = ov.Core()
+        avail = [d.upper() for d in core.available_devices]
+        if "NPU" in req and "NPU" in avail:
+            return "intel:npu"
+    except Exception:
+        pass
     # Note: YOLOv8s-Worldv2 (WorldDetect cross-attention head) in OpenVINO 2026+ can trigger
     # an Intel Arc OpenCL driver fault (TDR/BSOD) when compiled on 'intel:gpu'.
-    # OpenVINO LATENCY mode on CPU executes YOLOv8s-World FP16 in ~10-15 ms with 100% stability.
+    # OpenVINO LATENCY mode on NPU (~17 ms) or CPU (~10 ms) executes YOLOv8s-World FP16 with 100% stability.
     return "cpu"
 
 
