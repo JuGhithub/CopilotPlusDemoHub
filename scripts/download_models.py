@@ -128,7 +128,19 @@ def download_speaker_model(force=False):
         return False
 
 
-def _export_yolo(pt_name, target_dir_name, base_name, force):
+WORLD_CLASSES = [
+    "cup", "coffee cup", "mug", "coffee mug", "tea cup", "paper cup",
+    "espresso cup", "travel mug", "thermos", "tumbler", "glass",
+    "drink", "beverage", "water bottle", "bottle", "can",
+    "glasses", "eyeglasses", "sunglasses", "reading glasses", "spectacles", "eyewear",
+    "headphones", "headset", "earphones", "earbuds", "head phone",
+    "cell phone", "smartphone", "mobile phone", "phone screen",
+    "tablet", "printed photo", "picture frame",
+    "person", "human face"
+]
+
+
+def _export_yolo(pt_name, target_dir_name, base_name, force, custom_classes=None):
     """Exporte un modèle YOLO au format OpenVINO (dossier) ET ONNX (fichier brut)."""
     from ultralytics import YOLO
 
@@ -144,7 +156,10 @@ def _export_yolo(pt_name, target_dir_name, base_name, force):
         else:
             log_info(f"Export OpenVINO de {base_name}...")
             try:
-                exported = YOLO(pt_name).export(format="openvino")
+                m = YOLO(pt_name)
+                if custom_classes:
+                    m.set_classes(custom_classes)
+                exported = m.export(format="openvino", half=True, imgsz=640)
                 if os.path.abspath(exported) != os.path.abspath(ov_target):
                     shutil.rmtree(ov_target, ignore_errors=True)
                     shutil.copytree(exported, ov_target)
@@ -158,7 +173,10 @@ def _export_yolo(pt_name, target_dir_name, base_name, force):
         else:
             log_info(f"Export ONNX de {base_name} (DirectML / Olive)...")
             try:
-                exported = YOLO(pt_name).export(format="onnx", imgsz=640, simplify=False)
+                m = YOLO(pt_name)
+                if custom_classes:
+                    m.set_classes(custom_classes)
+                exported = m.export(format="onnx", imgsz=640, simplify=False)
                 if os.path.abspath(exported) != os.path.abspath(onnx_target):
                     shutil.copy2(exported, onnx_target)
                 log_ok(f"{base_name}.onnx généré.")
@@ -181,7 +199,7 @@ def export_yolo_models(force=False):
     ok = _export_yolo("yolov8n-seg.pt", "yolov8n-seg_openvino_model", "yolov8n-seg", force)
     local_world = os.path.join(ROOT_DIR, "yolov8s-worldv2.pt")
     pt_world = local_world if os.path.exists(local_world) else "yolov8s-world.pt"
-    ok = _export_yolo(pt_world, "yolov8s-world_openvino_model", "yolov8s-world", force) and ok
+    ok = _export_yolo(pt_world, "yolov8s-world_openvino_model", "yolov8s-world", force, custom_classes=WORLD_CLASSES) and ok
     return ok
 
 

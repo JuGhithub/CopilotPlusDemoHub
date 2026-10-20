@@ -78,7 +78,8 @@
                             <Button x:Name="BtnSampleBoth" Content="☕+👓 Sans Casque (2/3)" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="9,0" Margin="0,0,6,0" Click="BtnSampleBoth_Click" ToolTip="Tasse et lunettes seules, casque manquant (Accès Refusé)" />
                             <Button x:Name="BtnSampleCup" Content="☕ Tasse Seule" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="9,0" Margin="0,0,6,0" Click="BtnSampleCup_Click" ToolTip="Tasse seule présente, lunettes et casque manquants (Accès Refusé)" />
                             <Button x:Name="BtnSampleGlasses" Content="👓 Lunettes Seules" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="9,0" Margin="0,0,6,0" Click="BtnSampleGlasses_Click" ToolTip="Lunettes seules présentes, tasse et casque manquants (Accès Refusé)" />
-                            <Button x:Name="BtnSampleNone" Content="❌ Aucun" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="9,0" Click="BtnSampleNone_Click" ToolTip="Aucun équipement présent (Refus total)" />
+                            <Button x:Name="BtnSampleNone" Content="❌ Aucun" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="9,0" Margin="0,0,6,0" Click="BtnSampleNone_Click" ToolTip="Aucun équipement présent (Refus total)" />
+                            <Button x:Name="BtnSampleSpoof" Content="📱 Test Anti-Triche" Style="{StaticResource ModernButtonStyle}" Background="#7F1D1D" BorderBrush="#EF4444" BorderThickness="1.5" Height="30" Padding="10,0" FontWeight="Bold" Click="BtnSampleSpoof_Click" ToolTip="Simulation de triche : présentation d'une photo de tasse et de casque sur l'écran d'un smartphone (Détection Anti-Spoofing 2D)" />
                         </StackPanel>
 
                         <!-- Engine & Hardware Accelerator -->
