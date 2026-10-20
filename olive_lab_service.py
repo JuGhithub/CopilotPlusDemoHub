@@ -90,7 +90,7 @@ def run_yolo_benchmark(model_type="yolov8s", mode="duel", image_path=None, devic
 
     if mode in ("raw", "duel"):
         ram_before = proc.memory_info().rss / (1024 * 1024)
-        raw_providers = ['DmlExecutionProvider', 'CPUExecutionProvider'] if req_device in ('GPU', 'AUTO', 'DEFAULT') else ['CPUExecutionProvider']
+        raw_providers = ['DmlExecutionProvider', 'CPUExecutionProvider'] if (req_device in ('GPU', 'AUTO', 'DEFAULT') and 'DmlExecutionProvider' in ort.get_available_providers()) else ['CPUExecutionProvider']
         sess_raw = ort.InferenceSession(raw_model_path, providers=raw_providers)
         dummy_raw = np.random.randn(1, 3, 640, 640).astype(np.float32)
         sess_raw.run(None, {'images': dummy_raw})  # Warmup
@@ -151,7 +151,7 @@ def run_yolo_benchmark(model_type="yolov8s", mode="duel", image_path=None, devic
 
         if not npu_executed:
             # DirectML / GPU
-            dml_providers = ['DmlExecutionProvider', 'CPUExecutionProvider'] if req_device in ('GPU', 'NPU', 'AUTO', 'DEFAULT') else ['CPUExecutionProvider']
+            dml_providers = ['DmlExecutionProvider', 'CPUExecutionProvider'] if (req_device in ('GPU', 'NPU', 'AUTO', 'DEFAULT') and 'DmlExecutionProvider' in ort.get_available_providers()) else ['CPUExecutionProvider']
             sess_olive = ort.InferenceSession(olive_model_path, providers=dml_providers)
             dummy_olive = np.random.randn(1, 3, 640, 640).astype(np.float16)
             sess_olive.run(None, {'images': dummy_olive})  # Warmup

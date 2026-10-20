@@ -102,7 +102,26 @@ class SpeakerManager:
         self.model_path = model_path
         core = ov.Core()
         model = core.read_model(self.model_path)
-        self.compiled_model = core.compile_model(model, self.device)
+        # Repli automatique NPU -> GPU -> CPU si le périphérique demandé est absent (AMD, Qualcomm, pilote manquant...)
+        requested = (self.device or "CPU").upper()
+        order = [requested] + [d for d in ("NPU", "GPU", "CPU") if d != requested]
+        if requested == "AUTO":
+            order = ["NPU", "GPU", "CPU"]
+        available = [d.upper() for d in core.available_devices]
+        self.compiled_model = None
+        last_err = None
+        for dev in order:
+            if dev != "CPU" and not any(a == dev or a.startswith(dev + ".") for a in available):
+                continue
+            try:
+                self.compiled_model = core.compile_model(model, dev)
+                self.device = dev
+                break
+            except Exception as e:  # pragma: no cover
+                last_err = e
+        if self.compiled_model is None:
+            self.compiled_model = core.compile_model(model, "CPU")
+            self.device = "CPU"
 
         # 2. Locate canonical root profiles file (TPM-sealed vault)
         cur = self.script_dir

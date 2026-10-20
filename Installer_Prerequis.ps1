@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Copilot+ PC Demo Hub - Installation Automatisée des Prérequis (.PS1)
 .DESCRIPTION
@@ -116,12 +116,41 @@ if ($pythonVer -and $pythonVer -match "3\.1[0-3]") {
 # -------------------------------------------------------------------
 Write-Host ""
 Write-Host "[4/7] Installation des bibliothèques d'IA Python [requirements.txt]..." -ForegroundColor Cyan
+$script:InstallProblems = New-Object System.Collections.Generic.List[string]
+$isArm = ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") -or ($env:PROCESSOR_ARCHITEW6432 -eq "ARM64")
 & python -m pip install --upgrade pip
 & python -m pip install -r "$ScriptDir\requirements.txt"
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "  [OK] Dépendances Python installées avec succès." -ForegroundColor Green
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "  [!] Échec de l'installation groupée : nouvelle tentative paquet par paquet..." -ForegroundColor Yellow
+    foreach ($line in (Get-Content "$ScriptDir\requirements.txt")) {
+        $pkg = ($line -split '#')[0].Trim()
+        if ($pkg) { & python -m pip install $pkg 2>&1 | Out-Null }
+    }
+}
+
+# rapidocr-onnxruntime installe 'onnxruntime' (CPU) qui écrase 'onnxruntime-directml' : on force DirectML sur x64
+if (-not $isArm) {
+    & python -m pip uninstall -y onnxruntime 2>&1 | Out-Null
+    & python -m pip install --force-reinstall --no-deps onnxruntime-directml 2>&1 | Out-Null
+}
+
+# Vérification réelle des modules indispensables (au lieu de se fier au code retour de pip)
+$mods = @("cv2","numpy","onnxruntime","fitz","rapidocr_onnxruntime","sounddevice","soundfile","huggingface_hub","ultralytics","psutil")
+if (-not $isArm) { $mods += @("openvino","openvino_genai") }
+$missing = @()
+foreach ($m in $mods) {
+    & python -c "import $m" 2>$null
+    if ($LASTEXITCODE -ne 0) { $missing += $m }
+}
+if ($missing.Count -eq 0) {
+    Write-Host "  [OK] Dépendances Python installées et vérifiées." -ForegroundColor Green
 } else {
-    Write-Host "  [!] Avertissement lors de l'installation pip." -ForegroundColor Yellow
+    Write-Host "  [!] Modules Python manquants : $($missing -join ', ')" -ForegroundColor Red
+    $script:InstallProblems.Add("Modules Python manquants : $($missing -join ', ')")
+}
+if ($isArm) {
+    Write-Host "  [INFO] Windows ARM64 : OpenVINO n'est pas disponible. Les démos vision/audio/OCR utiliseront ONNX Runtime (CPU/DirectML)." -ForegroundColor Yellow
+    $script:InstallProblems.Add("Windows ARM64 : accélération OpenVINO indisponible (modes dégradés)")
 }
 
 # -------------------------------------------------------------------
@@ -197,7 +226,9 @@ Write-Host "[6/7] Initialisation et téléchargement de tous les modèles d'IA l
 if ($LASTEXITCODE -eq 0) {
     Write-Host "  [OK] Tous les modèles locaux sont prêts pour l'inférence." -ForegroundColor Green
 } else {
-    Write-Host "  [!] Avertissement lors de la préparation des modèles locaux." -ForegroundColor Yellow
+    Write-Host "  [!] Des modèles d'IA sont manquants : certaines démos seront indisponibles." -ForegroundColor Red
+    Write-Host "      Relancez .\Installer_Prerequis.ps1 (connexion Internet requise) ou : python scripts\download_models.py" -ForegroundColor Yellow
+    $script:InstallProblems.Add("Modèles d'IA manquants (voir messages [INCOMPLET] ci-dessus)")
 }
 
 # -------------------------------------------------------------------
@@ -221,9 +252,18 @@ Write-Host "====================================================================
 & python "$ScriptDir\scripts\verify_installation.py"
 
 Write-Host ""
-Write-Host "======================================================================" -ForegroundColor Green
-Write-Host "   Installation et configuration terminées avec succès !              " -ForegroundColor Green
-Write-Host "   Pour lancer la démonstration, utilisez : .\Lancer_DemoHub.ps1       " -ForegroundColor White
-Write-Host "======================================================================" -ForegroundColor Green
+if ($script:InstallProblems.Count -gt 0) {
+    Write-Host "======================================================================" -ForegroundColor Yellow
+    Write-Host "   Installation terminée AVEC DES PROBLÈMES - fonctionnalités limitées" -ForegroundColor Yellow
+    foreach ($pb in $script:InstallProblems) { Write-Host "    - $pb" -ForegroundColor Yellow }
+    Write-Host "   Corrigez puis relancez : .\Installer_Prerequis.ps1  (reprise sans tout retélécharger)" -ForegroundColor Yellow
+    Write-Host "   Diagnostic détaillé : python scripts\verify_installation.py" -ForegroundColor Yellow
+    Write-Host "======================================================================" -ForegroundColor Yellow
+} else {
+    Write-Host "======================================================================" -ForegroundColor Green
+    Write-Host "   Installation et configuration terminées avec succès !              " -ForegroundColor Green
+    Write-Host "   Pour lancer la démonstration, utilisez : .\Lancer_DemoHub.ps1       " -ForegroundColor White
+    Write-Host "======================================================================" -ForegroundColor Green
+}
 Write-Host ""
 pause

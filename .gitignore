@@ -76,3 +76,6 @@ ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 .DS_Store
+
+# Coffre biométrique scellé DPAPI/TPM : lié à l'utilisateur/machine, illisible ailleurs
+Data/Audio/voice_profiles.tpm

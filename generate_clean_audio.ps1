@@ -1,4 +1,4 @@
-Add-Type -AssemblyName System.Speech
+﻿Add-Type -AssemblyName System.Speech
 $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
 $voice = $synth.GetInstalledVoices() | Where-Object { $_.VoiceInfo.Culture.TwoLetterISOLanguageName -eq 'fr' } | Select-Object -First 1
 if ($voice) { 

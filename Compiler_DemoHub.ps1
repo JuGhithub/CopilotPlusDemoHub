@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Copilot+ PC Demo Hub - Compilation .NET 8 (.PS1)
 .DESCRIPTION

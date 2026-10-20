@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Copilot+ PC Demo Hub - Générateur de Package de Release (.PS1)
 .DESCRIPTION

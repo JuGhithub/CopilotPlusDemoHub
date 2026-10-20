@@ -230,7 +230,7 @@ def main():
             model = YOLO(model_path, task="detect")
             dummy = np.zeros((640, 640, 3), dtype=np.uint8)
             _ = model(dummy, verbose=False)
-            if "GPU" in args.device.upper() or "NPU" in args.device.upper():
+            if ("GPU" in args.device.upper() or "NPU" in args.device.upper()) and 'DmlExecutionProvider' in ort.get_available_providers():
                 model.predictor.model.session = ort.InferenceSession(
                     model_path,
                     providers=['DmlExecutionProvider', 'CPUExecutionProvider']

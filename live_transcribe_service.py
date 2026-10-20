@@ -33,10 +33,16 @@ def main():
     model_path = args.model_dir
     if not os.path.isabs(model_path) or not os.path.exists(os.path.join(model_path, "openvino_encoder_model.xml")):
         cur = script_dir
+        found = False
         for _ in range(6):
-            cand = os.path.abspath(os.path.join(cur, "models", "whisper-small-fp16-ov"))
-            if os.path.isdir(cand) and os.path.exists(os.path.join(cand, "openvino_encoder_model.xml")):
-                model_path = cand
+            # small (meilleur) puis base puis tiny : on prend le premier modèle réellement installé
+            for name in ("whisper-small-fp16-ov", "whisper-base-fp16-ov", "whisper-tiny-fp16-ov"):
+                cand = os.path.abspath(os.path.join(cur, "models", name))
+                if os.path.isdir(cand) and os.path.exists(os.path.join(cand, "openvino_encoder_model.xml")):
+                    model_path = cand
+                    found = True
+                    break
+            if found:
                 break
             parent = os.path.dirname(cur)
             if parent == cur: break

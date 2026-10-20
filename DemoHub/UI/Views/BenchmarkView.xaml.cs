@@ -746,16 +746,7 @@ public partial class BenchmarkView : UserControl, IDisposable
 
     private static string GetPythonExecutable()
     {
-        string cur = AppDomain.CurrentDomain.BaseDirectory;
-        for (int i = 0; i < 6; i++)
-        {
-            string venvPy = System.IO.Path.Combine(cur, ".venv", "Scripts", "python.exe");
-            if (File.Exists(venvPy)) return venvPy;
-            string? parent = Directory.GetParent(cur)?.FullName;
-            if (parent == null || parent == cur) break;
-            cur = parent;
-        }
-        return "python";
+        return CopilotPlusDemoHub.Core.PythonPathHelper.GetPythonExe();
     }
 
     public void Dispose()

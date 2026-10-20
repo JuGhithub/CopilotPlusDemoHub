@@ -147,15 +147,20 @@ class McpLocalServer:
         try:
             import openvino as ov
             self.ov_core = ov.Core()
-            cache_dir = find_file(os.path.join("models", "npu_cache"))
-            os.makedirs(cache_dir, exist_ok=True)
-            self.ov_core.set_property('NPU', {'CACHE_DIR': cache_dir})
             if "NPU" in self.ov_core.available_devices:
+                cache_dir = find_file(os.path.join("models", "npu_cache"))
+                os.makedirs(cache_dir, exist_ok=True)
+                self.ov_core.set_property('NPU', {'CACHE_DIR': cache_dir})
                 self.npu_available = True
         except Exception:
             self.ov_core = None
 
-        self.providers = ['DmlExecutionProvider', 'CPUExecutionProvider'] if self.device in ('GPU', 'AUTO') else ['CPUExecutionProvider']
+        try:
+            import onnxruntime as _ort
+            _has_dml = 'DmlExecutionProvider' in _ort.get_available_providers()
+        except Exception:
+            _has_dml = False
+        self.providers = ['DmlExecutionProvider', 'CPUExecutionProvider'] if (_has_dml and self.device in ('GPU', 'NPU', 'AUTO')) else ['CPUExecutionProvider']
         self.dml_lock = threading.Lock()
         self._load_lock = threading.Lock()
         self._models_cache = {}

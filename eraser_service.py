@@ -257,7 +257,7 @@ def get_or_compile_model(model_path, engine, requested_device):
         import onnxruntime as ort
         is_olive = engine == "onnx_olive"
         target_device = (requested_device or "GPU").upper()
-        providers = ['DmlExecutionProvider', 'CPUExecutionProvider'] if target_device in ("GPU", "NPU", "AUTO") else ['CPUExecutionProvider']
+        providers = ['DmlExecutionProvider', 'CPUExecutionProvider'] if (target_device in ("GPU", "NPU", "AUTO") and 'DmlExecutionProvider' in ort.get_available_providers()) else ['CPUExecutionProvider']
         sess_opts = ort.SessionOptions()
         sess_opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
         sess = ort.InferenceSession(model_path, sess_opts, providers=providers)

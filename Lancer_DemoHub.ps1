@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Copilot+ PC Demo Hub - Lanceur PowerShell (.PS1)
 .DESCRIPTION
@@ -85,6 +85,9 @@ if ($foundryInstalled) {
     if (-not $procName) { $procName = $env:PROCESSOR_IDENTIFIER }
 
     $loaded = $false
+    # Alias universel : Foundry Local choisit lui-même la meilleure variante (NPU/GPU/CPU) pour ce matériel
+    Write-Host "      * Modèle Phi-4-mini [variante optimale détectée par Foundry]..." -ForegroundColor Yellow
+    try { & foundry model load phi-4-mini 2>$null | Out-Null; $loaded = $true } catch {}
     if ($procName -match "Intel") {
         Write-Host "      * Modèle NPU [Intel AI Boost]..." -ForegroundColor Yellow
         try { & foundry model load phi-4-mini-instruct-openvino-npu 2>$null | Out-Null; $loaded = $true } catch {}
