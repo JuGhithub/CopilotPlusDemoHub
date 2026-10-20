@@ -7,6 +7,7 @@ import numpy as np
 import soundfile as sf
 import openvino_genai as ovg
 from speaker_service import SpeakerManager
+from lang_utils import detect_language, lang_code, whisper_translate_to_english
 
 def main():
     parser = argparse.ArgumentParser(description="Real OpenVINO Whisper Transcription & Speaker Diarization Service")
@@ -14,7 +15,9 @@ def main():
     parser.add_argument("--device", default="NPU", choices=["NPU", "GPU", "CPU"], help="Hardware accelerator")
     parser.add_argument("--language", default="<|fr|>", help="Language token, e.g. <|fr|> or <|en|>")
     parser.add_argument("--model_dir", default="models/whisper-small-fp16-ov", help="Path to OpenVINO Whisper model")
+    parser.add_argument("--translate_to", default="none", help="Langue cible de traduction Whisper ('en') ou 'none'. Les autres langues sont traduites côté application (LLM).")
     args = parser.parse_args()
+    translate_to = (args.translate_to or "none").strip().lower()
 
     # Ensure UTF-8 output
     sys.stdout.reconfigure(encoding="utf-8")
@@ -130,8 +133,10 @@ def main():
 
         results = pipe.generate(audio.tolist(), config)
         infer_time_ms = int((time.perf_counter() - infer_start) * 1000)
-        det = getattr(results, "language", None)
-        detected_lang = str(det).replace("<|", "").replace("|>", "").strip() if det else ("fr" if config.language and "fr" in str(config.language) else "en")
+        # openvino_genai n'expose pas la langue détectée : langue forcée, sinon déduite du texte transcrit
+        forced_lang = lang_code(config.language)
+        full_text_guess = " ".join(c.text for c in results.chunks) if hasattr(results, "chunks") and results.chunks else str(results)
+        detected_lang = forced_lang if forced_lang else detect_language(full_text_guess, fallback="fr")
 
         accumulated_text = ""
         if hasattr(results, "chunks") and results.chunks:
@@ -141,6 +146,19 @@ def main():
                     continue
                 accumulated_text += " " + text
 
+                # Langue de la phrase (mélange FR/EN possible) + traduction Whisper vers l'anglais
+                chunk_lang = forced_lang if forced_lang else detect_language(text, fallback=detected_lang)
+                translation = None
+                translation_lang = None
+                if translate_to == "en" and chunk_lang != "en":
+                    ts_i = max(0, int(chunk.start_ts * 16000))
+                    te_i = min(len(audio), int(chunk.end_ts * 16000))
+                    if te_i > ts_i:
+                        translation = whisper_translate_to_english(pipe, audio[ts_i:te_i].tolist(), chunk_lang)
+                        if translation:
+                            translation_lang = "en"
+
+                is_tpm_certified = False
                 spk_id = "spk_1"
                 spk_name = "Intervenant 1"
                 spk_color = "#3B82F6"
@@ -173,8 +191,11 @@ def main():
                     "is_tpm_certified": is_tpm_certified,
                     "confidence": confidence,
                     "embedding": embedding,
+                    "detected_language": chunk_lang,
+                    "translation": translation,
+                    "translation_lang": translation_lang,
                     "text": text
-                }), flush=True)
+                }, ensure_ascii=False), flush=True)
         else:
             accumulated_text = str(results).strip()
             spk_id = "spk_1"

@@ -41,6 +41,9 @@ public partial class AudioStudioView : UserControl, IDisposable
     private readonly DispatcherTimer _telemetryTimer;
 
     private string _fullAccumulatedTranscript = string.Empty;
+    private string _fullTranslatedTranscript = string.Empty;
+    private string _translateTarget = "none";
+    private readonly SemaphoreSlim _translateLock = new(1, 1);
 
     private class TranscriptSegmentData
     {
@@ -266,6 +269,16 @@ public partial class AudioStudioView : UserControl, IDisposable
     }
 
     #region Real-Time Live Microphone Streaming Transcription & Diarization
+    private static string LangFlag(string langCode) => (langCode ?? "").ToLowerInvariant() switch
+    {
+        "fr" => "🇫🇷",
+        "en" => "🇬🇧",
+        "es" => "🇪🇸",
+        "de" => "🇩🇪",
+        "it" => "🇮🇹",
+        _ => "🌐"
+    };
+
     private string FormatLanguageFriendlyName(string langCode)
     {
         return langCode.ToLowerInvariant() switch
@@ -277,6 +290,54 @@ public partial class AudioStudioView : UserControl, IDisposable
             "it" => "🇮🇹 Italiano",
             _ => $"🌐 {langCode.ToUpperInvariant()}"
         };
+    }
+
+    private void CmbTranslate_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_isViewLoaded) return;
+        if (CmbTranslate.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+        {
+            _translateTarget = tag;
+            if (_isLiveActive && _liveProcess != null && !_liveProcess.HasExited)
+            {
+                try
+                {
+                    _liveProcess.StandardInput.WriteLine($"translate {tag}");
+                    _liveProcess.StandardInput.Flush();
+                }
+                catch { }
+            }
+        }
+    }
+
+    private static string LangNameEnglish(string code) => code.ToLowerInvariant() switch
+    {
+        "fr" => "French",
+        "en" => "English",
+        "es" => "Spanish",
+        "de" => "German",
+        "it" => "Italian",
+        _ => code
+    };
+
+    /// <summary>Traduction locale via Phi-4-mini (Foundry Local), sérialisée pour ne pas saturer le NPU.</summary>
+    private async Task<string> TranslateWithLlmAsync(string text, string targetLang)
+    {
+        await _translateLock.WaitAsync();
+        try
+        {
+            string silicon = _selectedSilicon.ToString();
+            var model = await _foundryClient.GetBestModelAsync("phi-4-mini", silicon);
+            string system =
+                $"You are a professional interpreter. Translate the user's text into {LangNameEnglish(targetLang)}. " +
+                "Output ONLY the translation: no quotes, no comments, no explanations, keep the meaning and tone.";
+            var result = await _foundryClient.AskAsync(model, system, text, temperature: 0.1, maxTokens: 400);
+            return result.Content.Trim().Trim('"');
+        }
+        finally
+        {
+            _translateLock.Release();
+        }
     }
 
     private void CmbLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -340,7 +401,7 @@ public partial class AudioStudioView : UserControl, IDisposable
             var psi = new ProcessStartInfo
             {
                 FileName = PythonPathHelper.GetPythonExe(),
-                Arguments = $"\"{scriptPath}\" --output \"{_liveAudioPath}\" --device {deviceStr} --language \"{selectedLang}\"",
+                Arguments = $"\"{scriptPath}\" --output \"{_liveAudioPath}\" --device {deviceStr} --language \"{selectedLang}\" --translate_to {_translateTarget}",
                 WorkingDirectory = workingDir,
                 UseShellExecute = false,
                 RedirectStandardInput = true,
@@ -369,6 +430,7 @@ public partial class AudioStudioView : UserControl, IDisposable
             StackTranscriptSegments.Children.Clear();
             _transcriptSegments.Clear();
             _fullAccumulatedTranscript = string.Empty;
+        _fullTranslatedTranscript = string.Empty;
 
             TxtTranscriptPlaceholder.Visibility = Visibility.Visible;
             TxtTranscriptPlaceholder.Text = string.Format(_localizer.Get("Audio_InitializingPrompt"), deviceStr);
@@ -438,6 +500,7 @@ public partial class AudioStudioView : UserControl, IDisposable
                                 {
                                     detectedLang = detLangProp.GetString() ?? "";
                                 }
+                                string? translation = (root.TryGetProperty("translation", out var trProp) && trProp.ValueKind == JsonValueKind.String) ? trProp.GetString() : null;
 
                                 List<double>? embedding = null;
                                 if (root.TryGetProperty("embedding", out var embProp) && embProp.ValueKind == JsonValueKind.Array)
@@ -455,7 +518,7 @@ public partial class AudioStudioView : UserControl, IDisposable
                                     Dispatcher.Invoke(() =>
                                     {
                                         TxtTranscriptPlaceholder.Visibility = Visibility.Collapsed;
-                                        AddTranscriptSegmentCard(startTs, endTs, text, speakerId, speakerName, speakerColor, isKnown, conf, embedding, _liveAudioPath);
+                                        AddTranscriptSegmentCard(startTs, endTs, text, speakerId, speakerName, speakerColor, isKnown, conf, embedding, _liveAudioPath, detectedLang, translation);
                                         ScrollerTranscript.ScrollToEnd();
 
                                         if (!string.IsNullOrWhiteSpace(detectedLang))
@@ -584,6 +647,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         LblTranscriptionStatus.Text = string.Format(_localizer.Get("Audio_StatusInitializing"), deviceStr);
 
         _fullAccumulatedTranscript = string.Empty;
+        _fullTranslatedTranscript = string.Empty;
         _accumulatedJoules = 0.0;
         _energyStopwatch.Restart();
 
@@ -606,7 +670,7 @@ public partial class AudioStudioView : UserControl, IDisposable
                 var psi = new ProcessStartInfo
                 {
                     FileName = PythonPathHelper.GetPythonExe(),
-                    Arguments = $"\"{scriptPath}\" --file \"{_currentAudioPath}\" --device {deviceStr} --language \"{selectedLang}\"",
+                    Arguments = $"\"{scriptPath}\" --file \"{_currentAudioPath}\" --device {deviceStr} --language \"{selectedLang}\" --translate_to {_translateTarget}",
                     WorkingDirectory = workingDir,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
@@ -669,6 +733,8 @@ public partial class AudioStudioView : UserControl, IDisposable
                             string speakerColor = root.TryGetProperty("speaker_color", out var spkColProp) ? spkColProp.GetString() ?? "#3B82F6" : "#3B82F6";
                             bool isKnown = root.TryGetProperty("is_known", out var knownProp) && knownProp.GetBoolean();
                             double conf = root.TryGetProperty("confidence", out var confProp) ? confProp.GetDouble() : 1.0;
+                            string chunkLang = root.TryGetProperty("detected_language", out var chunkLangProp) ? chunkLangProp.GetString() ?? "" : "";
+                            string? chunkTranslation = (root.TryGetProperty("translation", out var chunkTrProp) && chunkTrProp.ValueKind == JsonValueKind.String) ? chunkTrProp.GetString() : null;
 
                             List<double>? embedding = null;
                             if (root.TryGetProperty("embedding", out var embProp) && embProp.ValueKind == JsonValueKind.Array)
@@ -685,7 +751,7 @@ public partial class AudioStudioView : UserControl, IDisposable
                                 _fullAccumulatedTranscript += $" [{speakerName}] " + text;
                                 Dispatcher.Invoke(() =>
                                 {
-                                    AddTranscriptSegmentCard(startTs, endTs, text, speakerId, speakerName, speakerColor, isKnown, conf, embedding, _currentAudioPath);
+                                    AddTranscriptSegmentCard(startTs, endTs, text, speakerId, speakerName, speakerColor, isKnown, conf, embedding, _currentAudioPath, chunkLang, chunkTranslation);
                                     ScrollerTranscript.ScrollToEnd();
                                 });
                             }
@@ -783,7 +849,9 @@ public partial class AudioStudioView : UserControl, IDisposable
         bool isKnown,
         double confidence,
         List<double>? embedding = null,
-        string audioFilePath = "")
+        string audioFilePath = "",
+        string detectedLang = "",
+        string? translation = null)
     {
         int startM = (int)startSec / 60;
         int startS = (int)startSec % 60;
@@ -865,9 +933,10 @@ public partial class AudioStudioView : UserControl, IDisposable
             CornerRadius = new CornerRadius(4),
             Padding = new Thickness(6, 2, 6, 2)
         };
+        string langChip = string.IsNullOrWhiteSpace(detectedLang) ? "" : $"{LangFlag(detectedLang)} {detectedLang.ToUpperInvariant()}   ";
         timeBadge.Child = new TextBlock
         {
-            Text = timeTag,
+            Text = langChip + timeTag,
             FontSize = 10,
             FontWeight = FontWeights.Bold,
             Foreground = (Brush)FindResource("CopilotCyanBrush")
@@ -889,7 +958,70 @@ public partial class AudioStudioView : UserControl, IDisposable
             LineHeight = 18
         };
         mainStack.Children.Add(txtBlock);
+
+        // Traduction (Whisper natif vers l'anglais, ou Phi-4-mini local pour les autres langues)
+        string target = _translateTarget;
+        bool hasTranslation = !string.IsNullOrWhiteSpace(translation);
+        bool needsLlm = !hasTranslation && target != "none" && !string.IsNullOrWhiteSpace(text)
+                        && !string.Equals(detectedLang, target, StringComparison.OrdinalIgnoreCase);
+        TextBlock? trBlock = null;
+        if (hasTranslation || needsLlm)
+        {
+            string trLang = hasTranslation ? "en" : target;
+            string trPrefix = $"🌐 → {LangFlag(trLang)} {trLang.ToUpperInvariant()} : ";
+            trBlock = new TextBlock
+            {
+                Text = hasTranslation ? trPrefix + translation : trPrefix + "⏳ …",
+                FontSize = 12,
+                FontStyle = FontStyles.Italic,
+                Foreground = (Brush)FindResource("CopilotCyanBrush"),
+                TextWrapping = TextWrapping.Wrap,
+                LineHeight = 17,
+                Margin = new Thickness(0, 6, 0, 0)
+            };
+            mainStack.Children.Add(trBlock);
+        }
         card.Child = mainStack;
+
+        if (target != "none")
+        {
+            if (hasTranslation)
+            {
+                _fullTranslatedTranscript += $" [{speakerName}] " + translation;
+            }
+            else if (!needsLlm)
+            {
+                _fullTranslatedTranscript += $" [{speakerName}] " + text; // déjà dans la langue cible
+            }
+            else
+            {
+                string capturedTarget = target;
+                string capturedPrefix = $"🌐 → {LangFlag(capturedTarget)} {capturedTarget.ToUpperInvariant()} : ";
+                _ = Task.Run(async () =>
+                {
+                    string translated;
+                    try
+                    {
+                        translated = await TranslateWithLlmAsync(text, capturedTarget);
+                    }
+                    catch (Exception ex)
+                    {
+                        translated = string.Empty;
+                        Dispatcher.Invoke(() => trBlock!.Text = capturedPrefix + (_localizer.CurrentLanguage == "en"
+                            ? $"⚠️ Translation unavailable ({ex.Message})"
+                            : $"⚠️ Traduction indisponible ({ex.Message})"));
+                    }
+                    if (!string.IsNullOrWhiteSpace(translated))
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            trBlock!.Text = capturedPrefix + translated;
+                            _fullTranslatedTranscript += $" [{speakerName}] " + translated;
+                        });
+                    }
+                });
+            }
+        }
 
         var segData = new TranscriptSegmentData
         {
@@ -1568,7 +1700,13 @@ public partial class AudioStudioView : UserControl, IDisposable
         bool isEn = _localizer.CurrentLanguage == "en";
         if (!string.IsNullOrWhiteSpace(_fullAccumulatedTranscript))
         {
-            Clipboard.SetText(_fullAccumulatedTranscript.Trim());
+            string clip = _fullAccumulatedTranscript.Trim();
+            if (_translateTarget != "none" && !string.IsNullOrWhiteSpace(_fullTranslatedTranscript))
+            {
+                string head = isEn ? $"--- Translation ({_translateTarget.ToUpperInvariant()}) ---" : $"--- Traduction ({_translateTarget.ToUpperInvariant()}) ---";
+                clip += "\n\n" + head + "\n" + _fullTranslatedTranscript.Trim();
+            }
+            Clipboard.SetText(clip);
             MessageBox.Show(
                 isEn ? "Full transcript copied to clipboard!" : "Transcription complète copiée dans le presse-papier !",
                 isEn ? "Success" : "Succès",
@@ -1748,6 +1886,11 @@ public partial class AudioStudioView : UserControl, IDisposable
             LblTpmBadge.ToolTip = _localizer.Get("Audio_TpmTooltip");
         }
         if (LblAudioLanguageLabel != null) LblAudioLanguageLabel.Text = _localizer.Get("Audio_LangLabel");
+        if (LblAudioTranslateLabel != null) LblAudioTranslateLabel.Text = (_localizer.CurrentLanguage == "en") ? "Translate:" : "Traduire :";
+        if (CmbTrItemNone != null) CmbTrItemNone.Content = (_localizer.CurrentLanguage == "en") ? "🚫 None" : "🚫 Aucune";
+        if (CmbTranslate != null) CmbTranslate.ToolTip = (_localizer.CurrentLanguage == "en")
+            ? "Translate each sentence into the chosen language (English: native Whisper; other languages: local Phi-4-mini)"
+            : "Traduit chaque phrase dans la langue choisie (anglais : Whisper natif ; autres langues : Phi-4-mini local)";
 
         // Top bar buttons
         if (BtnLiveTranscribe != null && !_isLiveActive)

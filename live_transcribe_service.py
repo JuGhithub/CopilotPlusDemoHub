@@ -11,6 +11,7 @@ import sounddevice as sd
 import soundfile as sf
 import openvino_genai as ovg
 from speaker_service import SpeakerManager
+from lang_utils import detect_language, lang_code, whisper_translate_to_english
 
 def main():
     parser = argparse.ArgumentParser(description="Real-Time Streaming Speech Transcription & Diarization")
@@ -19,6 +20,7 @@ def main():
     parser.add_argument("--language", default="<|fr|>", help="Language token (<|fr|>, <|en|>, etc.)")
     parser.add_argument("--model_dir", default="models/whisper-small-fp16-ov", help="Path to OpenVINO Whisper model")
     parser.add_argument("--samplerate", type=int, default=16000, help="Audio sample rate (default 16000)")
+    parser.add_argument("--translate_to", default="none", help="Langue cible de traduction Whisper ('en') ou 'none'. Les autres langues sont traduites côté application (LLM).")
     args = parser.parse_args()
 
     sys.stdout.reconfigure(encoding="utf-8")
@@ -156,6 +158,8 @@ def main():
         print(json.dumps({"type": "error", "message": f"Microphone stream error: {e}"}), flush=True)
         sys.exit(1)
 
+    translate_state = {"to": (args.translate_to or "none").strip().lower()}
+
     # Stdin thread for clean stop
     def stdin_listener():
         while not stop_event.is_set():
@@ -172,6 +176,9 @@ def main():
                         pass
                     stop_event.set()
                     break
+                elif cmd.startswith("translate "):
+                    translate_state["to"] = cmd.split(maxsplit=1)[1].strip().lower()
+                    print(json.dumps({"type": "translate_updated", "translate_to": translate_state["to"]}), flush=True)
                 elif cmd.startswith("language "):
                     parts = line.strip().split(maxsplit=1)
                     if len(parts) > 1:
@@ -211,11 +218,9 @@ def main():
         try:
             res = pipe.generate(audio_chunk.tolist(), config)
             text = str(res).strip()
-            det = getattr(res, "language", None)
-            if det:
-                detected_lang = str(det).replace("<|", "").replace("|>", "").strip()
-            elif config.language:
-                detected_lang = str(config.language).replace("<|", "").replace("|>", "").strip()
+            # openvino_genai n'expose pas la langue détectée : langue forcée, sinon déduite du texte transcrit
+            forced = lang_code(config.language)
+            detected_lang = forced if forced else detect_language(text, fallback="fr")
         except Exception as ex:
             text = ""
 
@@ -246,6 +251,14 @@ def main():
             except Exception:
                 is_tpm_certified = False
 
+        # Traduction native Whisper vers l'anglais (les autres cibles sont traduites par le LLM côté application)
+        translation = None
+        translation_lang = None
+        if translate_state["to"] == "en" and detected_lang != "en":
+            translation = whisper_translate_to_english(pipe, audio_chunk.tolist(), detected_lang)
+            if translation:
+                translation_lang = "en"
+
         print(json.dumps({
             "type": "live_segment",
             "start_ts": start_sec,
@@ -259,6 +272,8 @@ def main():
             "embedding": embedding,
             "infer_ms": infer_ms,
             "detected_language": detected_lang,
+            "translation": translation,
+            "translation_lang": translation_lang,
             "text": clean_text
         }, ensure_ascii=False), flush=True)
 

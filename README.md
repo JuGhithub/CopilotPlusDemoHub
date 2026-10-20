@@ -85,7 +85,9 @@ flowchart TD
 ---
 
 ### 4. 🎙️ Audio Studio & Locuteurs (STT & Biométrie Vocale)
-- **Transcription** : Modèles `Whisper-Tiny` et `Whisper-Base` quantifiés FP16 pour une retranscription vocale ultra-rapide en français et en anglais.
+- **Transcription** : Modèles `Whisper-Tiny`, `Whisper-Base` et `Whisper-Small` quantifiés FP16 pour une retranscription vocale ultra-rapide.
+- **Bilingue FR / EN** : détection automatique de la langue **phrase par phrase** (on peut alterner français et anglais en parlant), ou langue forcée.
+- **Traduction locale** : chaque phrase peut être traduite vers FR / EN / ES / DE / IT (anglais via la tâche native Whisper, autres langues via Phi-4-mini local). La copie du texte inclut original + traduction.
 - **Biométrie du Locuteur** : Réseau neuronal profond `VoxCeleb ECAPA-TDNN ONNX` extrayant l'empreinte acoustique unique de chaque participant.
 - **Sécurité TPM 2.0** : Scellement cryptographique des profils biométriques dans le matériel Windows via DPAPI / TPM.
 

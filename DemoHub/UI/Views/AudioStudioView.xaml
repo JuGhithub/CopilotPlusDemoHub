@@ -122,6 +122,16 @@
                                     <ComboBoxItem Content="🇩🇪 Deutsch" Tag="&lt;|de|&gt;" />
                                     <ComboBoxItem Content="🇮🇹 Italiano" Tag="&lt;|it|&gt;" />
                                 </ComboBox>
+                                <TextBlock x:Name="LblAudioTranslateLabel" Text="Traduire :" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="10,0,4,0" />
+                                <ComboBox x:Name="CmbTranslate" SelectedIndex="0" Width="150" Height="26" Background="#1E293B" Foreground="White" BorderBrush="{StaticResource CardBorderBrush}" SelectionChanged="CmbTranslate_SelectionChanged"
+                                          ToolTip="Traduit chaque phrase dans la langue choisie (anglais : Whisper natif ; autres langues : Phi-4-mini local)">
+                                    <ComboBoxItem x:Name="CmbTrItemNone" Content="🚫 Aucune" Tag="none" />
+                                    <ComboBoxItem Content="→ 🇫🇷 Français" Tag="fr" />
+                                    <ComboBoxItem Content="→ 🇬🇧 English" Tag="en" />
+                                    <ComboBoxItem Content="→ 🇪🇸 Español" Tag="es" />
+                                    <ComboBoxItem Content="→ 🇩🇪 Deutsch" Tag="de" />
+                                    <ComboBoxItem Content="→ 🇮🇹 Italiano" Tag="it" />
+                                </ComboBox>
                             </StackPanel>
                         </Grid>
 
