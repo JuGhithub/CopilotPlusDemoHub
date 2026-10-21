@@ -30,6 +30,9 @@ public partial class AudioStudioView : UserControl, IDisposable
     private readonly Stopwatch _energyStopwatch = new();
     private Process? _transcribeProcess;
     private CancellationTokenSource? _transcribeCts;
+    private Process? _whisperDaemonProcess;
+    private string _whisperDaemonDevice = string.Empty;
+    private readonly object _whisperDaemonLock = new();
 
     private Process? _liveProcess;
     private bool _isLiveActive = false;
@@ -252,6 +255,103 @@ public partial class AudioStudioView : UserControl, IDisposable
         {
             LblSummaryTitle.Text = string.Format(_localizer.Get("Audio_SummaryHeader"), mode);
         }
+
+        if (!_isLiveActive && _transcribeProcess == null)
+        {
+            WarmUpWhisperDaemon(mode == SiliconMode.NPU ? "NPU" : "GPU");
+        }
+    }
+
+    private Process EnsureWhisperDaemon(string deviceStr)
+    {
+        lock (_whisperDaemonLock)
+        {
+            if (_whisperDaemonProcess != null &&
+                !_whisperDaemonProcess.HasExited &&
+                string.Equals(_whisperDaemonDevice, deviceStr, StringComparison.OrdinalIgnoreCase))
+            {
+                return _whisperDaemonProcess;
+            }
+
+            StopWhisperDaemon();
+
+            string scriptPath = FindRootFile("transcribe_service.py");
+            string workingDir = System.IO.Path.GetDirectoryName(scriptPath) ?? AppDomain.CurrentDomain.BaseDirectory;
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = PythonPathHelper.GetPythonExe(),
+                Arguments = $"\"{scriptPath}\" --daemon --device {deviceStr}",
+                WorkingDirectory = workingDir,
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                StandardInputEncoding = System.Text.Encoding.UTF8,
+                StandardOutputEncoding = System.Text.Encoding.UTF8
+            };
+
+            var proc = new Process { StartInfo = psi };
+            proc.ErrorDataReceived += (s, e) =>
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Whisper Daemon Stderr] {e.Data}");
+                }
+            };
+            proc.Start();
+            proc.BeginErrorReadLine();
+
+            _whisperDaemonProcess = proc;
+            _whisperDaemonDevice = deviceStr;
+            return proc;
+        }
+    }
+
+    private void WarmUpWhisperDaemon(string deviceStr)
+    {
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                EnsureWhisperDaemon(deviceStr);
+            }
+            catch { }
+        });
+    }
+
+    private void StopWhisperDaemon()
+    {
+        lock (_whisperDaemonLock)
+        {
+            if (_whisperDaemonProcess != null)
+            {
+                try
+                {
+                    if (!_whisperDaemonProcess.HasExited)
+                    {
+                        try
+                        {
+                            _whisperDaemonProcess.StandardInput.WriteLine("stop");
+                            _whisperDaemonProcess.StandardInput.Flush();
+                        }
+                        catch { }
+                        if (!_whisperDaemonProcess.WaitForExit(500))
+                        {
+                            _whisperDaemonProcess.Kill(entireProcessTree: true);
+                        }
+                    }
+                }
+                catch { }
+                finally
+                {
+                    try { _whisperDaemonProcess.Dispose(); } catch { }
+                    _whisperDaemonProcess = null;
+                    _whisperDaemonDevice = string.Empty;
+                }
+            }
+        }
     }
 
     #region Real-Time Live Microphone Streaming Transcription & Diarization
@@ -365,6 +465,7 @@ public partial class AudioStudioView : UserControl, IDisposable
     private void StartLiveTranscription()
     {
         StopAudio();
+        StopWhisperDaemon();
 
         string recDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Audio", "recordings");
         Directory.CreateDirectory(recDir);
@@ -596,6 +697,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         BtnStartTranscription.IsEnabled = true;
         BtnPlayPause.IsEnabled = true;
         _energyStopwatch.Stop();
+        WarmUpWhisperDaemon((_selectedSilicon == SiliconMode.NPU) ? "NPU" : "GPU");
 
         if (File.Exists(_liveAudioPath))
         {
@@ -649,39 +751,21 @@ public partial class AudioStudioView : UserControl, IDisposable
         _transcribeCts = new CancellationTokenSource();
         var token = _transcribeCts.Token;
 
-        string scriptPath = FindRootFile("transcribe_service.py");
-        string workingDir = System.IO.Path.GetDirectoryName(scriptPath) ?? AppDomain.CurrentDomain.BaseDirectory;
-
         await Task.Run(() =>
         {
             try
             {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = PythonPathHelper.GetPythonExe(),
-                    Arguments = $"\"{scriptPath}\" --file \"{_currentAudioPath}\" --device {deviceStr} --language \"{selectedLang}\" --translate_to {_translateTarget}",
-                    WorkingDirectory = workingDir,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    StandardOutputEncoding = System.Text.Encoding.UTF8
-                };
-
-                using var proc = new Process { StartInfo = psi };
+                var proc = EnsureWhisperDaemon(deviceStr);
                 _transcribeProcess = proc;
-                string lastStdErr = string.Empty;
-                proc.ErrorDataReceived += (s, e) =>
-                {
-                    if (!string.IsNullOrWhiteSpace(e.Data))
-                    {
-                        lastStdErr = e.Data;
-                        System.Diagnostics.Debug.WriteLine($"[Whisper Stderr] {e.Data}");
-                    }
-                };
 
-                proc.Start();
-                proc.BeginErrorReadLine();
+                string jobJson = JsonSerializer.Serialize(new
+                {
+                    file = _currentAudioPath,
+                    language = selectedLang,
+                    translate_to = _translateTarget
+                });
+                proc.StandardInput.WriteLine(jobJson);
+                proc.StandardInput.Flush();
 
                 string? line;
                 while ((line = proc.StandardOutput.ReadLine()) != null)
@@ -792,6 +876,7 @@ public partial class AudioStudioView : UserControl, IDisposable
                                 latencyMs: inferTimeMs,
                                 customPowerWatts: snap.DischargeRateWatts
                             );
+                            break;
                         }
                         else if (type == "error")
                         {
@@ -800,6 +885,7 @@ public partial class AudioStudioView : UserControl, IDisposable
                             {
                                 LblTranscriptionStatus.Text = $"⚠️ Erreur Whisper : {errMsg}";
                             });
+                            break;
                         }
                     }
                     catch
@@ -807,14 +893,6 @@ public partial class AudioStudioView : UserControl, IDisposable
                     }
                 }
 
-                proc.WaitForExit();
-                if (proc.ExitCode != 0 && string.IsNullOrWhiteSpace(_fullAccumulatedTranscript))
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        LblTranscriptionStatus.Text = $"⚠️ Processus terminé avec code {proc.ExitCode} : {lastStdErr}";
-                    });
-                }
                 _transcribeProcess = null;
             }
             catch (Exception ex)
@@ -2079,6 +2157,7 @@ public partial class AudioStudioView : UserControl, IDisposable
             }
         }
 
+        StopWhisperDaemon();
         _playbackTimer.Stop();
         _telemetryTimer.Stop();
         _mediaPlayer.Close();

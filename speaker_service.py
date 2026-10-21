@@ -127,6 +127,18 @@ class SpeakerManager:
 
         self.model_path = model_path
         core = ov.Core()
+        cache_dir = os.path.abspath(os.path.join(self.script_dir, "cache"))
+        if not os.path.exists(cache_dir):
+            for plevel in range(1, 7):
+                c = os.path.abspath(os.path.join(self.script_dir, *(['..'] * plevel), "cache"))
+                if os.path.isdir(c):
+                    cache_dir = c
+                    break
+        os.makedirs(cache_dir, exist_ok=True)
+        try:
+            core.set_property({"CACHE_DIR": cache_dir})
+        except Exception:
+            pass
         model = core.read_model(self.model_path)
         requested = (self.device or "CPU").upper()
         order = [requested] + [d for d in ("NPU", "GPU", "CPU") if d != requested]

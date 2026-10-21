@@ -3,39 +3,90 @@ import json
 import os
 import sys
 import time
+from math import gcd
 import numpy as np
 import soundfile as sf
+try:
+    import scipy.signal
+except Exception:
+    scipy = None
 import openvino_genai as ovg
 from speaker_service import SpeakerManager
 from lang_utils import detect_language, lang_code, whisper_translate_to_english
 
-def main():
-    parser = argparse.ArgumentParser(description="Real OpenVINO Whisper Transcription & Speaker Diarization Service")
-    parser.add_argument("--file", required=True, help="Path to audio file (WAV, MP3, FLAC, etc.)")
-    parser.add_argument("--device", default="NPU", choices=["NPU", "GPU", "CPU"], help="Hardware accelerator")
-    parser.add_argument("--language", default="<|fr|>", help="Language token, e.g. <|fr|> or <|en|>")
-    parser.add_argument("--model_dir", default="models/whisper-small-fp16-ov", help="Path to OpenVINO Whisper model")
-    parser.add_argument("--translate_to", default="none", help="Langue cible de traduction Whisper ('en') ou 'none'. Les autres langues sont traduites côté application (LLM).")
-    args = parser.parse_args()
-    translate_to = (args.translate_to or "none").strip().lower()
 
-    # Ensure UTF-8 output
-    sys.stdout.reconfigure(encoding="utf-8")
+def load_whisper_and_speaker(model_dir_arg, requested_device):
+    load_start = time.perf_counter()
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    model_path = model_dir_arg
+    if not os.path.isabs(model_path) or not os.path.exists(os.path.join(model_path, "openvino_encoder_model.xml")):
+        cur = script_dir
+        for _ in range(6):
+            for folder in ("whisper-small-fp16-ov", "whisper-base-fp16-ov", "whisper-tiny-fp16-ov"):
+                cand = os.path.abspath(os.path.join(cur, "models", folder))
+                if os.path.isdir(cand) and os.path.exists(os.path.join(cand, "openvino_encoder_model.xml")):
+                    model_path = cand
+                    break
+            else:
+                parent = os.path.dirname(cur)
+                if parent == cur:
+                    break
+                cur = parent
+                continue
+            break
 
-    if not os.path.exists(args.file):
-        print(json.dumps({"type": "error", "message": f"Audio file not found: {args.file}"}), flush=True)
+    cache_dir = os.path.abspath(os.path.join(script_dir, "cache"))
+    if not os.path.exists(cache_dir):
+        for parent_level in range(1, 6):
+            c = os.path.abspath(os.path.join(script_dir, *(['..'] * parent_level), "cache"))
+            if os.path.isdir(c):
+                cache_dir = c
+                break
+    os.makedirs(cache_dir, exist_ok=True)
+
+    target_device = requested_device
+    pipe = None
+    try:
+        pipe = ovg.WhisperPipeline(model_path, target_device, CACHE_DIR=cache_dir)
+    except Exception as e_initial:
+        fallback_devices = ["GPU", "CPU"] if target_device == "NPU" else ["CPU"]
+        for fb in fallback_devices:
+            try:
+                pipe = ovg.WhisperPipeline(model_path, fb, CACHE_DIR=cache_dir)
+                target_device = fb
+                break
+            except Exception:
+                pass
+        if pipe is None:
+            raise e_initial
+
+    spk_mgr = None
+    try:
+        spk_mgr = SpeakerManager()
+    except Exception as e:
+        print(json.dumps({"type": "warning", "message": f"Could not initialize SpeakerManager: {e}"}), flush=True)
+
+    effective_device = target_device
+    is_fallback = requested_device.upper() not in effective_device.upper()
+    load_time_ms = int((time.perf_counter() - load_start) * 1000)
+    return pipe, spk_mgr, os.path.basename(model_path), requested_device, effective_device, is_fallback, load_time_ms
+
+
+def transcribe_file(file_path, language_arg, translate_to_arg, pipe, spk_mgr, model_name, requested_device, effective_device, is_fallback, load_time_ms):
+    translate_to = (translate_to_arg or "none").strip().lower()
+
+    if not file_path or not os.path.exists(file_path):
+        print(json.dumps({"type": "error", "message": f"Audio file not found: {file_path}"}), flush=True)
         return
 
-    # 1. Load Audio
     try:
-        audio, sr = sf.read(args.file)
+        audio, sr = sf.read(file_path)
         if len(audio.shape) > 1:
-            audio = audio.mean(axis=1)  # Convert to mono
+            audio = audio.mean(axis=1)
         if sr != 16000:
             try:
-                import scipy.signal
-                num_samples = int(len(audio) * 16000 / sr)
-                audio = scipy.signal.resample(audio, num_samples).astype(np.float32)
+                g = gcd(16000, int(sr))
+                audio = scipy.signal.resample_poly(audio, 16000 // g, int(sr) // g).astype(np.float32)
             except Exception:
                 target_len = int(len(audio) * 16000 / sr)
                 audio = np.interp(
@@ -52,86 +103,28 @@ def main():
         print(json.dumps({"type": "error", "message": f"Error reading audio file: {str(e)}"}), flush=True)
         return
 
-    # 2. Initialize Speaker Manager
-    spk_mgr = None
-    try:
-        spk_mgr = SpeakerManager()
-    except Exception as e:
-        print(json.dumps({"type": "warning", "message": f"Could not initialize SpeakerManager: {e}"}), flush=True)
+    print(json.dumps({
+        "type": "model_loaded",
+        "device": effective_device,
+        "requested_device": requested_device,
+        "effective_device": effective_device,
+        "fallback": is_fallback,
+        "model": model_name,
+        "load_time_ms": load_time_ms
+    }), flush=True)
 
-    # 3. Initialize Whisper on Selected Silicon (NPU / GPU / CPU)
-    load_start = time.perf_counter()
-    try:
-        model_path = args.model_dir
-        if not os.path.isabs(model_path) or not os.path.exists(os.path.join(model_path, "openvino_encoder_model.xml")):
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            cur = script_dir
-            for _ in range(6):
-                cand_small = os.path.abspath(os.path.join(cur, "models", "whisper-small-fp16-ov"))
-                if os.path.isdir(cand_small) and os.path.exists(os.path.join(cand_small, "openvino_encoder_model.xml")):
-                    model_path = cand_small
-                    break
-                cand_base = os.path.abspath(os.path.join(cur, "models", "whisper-base-fp16-ov"))
-                if os.path.isdir(cand_base) and os.path.exists(os.path.join(cand_base, "openvino_encoder_model.xml")):
-                    model_path = cand_base
-                    break
-                cand_tiny = os.path.abspath(os.path.join(cur, "models", "whisper-tiny-fp16-ov"))
-                if os.path.isdir(cand_tiny) and os.path.exists(os.path.join(cand_tiny, "openvino_encoder_model.xml")):
-                    model_path = cand_tiny
-                    break
-                parent = os.path.dirname(cur)
-                if parent == cur:
-                    break
-                cur = parent
-        cache_dir = os.path.abspath(os.path.join(script_dir, "cache"))
-        if not os.path.exists(cache_dir):
-            for parent_level in range(1, 6):
-                c = os.path.abspath(os.path.join(script_dir, *(['..'] * parent_level), "cache"))
-                if os.path.isdir(c):
-                    cache_dir = c
-                    break
-        os.makedirs(cache_dir, exist_ok=True)
-
-        requested_device = args.device
-        target_device = args.device
-        pipe = None
-        try:
-            pipe = ovg.WhisperPipeline(model_path, target_device, CACHE_DIR=cache_dir)
-        except Exception as e_initial:
-            fallback_devices = ["GPU", "CPU"] if target_device == "NPU" else ["CPU"]
-            for fb in fallback_devices:
-                try:
-                    pipe = ovg.WhisperPipeline(model_path, fb)
-                    target_device = fb
-                    args.device = fb
-                    break
-                except Exception:
-                    pass
-            if pipe is None:
-                raise e_initial
-
-        effective_device = target_device
-        is_fallback = requested_device.upper() not in effective_device.upper()
-        load_time_ms = int((time.perf_counter() - load_start) * 1000)
-        print(json.dumps({
-            "type": "model_loaded",
-            "device": effective_device,
-            "requested_device": requested_device,
-            "effective_device": effective_device,
-            "fallback": is_fallback,
-            "model": os.path.basename(model_path),
-            "load_time_ms": load_time_ms
-        }), flush=True)
-    except Exception as e:
-        print(json.dumps({"type": "error", "message": f"Error loading model on {args.device}: {str(e)}"}), flush=True)
-        return
-
-    # 4. Transcribe with Speaker-Aware Turn Diarization
     infer_start = time.perf_counter()
     try:
+        if spk_mgr is not None:
+            try:
+                spk_mgr.profiles = spk_mgr._load_profiles()
+                spk_mgr.session_speakers = []
+            except Exception:
+                pass
+
         config = pipe.get_generation_config()
-        if args.language and args.language.lower() not in ("auto", "<|auto|>", "none", ""):
-            config.language = args.language if args.language.startswith("<|") else f"<|{args.language}|>"
+        if language_arg and language_arg.lower() not in ("auto", "<|auto|>", "none", ""):
+            config.language = language_arg if language_arg.startswith("<|") else f"<|{language_arg}|>"
         else:
             config.language = None
         config.task = "transcribe"
@@ -241,7 +234,82 @@ def main():
         }), flush=True)
 
     except Exception as e:
-        print(json.dumps({"type": "error", "message": f"Inference error on {args.device}: {str(e)}"}), flush=True)
+        print(json.dumps({"type": "error", "message": f"Inference error on {effective_device}: {str(e)}"}), flush=True)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Real OpenVINO Whisper Transcription & Speaker Diarization Service")
+    parser.add_argument("--file", required=False, help="Path to audio file (WAV, MP3, FLAC, etc.)")
+    parser.add_argument("--daemon", action="store_true", help="Keep Whisper pipeline warm in memory and accept JSON jobs on stdin")
+    parser.add_argument("--device", default="NPU", choices=["NPU", "GPU", "CPU"], help="Hardware accelerator")
+    parser.add_argument("--language", default="<|fr|>", help="Language token, e.g. <|fr|> or <|en|>")
+    parser.add_argument("--model_dir", default="models/whisper-small-fp16-ov", help="Path to OpenVINO Whisper model")
+    parser.add_argument("--translate_to", default="none", help="Langue cible de traduction Whisper ('en') ou 'none'.")
+    args = parser.parse_args()
+
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stdin.reconfigure(encoding="utf-8")
+
+    try:
+        pipe, spk_mgr, model_name, requested_device, effective_device, is_fallback, load_time_ms = load_whisper_and_speaker(args.model_dir, args.device)
+    except Exception as e:
+        print(json.dumps({"type": "error", "message": f"Error loading model on {args.device}: {str(e)}"}), flush=True)
+        return
+
+    if args.daemon:
+        print(json.dumps({
+            "type": "daemon_ready",
+            "device": effective_device,
+            "requested_device": requested_device,
+            "effective_device": effective_device,
+            "fallback": is_fallback,
+            "model": model_name,
+            "load_time_ms": load_time_ms
+        }), flush=True)
+
+        first_job_load_ms = 0
+        for raw_line in sys.stdin:
+            line = raw_line.strip()
+            if not line:
+                continue
+            if line.lower() in ("stop", "quit", "exit"):
+                break
+            try:
+                job = json.loads(line)
+                job_file = job.get("file", "")
+                job_lang = job.get("language", args.language)
+                job_tr = job.get("translate_to", args.translate_to)
+                transcribe_file(
+                    job_file,
+                    job_lang,
+                    job_tr,
+                    pipe,
+                    spk_mgr,
+                    model_name,
+                    requested_device,
+                    effective_device,
+                    is_fallback,
+                    first_job_load_ms
+                )
+            except Exception as ex:
+                print(json.dumps({"type": "error", "message": str(ex)}), flush=True)
+    else:
+        if not args.file:
+            print(json.dumps({"type": "error", "message": "Missing --file argument"}), flush=True)
+            return
+        transcribe_file(
+            args.file,
+            args.language,
+            args.translate_to,
+            pipe,
+            spk_mgr,
+            model_name,
+            requested_device,
+            effective_device,
+            is_fallback,
+            load_time_ms
+        )
+
 
 if __name__ == "__main__":
     main()
