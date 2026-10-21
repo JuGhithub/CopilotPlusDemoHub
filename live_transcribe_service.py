@@ -59,6 +59,7 @@ def main():
                 break
     os.makedirs(cache_dir, exist_ok=True)
 
+    requested_device = args.device
     target_device = args.device
     pipe = None
     try:
@@ -79,6 +80,9 @@ def main():
         if pipe is None:
             print(json.dumps({"type": "error", "message": f"Échec d'initialisation Whisper : {e_initial}"}, ensure_ascii=False), flush=True)
             sys.exit(1)
+
+    effective_device = target_device
+    is_fallback = requested_device.upper() not in effective_device.upper()
 
     try:
         config = pipe.get_generation_config()
@@ -133,7 +137,10 @@ def main():
 
     print(json.dumps({
         "type": "live_ready",
-        "device": args.device,
+        "device": effective_device,
+        "requested_device": requested_device,
+        "effective_device": effective_device,
+        "fallback": is_fallback,
         "model": os.path.basename(model_path),
         "load_time_ms": load_time_ms,
         "output": out_path
@@ -271,6 +278,10 @@ def main():
 
             print(json.dumps({
                 "type": "live_segment",
+                "device": effective_device,
+                "requested_device": requested_device,
+                "effective_device": effective_device,
+                "fallback": is_fallback,
                 "start_ts": start_sec,
                 "end_ts": end_sec,
                 "speaker_id": spk_id,

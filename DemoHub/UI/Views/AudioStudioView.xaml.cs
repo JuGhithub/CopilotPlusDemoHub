@@ -106,6 +106,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         {
             Interval = TimeSpan.FromMilliseconds(500)
         };
+        try { _telemetryService.Start(TimeSpan.FromSeconds(1)); } catch { }
         _telemetryTimer.Tick += TelemetryTimer_Tick;
         _telemetryTimer.Start();
 
@@ -167,18 +168,15 @@ public partial class AudioStudioView : UserControl, IDisposable
             _energyStopwatch.Restart();
 
             HardwareSnapshot snapshot = _telemetryService.GetCurrentSnapshot();
-            double instantWatts;
-            if (snapshot.IsOnBattery && snapshot.DischargeRateWatts > 0)
+            if (snapshot.DischargeRateWatts > 0)
             {
-                instantWatts = snapshot.DischargeRateWatts;
+                _accumulatedJoules += snapshot.DischargeRateWatts * deltaSec;
+                LblJoulesCounter.Text = $"{_accumulatedJoules:F1} J";
             }
             else
             {
-                instantWatts = (_selectedSilicon == SiliconMode.NPU) ? 5.5 : 32.0;
+                LblJoulesCounter.Text = "n/a";
             }
-
-            _accumulatedJoules += instantWatts * deltaSec;
-            LblJoulesCounter.Text = $"{_accumulatedJoules:F0} J";
         }
     }
 
@@ -186,34 +184,22 @@ public partial class AudioStudioView : UserControl, IDisposable
     {
         HardwareSnapshot snapshot = _telemetryService.GetCurrentSnapshot();
 
-        // Update real gauges
         float npuVal = (float)snapshot.NpuUsagePercent;
         float gpuVal = (float)snapshot.GpuUsagePercent;
         float cpuVal = (float)snapshot.CpuUsagePercent;
 
-        // If transcription is active on NPU, reflect realistic active workload if hardware counter is quiet
-        if (_transcribeProcess != null && _selectedSilicon == SiliconMode.NPU)
-        {
-            npuVal = Math.Max(npuVal, 64.0f + (float)(Random.Shared.NextDouble() * 18.0));
-        }
-        else if (_transcribeProcess != null && _selectedSilicon == SiliconMode.GPU)
-        {
-            gpuVal = Math.Max(gpuVal, 78.0f + (float)(Random.Shared.NextDouble() * 14.0));
-        }
-
-        LblNpuLoad.Text = $"{npuVal:F0} %";
+        bool npuBusy = (_transcribeProcess != null || _isLiveActive) && _selectedSilicon == SiliconMode.NPU;
+        LblNpuLoad.Text = (npuVal == 0 && npuBusy) ? "n/a" : $"{npuVal:F0} %";
         LblGpuLoad.Text = $"{gpuVal:F0} %";
         LblCpuLoad.Text = $"{cpuVal:F0} %";
 
-        // Power display
-        if (snapshot.IsOnBattery && snapshot.DischargeRateWatts > 0)
+        if (snapshot.DischargeRateWatts > 0)
         {
             LblInstantWatts.Text = $"{snapshot.DischargeRateWatts:F1} W";
         }
         else
         {
-            double defaultW = (_selectedSilicon == SiliconMode.NPU) ? 5.5 : 32.0;
-            LblInstantWatts.Text = $"{defaultW:F1} W";
+            LblInstantWatts.Text = !snapshot.IsOnBattery ? "secteur" : "n/a";
         }
     }
 
@@ -462,10 +448,13 @@ public partial class AudioStudioView : UserControl, IDisposable
                             if (type == "live_ready")
                             {
                                 int loadMs = root.TryGetProperty("load_time_ms", out var lp) ? lp.GetInt32() : 0;
+                                string effLive = root.TryGetProperty("effective_device", out var edp) ? (edp.GetString() ?? deviceStr) : deviceStr;
+                                bool fbLive = root.TryGetProperty("fallback", out var fbp) && fbp.ValueKind == JsonValueKind.True;
+                                string liveDevDisplay = fbLive ? $"{effLive} (repli)" : effLive;
                                 Dispatcher.Invoke(() =>
                                 {
                                     TxtTranscriptPlaceholder.Text = _localizer.Get("Audio_ListeningPrompt");
-                                    LblTranscriptionStatus.Text = string.Format(_localizer.Get("Audio_StatusLiveRecording"), deviceStr);
+                                    LblTranscriptionStatus.Text = string.Format(_localizer.Get("Audio_StatusLiveRecording"), liveDevDisplay);
 
                                     _liveTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
                                     _liveTimer.Tick += (s, ev) =>
@@ -711,11 +700,14 @@ public partial class AudioStudioView : UserControl, IDisposable
                         {
                             int loadMs = root.GetProperty("load_time_ms").GetInt32();
                             string model = root.GetProperty("model").GetString() ?? "Whisper";
+                            string effLoad = root.TryGetProperty("effective_device", out var edl) ? (edl.GetString() ?? deviceStr) : deviceStr;
+                            bool fbLoad = root.TryGetProperty("fallback", out var fbl) && fbl.ValueKind == JsonValueKind.True;
+                            string loadDevDisplay = fbLoad ? $"{effLoad} (repli)" : effLoad;
                             Dispatcher.Invoke(() =>
                             {
                                 LblTranscriptionStatus.Text = (_localizer.CurrentLanguage == "en")
-                                    ? $"Model {model} loaded on {deviceStr} in {loadMs} ms. Decoding speech..."
-                                    : $"Modèle {model} chargé sur {deviceStr} en {loadMs} ms. Décodage et reconnaissance vocale en cours...";
+                                    ? $"Model {model} loaded on {loadDevDisplay} in {loadMs} ms. Decoding speech..."
+                                    : $"Modèle {model} chargé sur {loadDevDisplay} en {loadMs} ms. Décodage et reconnaissance vocale en cours...";
                             });
                         }
                         else if (type == "chunk")
@@ -762,6 +754,9 @@ public partial class AudioStudioView : UserControl, IDisposable
                             string speedFactor = root.GetProperty("speed_factor").GetString() ?? string.Empty;
                             double speedFactorRaw = root.TryGetProperty("speed_factor_raw", out var spRaw) ? spRaw.GetDouble() : 0.0;
                             string detectedLang = root.TryGetProperty("detected_language", out var dlp) ? dlp.GetString() ?? "" : "";
+                            string effectiveDevice = root.TryGetProperty("effective_device", out var edc) ? (edc.GetString() ?? deviceStr) : deviceStr;
+                            bool isFallback = root.TryGetProperty("fallback", out var fbc) && fbc.ValueKind == JsonValueKind.True;
+                            string devDisplay = isFallback ? $"{effectiveDevice} (repli)" : effectiveDevice;
 
                             Dispatcher.Invoke(() =>
                             {
@@ -772,23 +767,30 @@ public partial class AudioStudioView : UserControl, IDisposable
                                     TxtDetectedLanguage.Text = string.Format(_localizer.Get("Audio_LangDetected"), friendlyLang);
                                 }
 
-                                LblInferTime.Text = $"{inferTimeMs} ms";
+                                LblInferTime.Text = $"{inferTimeMs} ms • {devDisplay}";
                                 LblSpeedRelative.Text = speedFactor;
                                 string speedText = (speedFactorRaw > 0)
                                     ? string.Format(_localizer.Get("Audio_SpeedFactor"), $"{speedFactorRaw}x")
                                     : $"⚡ {speedFactor}";
                                 LblSpeedFactor.Text = speedText;
                                 BadgeSpeedFactor.Visibility = Visibility.Visible;
-                                LblTranscriptionStatus.Text = string.Format(_localizer.Get("Audio_StatusComplete"), deviceStr);
+                                LblTranscriptionStatus.Text = string.Format(_localizer.Get("Audio_StatusComplete"), devDisplay);
                             });
+
+                            var snap = _telemetryService.GetCurrentSnapshot();
+                            string hwName = effectiveDevice.ToUpperInvariant().Contains("NPU")
+                                ? $"{SiliconDetector.NpuName} (Whisper Small)"
+                                : (effectiveDevice.ToUpperInvariant().Contains("GPU")
+                                    ? $"{SiliconDetector.GpuName} (Whisper Small)"
+                                    : $"{SiliconDetector.CpuName} (Whisper Small)");
 
                             _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
                                 demoName: "Audio Studio - Transcription Diarisation",
                                 requestedSilicon: deviceStr,
-                                effectiveSilicon: deviceStr,
-                                siliconDeviceName: deviceStr == "NPU" ? $"{SiliconDetector.NpuName} (Whisper Small)" : $"{SiliconDetector.GpuName} (Whisper Small)",
+                                effectiveSilicon: effectiveDevice,
+                                siliconDeviceName: hwName,
                                 latencyMs: inferTimeMs,
-                                customPowerWatts: deviceStr == "NPU" ? 2.5 : 15.0
+                                customPowerWatts: snap.DischargeRateWatts
                             );
                         }
                         else if (type == "error")

@@ -92,6 +92,7 @@ def main():
                     break
         os.makedirs(cache_dir, exist_ok=True)
 
+        requested_device = args.device
         target_device = args.device
         pipe = None
         try:
@@ -109,10 +110,15 @@ def main():
             if pipe is None:
                 raise e_initial
 
+        effective_device = target_device
+        is_fallback = requested_device.upper() not in effective_device.upper()
         load_time_ms = int((time.perf_counter() - load_start) * 1000)
         print(json.dumps({
             "type": "model_loaded",
-            "device": target_device,
+            "device": effective_device,
+            "requested_device": requested_device,
+            "effective_device": effective_device,
+            "fallback": is_fallback,
             "model": os.path.basename(model_path),
             "load_time_ms": load_time_ms
         }), flush=True)
@@ -223,7 +229,10 @@ def main():
         speed_factor = round(audio_duration_sec / max(0.01, (infer_time_ms / 1000.0)), 2)
         print(json.dumps({
             "type": "complete",
-            "device": args.device,
+            "device": effective_device,
+            "requested_device": requested_device,
+            "effective_device": effective_device,
+            "fallback": is_fallback,
             "full_text": accumulated_text.strip(),
             "infer_time_ms": infer_time_ms,
             "speed_factor_raw": speed_factor,
