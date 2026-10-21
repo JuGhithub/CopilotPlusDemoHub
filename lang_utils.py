@@ -7,6 +7,7 @@ Utilitaires de langue pour la reconnaissance vocale :
   hérite de la langue du segment précédent et traduit l'anglais en français après un passage français).
   La sonde identifie la langue réelle de chaque prise de parole sans biais d'état, puis passe
   explicitement `<|fr|>` ou `<|en|>` au pipeline principal Whisper sur NPU.
+- Anti-boucle de répétition (`clean_repetitions` + `no_repeat_ngram_size` + plafond dynamique `max_new_tokens`).
 """
 import os
 import re
@@ -58,6 +59,47 @@ _FR_ELISIONS_RE = re.compile(
 )
 
 _WORD_RE = re.compile(r"[a-zA-ZÀ-ÿ]+")
+
+_REPEAT_1TO2_WORDS_RE = re.compile(
+    r"\b(\w+(?:\s+\w+)?)(?:[\s,]+\1\b){2,}",
+    re.IGNORECASE,
+)
+
+
+def clean_repetitions(text):
+    """
+    Supprime les boucles de répétition (hallucinations de décodage glouton Whisper sur fin de souffle / bruit),
+    ex: 'And it needs a little bit of a little bit of a little bit of a...' -> 'And it needs a little bit.'
+    """
+    if not text:
+        return ""
+    out = text.strip()
+    prev = None
+    for _ in range(4):
+        if out == prev:
+            break
+        prev = out
+        # 1. Collapser les groupes de 3 à 8 mots répétés >= 2 fois consécutives (ainsi que la queue tronquée en fin de phrase)
+        m = re.search(r"\b(\w+(?:\s+\w+){2,7})(?:\s+\1\b){2,}", out, flags=re.IGNORECASE)
+        if m:
+            phrase = m.group(1)
+            # Coupe tout ce qui suit la première occurrence si la boucle allait jusqu'à la fin
+            tail_after_loop = out[m.end():].strip()
+            if len(tail_after_loop.split()) <= len(phrase.split()):
+                out = out[:m.start()] + phrase
+            else:
+                out = out[:m.start()] + phrase + " " + tail_after_loop
+        # 2. Collapser les groupes de 3 à 8 mots répétés exactement 2 fois consécutives
+        out = re.sub(r"\b(\w+(?:\s+\w+){2,7})(?:\s+\1\b)+", r"\1", out, flags=re.IGNORECASE)
+        # 3. Collapser les mots simples ou paires de mots répétés >= 3 fois consécutives
+        out = _REPEAT_1TO2_WORDS_RE.sub(r"\1", out)
+
+    # Si une boucle a été tronquée et se termine par une préposition / article pendant ('of', 'of a', 'de', 'de la')
+    if out != text.strip():
+        out = re.sub(r"\s+\b(of a|of the|of|and a|and|to a|to|de la|de l'|du|des|de|et|un|une)\s*$", "", out, flags=re.IGNORECASE).strip()
+        if out and out[-1] not in ".?!…":
+            out += "."
+    return out
 
 
 def _get_lang_probe_pipe():
@@ -168,27 +210,30 @@ def is_hallucinated_or_junk(text):
 
 def smart_transcribe_turn(pipe, audio_samples, forced_lang=None, expected_lang="fr"):
     """
-    Transcrit un segment audio sur le NPU :
-    - Si `forced_lang` est défini (ex: 'fr' ou 'en'), décode directement avec ce token de langue.
-    - Si on est en mode Auto (`forced_lang is None`) :
-      1. Interroge la sonde acoustique sans état (`_get_lang_probe_pipe()`, `max_new_tokens=10`)
-         sur les premières secondes du segment afin de déterminer la vraie langue parlée (`fr` vs `en`)
-         sans subir la rémanence du cache KV du `StaticWhisperPipeline` NPU d'OpenVINO GenAI.
-      2. Exécute ensuite la transcription complète haute fidélité sur le NPU (`pipe`) en lui passant
-         explicitement le token de langue détecté (`<|fr|>` ou `<|en|>`), ce qui garantit zéro dérive
-         et 100 % de fidélité en français comme en anglais.
+    Transcrit un segment audio sur le NPU avec :
+    1. Sonde acoustique sans état (`_get_lang_probe_pipe()`) en mode Auto pour éviter
+       le verrouillage de langue du cache KV d'OpenVINO GenAI sur NPU.
+    2. Protection anti-répétition matérielle (`no_repeat_ngram_size = 3`, `repetition_penalty = 1.15`,
+       et plafond dynamique `max_new_tokens` proportionnel à la durée réelle du segment audio).
+    3. Nettoyage post-décodage (`clean_repetitions`) au cas où un motif plus long tenterait de boucler.
     Retourne `(text, detected_lang, was_retried)`.
     """
     audio_list = audio_samples.tolist() if hasattr(audio_samples, "tolist") else list(audio_samples)
+    duration_sec = max(0.5, len(audio_list) / 16000.0)
+    # Plafond physique réaliste : ~8 tokens/seconde + marge de 12 tokens (borné entre 16 et 140)
+    dynamic_max_tokens = max(16, min(140, int(duration_sec * 8.0) + 12))
 
     cfg = pipe.get_generation_config()
     cfg.task = "transcribe"
     cfg.return_timestamps = False
+    cfg.no_repeat_ngram_size = 3
+    cfg.repetition_penalty = 1.15
+    cfg.max_new_tokens = dynamic_max_tokens
 
     if forced_lang:
         cfg.language = lang_token(forced_lang)
         res = pipe.generate(audio_list, cfg)
-        text = str(res).strip()
+        text = clean_repetitions(str(res).strip())
         return text, forced_lang, False
 
     target_lang = expected_lang or "fr"
@@ -200,6 +245,7 @@ def smart_transcribe_turn(pipe, audio_samples, forced_lang=None, expected_lang="
             c_pr.language = None
             c_pr.return_timestamps = False
             c_pr.max_new_tokens = 10
+            c_pr.no_repeat_ngram_size = 3
             probe_txt = str(probe.generate(audio_list[:64000], c_pr)).strip()
             if probe_txt and not is_hallucinated_or_junk(probe_txt):
                 target_lang = detect_language(probe_txt, fallback=expected_lang or "fr")
@@ -208,7 +254,7 @@ def smart_transcribe_turn(pipe, audio_samples, forced_lang=None, expected_lang="
 
     cfg.language = lang_token(target_lang)
     res_npu = pipe.generate(audio_list, cfg)
-    text_npu = str(res_npu).strip()
+    text_npu = clean_repetitions(str(res_npu).strip())
     if not text_npu:
         return "", target_lang, False
 
@@ -237,13 +283,18 @@ def whisper_translate_to_english(pipe, audio_list, source_lang_code):
     if not source_lang_code or source_lang_code == "en":
         return None
     try:
+        duration_sec = max(0.5, len(audio_list) / 16000.0)
         cfg = pipe.get_generation_config()
         cfg.task = "translate"
         cfg.language = lang_token(source_lang_code)
         cfg.return_timestamps = False
+        cfg.no_repeat_ngram_size = 3
+        cfg.repetition_penalty = 1.15
+        cfg.max_new_tokens = max(16, min(140, int(duration_sec * 8.0) + 12))
         res = pipe.generate(audio_list, cfg)
         texts = getattr(res, "texts", None)
         out = (texts[0] if texts else str(res)).strip()
+        out = clean_repetitions(out)
         return out or None
     except Exception:
         return None
