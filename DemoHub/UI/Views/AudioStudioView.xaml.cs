@@ -1729,8 +1729,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         }
 
         string sourceTranscript = _transcriptSegments.Count > 0
-            ? string.Join("
-", _transcriptSegments.Select(seg => $"[{seg.SpeakerName}] : {seg.Text}"))
+            ? string.Join(Environment.NewLine, _transcriptSegments.Select(seg => $"[{seg.SpeakerName}] : {seg.Text}"))
             : _fullAccumulatedTranscript.Trim();
 
         string targetSilicon = _selectedSilicon.ToString();
