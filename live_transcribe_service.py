@@ -10,6 +10,11 @@ import numpy as np
 import sounddevice as sd
 import soundfile as sf
 import openvino_genai as ovg
+for _lvl in range(1, 6):
+    _cand_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), *(['..'] * _lvl)))
+    if os.path.exists(os.path.join(_cand_root, "lang_utils.py")) and _cand_root not in sys.path:
+        sys.path.insert(0, _cand_root)
+        break
 from speaker_service import SpeakerManager
 from lang_utils import detect_language, lang_code, whisper_translate_to_english
 

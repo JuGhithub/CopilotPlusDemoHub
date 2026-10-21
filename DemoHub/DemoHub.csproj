@@ -33,6 +33,9 @@
     <None Include="..\transcribe_service.py" Link="transcribe_service.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="..\lang_utils.py" Link="lang_utils.py">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="..\speaker_service.py" Link="speaker_service.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
