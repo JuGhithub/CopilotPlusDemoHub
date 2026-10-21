@@ -425,15 +425,18 @@ def action_redact(args):
         redacted_details = []
 
         patterns = []
-        if args.mode == "auto_rgpd":
+        if getattr(args, 'keyword', None) and args.keyword:
+            for kw in [k.strip() for k in args.keyword.split("|") if k.strip()]:
+                patterns.append((re.escape(kw), f"Entité IA : {kw}"))
+        if args.mode in ("auto_rgpd", "ai_audit") and (not getattr(args, 'keyword', None) or args.mode == "ai_audit"):
             # GDPR sensitive patterns: Emails, French Phones, IBANs, NIR/Social Security
-            patterns = [
+            patterns.extend([
                 (r'[\w\.-]+@[\w\.-]+\.\w+', "Adresse Email RGPD"),
                 (r'(?:\+33|0)[1-9](?:[\s.-]?\d{2}){4}', "Numéro de Téléphone"),
                 (r'[A-Z]{2}\d{2}[A-Z0-9]{4}\d{7}([A-Z0-9]?){0,16}', "Coordonnées Bancaires (IBAN)"),
                 (r'[12]\s?\d{2}\s?(?:0[1-9]|1[0-2])\s?\d{2}\s?\d{3}\s?\d{3}(?:\s?\d{2})?', "Numéro Sécurité Sociale (NIR)"),
                 (r'\b\d{1,3}(?:\s\d{3})*,\d{2}\s?EUR\b', "Montant Financier Confidentiel")
-            ]
+            ])
         if getattr(args, 'rect', None) and args.rect:
             try:
                 coords = [float(c.strip()) for c in args.rect.split(",")]
@@ -448,14 +451,13 @@ def action_redact(args):
                 pass
         elif patterns:
             for page in doc:
+                page_text = page.get_text("text")
                 for pattern, label in patterns:
-                    matches = page.search_for(pattern)
-                    if not matches:
-                        page_text = page.get_text("text")
-                        for m in re.finditer(pattern, page_text):
-                            found_str = m.group(0)
-                            sub_matches = page.search_for(found_str)
-                            matches.extend(sub_matches)
+                    matches = []
+                    for m in re.finditer(pattern, page_text, re.IGNORECASE):
+                        found_str = m.group(0)
+                        sub_matches = page.search_for(found_str)
+                        matches.extend(sub_matches)
 
                     for rect in matches:
                         page.add_redact_annot(rect, fill=(0, 0, 0))

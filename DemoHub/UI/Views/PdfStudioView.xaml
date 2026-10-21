@@ -343,6 +343,35 @@
                             <Grid x:Name="PanelEditMode" Visibility="Collapsed">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <StackPanel>
+                                        <!-- Feature 0: NPU AI Legal & GDPR Audit (Foundry Local) -->
+                                        <Border Background="#111C33" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1.5" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                    <TextBlock Text="🧠" FontSize="14" Margin="0,0,6,0" />
+                                                    <TextBlock x:Name="LblNpuAuditTitle" Text="AUDIT SÉMANTIQUE &amp; DÉTECTION D'ENTITÉS PAR IA LOCALE (NPU)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" />
+                                                </StackPanel>
+                                                <TextBlock x:Name="LblNpuAuditDesc" Text="Analyse le document via LLM local sur NPU (Foundry Local) pour synthétiser les clauses et détecter les données sensibles qui échappent aux Regex classiques (noms propres, signataires, RCS, adresses)." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+                                                <Button x:Name="BtnRunNpuAudit" Content="🧠 Lancer l'Audit RGPD &amp; Juridique sur NPU"
+                                                        Style="{StaticResource ModernButtonStyle}" Background="#0284C7" Foreground="White"
+                                                        Height="34" FontSize="11.5" FontWeight="Bold" Click="BtnRunNpuAudit_Click" />
+
+                                                <Border x:Name="BorderAuditResult" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,10,0,0" Visibility="Collapsed">
+                                                    <StackPanel>
+                                                        <TextBlock x:Name="TxtAuditMetrics" Text="⚡ Inférence NPU en cours..." FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource NpuGreenBrush}" Margin="0,0,0,6" TextWrapping="Wrap" />
+                                                        <TextBox x:Name="TxtAuditReport" Background="Transparent" Foreground="{StaticResource TextPrimaryBrush}"
+                                                                 BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True"
+                                                                 MaxHeight="170" VerticalScrollBarVisibility="Auto"
+                                                                 FontSize="11" FontFamily="Consolas, Segoe UI" />
+                                                        <Button x:Name="BtnRedactAuditEntities" Content="🛡️ Caviarder les Entités Détectées par l'IA + RGPD"
+                                                                Style="{StaticResource ModernButtonStyle}" Background="#7F1D1D" Foreground="#FCA5A5"
+                                                                Height="32" FontSize="11" FontWeight="Bold" Margin="0,8,0,0"
+                                                                Click="BtnRedactAuditEntities_Click" Visibility="Collapsed" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+
                                         <!-- Feature 1: True Redaction (GDPR) -->
                                         <Border Background="#131F33" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
                                             <StackPanel>
