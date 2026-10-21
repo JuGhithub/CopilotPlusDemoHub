@@ -83,13 +83,13 @@ def resolve_ov_device(req_device):
         core = ov.Core()
         avail = [d.upper() for d in core.available_devices]
         if "NPU" in req and "NPU" in avail:
-            return "intel:npu"
+            return ("intel:npu", "NPU")
     except Exception:
         pass
     # Note: YOLOv8s-Worldv2 (WorldDetect cross-attention head) in OpenVINO 2026+ can trigger
     # an Intel Arc OpenCL driver fault (TDR/BSOD) when compiled on 'intel:gpu'.
     # OpenVINO LATENCY mode on NPU (~17 ms) or CPU (~10 ms) executes YOLOv8s-World FP16 with 100% stability.
-    return "cpu"
+    return ("cpu", "CPU")
 
 
 def draw_hud_box(img, box, label, color, conf=None, text_color=(10, 15, 25)):
@@ -510,11 +510,13 @@ def main():
     parser.add_argument("--stream", action="store_true", help="Run real-time webcam video stream with live inference")
     parser.add_argument("--out", default="", help="Path to output annotated image")
     parser.add_argument("--conf", type=float, default=0.20, help="Confidence threshold")
-    parser.add_argument("--device", default="GPU", choices=["NPU", "GPU", "CPU"], help="Compute device")
+    parser.add_argument("--device", default="NPU", choices=["NPU", "GPU", "CPU"], help="Compute device")
     parser.add_argument("--engine", default="openvino", choices=["openvino", "onnx", "onnx_olive"], help="Inference engine backend (openvino, onnx, onnx_olive)")
     args = parser.parse_args()
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
+    requested_device = args.device
+    effective_device = "CPU"
 
     selected_engine = args.engine
     if selected_engine == "openvino":
@@ -527,7 +529,7 @@ def main():
     if selected_engine == "openvino":
         model_dir = find_model_path(script_dir)
         if os.path.exists(model_dir):
-            inference_device = resolve_ov_device(args.device)
+            inference_device, effective_device = resolve_ov_device(args.device)
             engine_name = "OpenVINO"
             try:
                 model = YOLO(model_dir)
@@ -561,12 +563,14 @@ def main():
                     providers=['DmlExecutionProvider', 'CPUExecutionProvider']
                 )
                 engine_name = "ONNX Runtime + Olive FP16 (DirectML)" if is_olive else "ONNX Runtime (DirectML)"
+                effective_device = "GPU (DirectML)"
             else:
                 model.predictor.model.session = ort.InferenceSession(
                     model_path,
                     providers=['CPUExecutionProvider']
                 )
                 engine_name = "ONNX Runtime + Olive FP16 (CPU)" if is_olive else "ONNX Runtime (CPU)"
+                effective_device = "CPU"
             inference_device = "cpu"
         except Exception as e:
             print(json.dumps({
@@ -657,8 +661,11 @@ def main():
                 "access_granted": granted,
                 "infer_time_ms": infer_ms,
                 "fps": fps,
-                "device": args.device,
+                "device": effective_device,
+                "requested_device": requested_device,
+                "effective_device": effective_device,
                 "engine": engine_name,
+                "fallback": requested_device.upper() not in effective_device.upper(),
                 "frame_b64": b64_str
             }
             print(json.dumps(payload, ensure_ascii=False), flush=True)
@@ -750,8 +757,11 @@ def main():
         "access_granted": granted,
         "annotated_image": os.path.abspath(out_path),
         "infer_time_ms": infer_ms,
-        "device": args.device,
+        "device": effective_device,
+        "requested_device": requested_device,
+        "effective_device": effective_device,
         "engine": engine_name,
+        "fallback": requested_device.upper() not in effective_device.upper(),
         "source": source_name
     }
     print(json.dumps(result, ensure_ascii=False), flush=True)

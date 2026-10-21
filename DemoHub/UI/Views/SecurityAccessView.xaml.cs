@@ -32,6 +32,7 @@ public partial class SecurityAccessView : UserControl, IDisposable
     private int _consecutiveGrantedFrames = 0;
     private CancellationTokenSource? _unlockCountdownCts;
     private bool _isUnlockCountdownRunning = false;
+    private HardwareTelemetryService? _hwTelemetry;
 
     // Minesweeper constants & state
     private const int ROWS = 9;
@@ -218,6 +219,13 @@ public partial class SecurityAccessView : UserControl, IDisposable
 
         try
         {
+            _hwTelemetry = new HardwareTelemetryService();
+            _hwTelemetry.Start(TimeSpan.FromSeconds(1));
+        }
+        catch { }
+
+        try
+        {
             _streamProcess = Process.Start(psi);
         }
         catch (Exception ex)
@@ -269,11 +277,13 @@ public partial class SecurityAccessView : UserControl, IDisposable
                                 double fps = root.GetProperty("fps").GetDouble();
                                 string b64 = root.GetProperty("frame_b64").GetString() ?? "";
                                 string engineName = root.TryGetProperty("engine", out var ep) ? (ep.GetString() ?? "") : "";
+                                string effectiveDevice = root.TryGetProperty("effective_device", out var edp) ? (edp.GetString() ?? device) : device;
+                                bool isFallback = root.TryGetProperty("fallback", out var fbp) && fbp.GetBoolean();
 
                                 Dispatcher.Invoke(() =>
                                 {
                                     if (!_isStreaming) return;
-                                    ProcessLiveFrame(b64, cup, cupConf, glasses, glassesConf, headset, headsetConf, granted, inferMs, fps, device, engineName, cupSpoof, glassesSpoof, headsetSpoof, spoofDetected, spoofReason);
+                                    ProcessLiveFrame(b64, cup, cupConf, glasses, glassesConf, headset, headsetConf, granted, inferMs, fps, device, engineName, cupSpoof, glassesSpoof, headsetSpoof, spoofDetected, spoofReason, effectiveDevice, isFallback);
                                 });
                             }
                             else if (type == "error")
@@ -305,7 +315,7 @@ public partial class SecurityAccessView : UserControl, IDisposable
         });
     }
 
-    private void ProcessLiveFrame(string b64, bool cup, double cupConf, bool glasses, double glassesConf, bool headset, double headsetConf, bool granted, int inferMs, double fps, string device, string engine = "", bool cupSpoof = false, bool glassesSpoof = false, bool headsetSpoof = false, bool spoofDetected = false, string spoofReason = "")
+    private void ProcessLiveFrame(string b64, bool cup, double cupConf, bool glasses, double glassesConf, bool headset, double headsetConf, bool granted, int inferMs, double fps, string device, string engine = "", bool cupSpoof = false, bool glassesSpoof = false, bool headsetSpoof = false, bool spoofDetected = false, string spoofReason = "", string effectiveDevice = "", bool isFallback = false)
     {
         if (string.IsNullOrEmpty(b64)) return;
 
@@ -327,13 +337,40 @@ public partial class SecurityAccessView : UserControl, IDisposable
         UpdateComplianceBadges(cup, cupConf, glasses, glassesConf, headset, headsetConf, granted, cupSpoof, glassesSpoof, headsetSpoof, spoofDetected, spoofReason);
 
         // Hardware & Telemetry
-        double watts = device.ToUpperInvariant().Contains("NPU") ? 2.2 : (device.ToUpperInvariant().Contains("GPU") ? 14.5 : 24.0);
-        double joules = watts * (inferMs / 1000.0);
-
+        string effDev = string.IsNullOrEmpty(effectiveDevice) ? device : effectiveDevice;
+        string fallbackSuffix = isFallback ? " (repli)" : "";
         string engineTag = string.IsNullOrEmpty(engine) ? "" : $" • {engine}";
-        TxtInferSpeed.Text = $"⚡ {inferMs} ms • {fps:F0} FPS • {device}{engineTag}";
+        TxtInferSpeed.Text = $"⚡ {inferMs} ms • {fps:F0} FPS • {effDev}{fallbackSuffix}{engineTag}";
         BadgeSpeed.Visibility = Visibility.Visible;
-        TxtPower.Text = $"🔋 ~{watts:F1} W • 🌱 {joules:F3} J";
+
+        HardwareSnapshot? snap = null;
+        try { snap = _hwTelemetry?.GetCurrentSnapshot(); } catch { }
+
+        string powerText;
+        if (_hwTelemetry == null || snap == null || snap.DischargeRateWatts <= 0)
+        {
+            powerText = (snap != null && !snap.IsOnBattery) ? "🔋 secteur" : "🔋 n/a";
+        }
+        else
+        {
+            double watts = snap.DischargeRateWatts;
+            double joules = watts * (inferMs / 1000.0);
+            powerText = $"🔋 {watts:F1} W • 🌱 {joules:F3} J";
+        }
+
+        if (snap != null)
+        {
+            if (snap.NpuUsagePercent > 0)
+            {
+                powerText += $" • NPU {snap.NpuUsagePercent:F0} %";
+            }
+            else if (effDev.Equals("NPU", StringComparison.OrdinalIgnoreCase))
+            {
+                powerText += " • NPU n/a";
+            }
+        }
+
+        TxtPower.Text = powerText;
         BadgePower.Visibility = Visibility.Visible;
 
         bool isEn = _localizer?.CurrentLanguage == "en";
@@ -364,6 +401,26 @@ public partial class SecurityAccessView : UserControl, IDisposable
         _isStreaming = false;
         ResetWebcamButton();
         if (BadgeLiveStream != null) BadgeLiveStream.Visibility = Visibility.Collapsed;
+
+        if (_hwTelemetry != null)
+        {
+            try
+            {
+                _hwTelemetry.Stop();
+                var summary = _hwTelemetry.GetSummary();
+                Debug.WriteLine(
+                    $"[SecurityAccessTelemetry] IsOnBattery={summary.IsOnBattery}, SampleCount={summary.SampleCount}, " +
+                    $"AverageDischargeWatts={summary.AverageDischargeWatts:F2}W, EnergyConsumedWattHours={summary.EnergyConsumedWattHours:F4}Wh, " +
+                    $"AverageNpuPercent={summary.AverageNpuPercent:F1}%, PeakNpuPercent={summary.PeakNpuPercent:F1}%, " +
+                    $"AverageGpuPercent={summary.AverageGpuPercent:F1}%");
+                _hwTelemetry.Dispose();
+            }
+            catch { }
+            finally
+            {
+                _hwTelemetry = null;
+            }
+        }
 
         if (_streamProcess != null)
         {
@@ -506,6 +563,8 @@ public partial class SecurityAccessView : UserControl, IDisposable
         string finalAnnotated = string.Empty;
         int inferMs = 0;
         string engineResult = string.Empty;
+        string effectiveDevice = device;
+        bool isFallback = false;
         string lastError = string.Empty;
 
         await Task.Run(() =>
@@ -566,6 +625,10 @@ public partial class SecurityAccessView : UserControl, IDisposable
                                     finalAnnotated = root.GetProperty("annotated_image").GetString() ?? outPath;
                                     inferMs = root.GetProperty("infer_time_ms").GetInt32();
                                     engineResult = root.TryGetProperty("engine", out var er) ? (er.GetString() ?? "") : engineLabel;
+                                    if (root.TryGetProperty("effective_device", out var edp))
+                                        effectiveDevice = edp.GetString() ?? device;
+                                    if (root.TryGetProperty("fallback", out var fbp))
+                                        isFallback = fbp.GetBoolean();
                                 }
                                 else if (type == "error")
                                 {
@@ -617,8 +680,10 @@ public partial class SecurityAccessView : UserControl, IDisposable
         double watts = device.ToUpperInvariant().Contains("NPU") ? 2.2 : (device.ToUpperInvariant().Contains("GPU") ? 14.5 : 24.0);
         double joules = watts * (inferMs / 1000.0);
 
+        string fallbackSuffix = isFallback ? " (repli)" : "";
+        TxtScanningDevice.Text = $"Inférence {engineLabel} sur {effectiveDevice}{fallbackSuffix}";
         string engineTag = string.IsNullOrEmpty(engineResult) ? "" : $" • {engineResult}";
-        TxtInferSpeed.Text = $"⚡ {inferMs} ms • {device}{engineTag}";
+        TxtInferSpeed.Text = $"⚡ {inferMs} ms • {effectiveDevice}{fallbackSuffix}{engineTag}";
         BadgeSpeed.Visibility = Visibility.Visible;
         TxtPower.Text = $"🔋 ~{watts:F1} W • 🌱 {joules:F3} J";
         BadgePower.Visibility = Visibility.Visible;
@@ -627,8 +692,8 @@ public partial class SecurityAccessView : UserControl, IDisposable
         _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
             demoName: "Contrôle d'Accès Vision IA (Café + Lunettes + Casque)",
             requestedSilicon: device,
-            effectiveSilicon: device,
-            siliconDeviceName: $"YOLO-World ({engineResult}) - {device}",
+            effectiveSilicon: effectiveDevice,
+            siliconDeviceName: $"YOLO-World ({engineResult}) - {effectiveDevice}",
             latencyMs: inferMs,
             customPowerWatts: watts
         );
