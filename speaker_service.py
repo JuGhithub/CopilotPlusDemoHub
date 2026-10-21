@@ -595,10 +595,10 @@ class SpeakerManager:
         Returns a list of (start_sample, end_sample) in the input sample rate.
         """
         audio_16k = self._to_16k_mono(audio_chunk, sr)
-        if len(audio_16k) < int(2.0 * 16000):
+        if len(audio_16k) < int(3.2 * 16000):
             return [(0, len(audio_chunk))]
 
-        islands = self.find_speech_islands(audio_16k, sr=16000, min_island_sec=0.45, bridge_sec=0.18)
+        islands = self.find_speech_islands(audio_16k, sr=16000, min_island_sec=1.10, bridge_sec=0.35)
         if len(islands) <= 1:
             return [(0, len(audio_chunk))]
 
@@ -607,7 +607,7 @@ class SpeakerManager:
         for (s, e), emb in zip(islands[1:], embs[1:]):
             prev_s, prev_e, prev_emb = turns_16k[-1]
             sim = float(np.dot(prev_emb, emb))
-            if sim >= 0.56:
+            if sim >= 0.45:
                 # Same speaker -> merge islands and average embedding
                 merged_emb = prev_emb + emb
                 merged_emb = merged_emb / (np.linalg.norm(merged_emb) + 1e-6)

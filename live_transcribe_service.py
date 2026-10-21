@@ -16,7 +16,7 @@ for _lvl in range(1, 6):
         sys.path.insert(0, _cand_root)
         break
 from speaker_service import SpeakerManager
-from lang_utils import detect_language, lang_code, whisper_translate_to_english
+from lang_utils import detect_language, lang_code, whisper_translate_to_english, smart_transcribe_turn, is_hallucinated_or_junk
 
 def main():
     parser = argparse.ArgumentParser(description="Real-Time Streaming Speech Transcription & Diarization")
@@ -132,10 +132,11 @@ def main():
     # VAD & Streaming Settings
     FRAME_SIZE = 1600  # 100ms at 16kHz
     PRE_SPEECH_FRAMES = 3   # 300ms pre-buffer
-    SILENCE_TRIGGER_FRAMES = 4  # 400ms pause triggers phrase end
-    MAX_PHRASE_SAMPLES = int(args.samplerate * 6.0)  # 6.0s max phrase length
-    MIN_PHRASE_SAMPLES = int(args.samplerate * 0.55)  # 0.55s min phrase length
+    SILENCE_TRIGGER_FRAMES = 7  # 700ms pause triggers phrase end (avoids chopping mid-sentence breaths)
+    MAX_PHRASE_SAMPLES = int(args.samplerate * 6.5)  # 6.5s max phrase length
+    MIN_PHRASE_SAMPLES = int(args.samplerate * 0.85)  # 0.85s min phrase length
     SPEECH_RMS_THRESHOLD = 0.014  # Minimum energy for speech
+    session_lang_votes = collections.deque(["fr", "fr"], maxlen=7)
 
     # Ring buffer for pre-speech frames
     pre_speech_ring = collections.deque(maxlen=PRE_SPEECH_FRAMES)
@@ -240,17 +241,20 @@ def main():
             t0 = time.perf_counter()
             detected_lang = "fr"
             try:
-                res = pipe.generate(audio_chunk.tolist(), config)
-                text = str(res).strip()
                 forced = lang_code(config.language)
-                detected_lang = forced if forced else detect_language(text, fallback="fr")
+                expected_lang = collections.Counter(session_lang_votes).most_common(1)[0][0] if session_lang_votes else "fr"
+                text, detected_lang, _ = smart_transcribe_turn(pipe, audio_chunk, forced_lang=forced, expected_lang=expected_lang)
+                if not forced and text and not is_hallucinated_or_junk(text):
+                    session_lang_votes.append(detected_lang)
+                    if (end_sec - start_sec) >= 2.8:
+                        session_lang_votes.append(detected_lang)
             except Exception:
                 text = ""
 
             infer_ms = int((time.perf_counter() - t0) * 1000)
 
             clean_text = text.strip()
-            if not clean_text or clean_text.lower() in ("...", "…", "sous-titres réalisés par", "merci d'avoir regardé cette vidéo", "sous-titres", "merci."):
+            if is_hallucinated_or_junk(clean_text):
                 continue
 
             spk_id = "spk_1"

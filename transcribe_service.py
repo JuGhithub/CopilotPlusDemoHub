@@ -17,7 +17,7 @@ for _lvl in range(1, 6):
         sys.path.insert(0, _cand_root)
         break
 from speaker_service import SpeakerManager
-from lang_utils import detect_language, lang_code, whisper_translate_to_english
+from lang_utils import detect_language, lang_code, whisper_translate_to_english, smart_transcribe_turn, is_hallucinated_or_junk
 
 
 def load_whisper_and_speaker(model_dir_arg, requested_device):
@@ -141,20 +141,18 @@ def transcribe_file(file_path, language_arg, translate_to_arg, pipe, spk_mgr, mo
 
         if turns:
             config.return_timestamps = False
-            hallucinations = {"...", "…", "sous-titres réalisés par", "merci d'avoir regardé cette vidéo", "sous-titres", "merci."}
             for turn in turns:
                 s_idx = turn["start_sample"]
                 e_idx = turn["end_sample"]
                 if e_idx <= s_idx:
                     continue
                 turn_audio = audio[s_idx:e_idx]
-                res = pipe.generate(turn_audio.tolist(), config)
-                text = str(res).strip()
-                if not text or text.lower() in hallucinations:
+                expected_lang = lang_votes[-1] if lang_votes else "fr"
+                text, chunk_lang, _ = smart_transcribe_turn(pipe, turn_audio, forced_lang=forced_lang, expected_lang=expected_lang)
+                if is_hallucinated_or_junk(text):
                     continue
 
                 accumulated_text += " " + text
-                chunk_lang = forced_lang if forced_lang else detect_language(text, fallback=lang_votes[-1] if lang_votes else "fr")
                 lang_votes.append(chunk_lang)
 
                 translation = None
