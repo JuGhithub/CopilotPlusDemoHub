@@ -1704,7 +1704,152 @@ public partial class AudioStudioView : UserControl, IDisposable
     }
     #endregion
 
-    #region Meeting Summary & Clipboard
+    #region Meeting Summary, Full Translation & Clipboard
+    private async void BtnTranslateFullFr_Click(object sender, RoutedEventArgs e)
+    {
+        await AppendFullTranscriptTranslationAsync("fr");
+    }
+
+    private async void BtnTranslateFullEn_Click(object sender, RoutedEventArgs e)
+    {
+        await AppendFullTranscriptTranslationAsync("en");
+    }
+
+    private async Task AppendFullTranscriptTranslationAsync(string targetLang)
+    {
+        bool isEn = _localizer.CurrentLanguage == "en";
+        if (string.IsNullOrWhiteSpace(_fullAccumulatedTranscript) && _transcriptSegments.Count == 0)
+        {
+            MessageBox.Show(
+                isEn ? "Please transcribe an audio recording or speak in the microphone first." : "Veuillez d'abord transcrire un enregistrement ou parler au microphone.",
+                isEn ? "No transcript available" : "Aucun texte transcrit",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        string sourceTranscript = _transcriptSegments.Count > 0
+            ? string.Join("
+", _transcriptSegments.Select(seg => $"[{seg.SpeakerName}] : {seg.Text}"))
+            : _fullAccumulatedTranscript.Trim();
+
+        string targetSilicon = _selectedSilicon.ToString();
+        string langLabel = targetLang == "fr"
+            ? (isEn ? "🇫🇷 FRENCH" : "🇫🇷 FRANÇAIS")
+            : (isEn ? "🇬🇧 ENGLISH" : "🇬🇧 ANGLAIS");
+        string langEnglishName = targetLang == "fr" ? "French" : "English";
+
+        BtnTranslateFullFr.IsEnabled = false;
+        BtnTranslateFullEn.IsEnabled = false;
+
+        // Remove any previous final translation card at the end of StackTranscriptSegments
+        for (int i = StackTranscriptSegments.Children.Count - 1; i >= 0; i--)
+        {
+            if (StackTranscriptSegments.Children[i] is FrameworkElement fe && fe.Tag as string == "FullTranslationCard")
+            {
+                StackTranscriptSegments.Children.RemoveAt(i);
+            }
+        }
+
+        var trCard = new Border
+        {
+            Tag = "FullTranslationCard",
+            Background = new SolidColorBrush(Color.FromRgb(0x0A, 0x19, 0x2F)),
+            BorderBrush = (Brush)FindResource("CopilotCyanBrush"),
+            BorderThickness = new Thickness(1.5),
+            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(12, 10, 12, 10),
+            Margin = new Thickness(0, 6, 0, 8)
+        };
+
+        var stack = new StackPanel();
+        var headerTxt = new TextBlock
+        {
+            Text = isEn
+                ? $"🌐 FULL TRANSCRIPT TRANSLATION → {langLabel} ({targetSilicon})"
+                : $"🌐 TRADUCTION INTÉGRALE DU TRANSCRIPT → {langLabel} ({targetSilicon})",
+            FontSize = 11,
+            FontWeight = FontWeights.Bold,
+            Foreground = (Brush)FindResource("CopilotCyanBrush"),
+            Margin = new Thickness(0, 0, 0, 6)
+        };
+        var bodyTxt = new TextBlock
+        {
+            Text = isEn ? "⏳ Translating full transcript on NPU..." : "⏳ Traduction intégrale en cours sur NPU...",
+            FontSize = 12,
+            Foreground = (Brush)FindResource("TextPrimaryBrush"),
+            TextWrapping = TextWrapping.Wrap,
+            LineHeight = 18
+        };
+        stack.Children.Add(headerTxt);
+        stack.Children.Add(bodyTxt);
+        trCard.Child = stack;
+
+        TxtTranscriptPlaceholder.Visibility = Visibility.Collapsed;
+        StackTranscriptSegments.Children.Add(trCard);
+        ScrollerTranscript.ScrollToEnd();
+
+        try
+        {
+            string sysPrompt =
+                $"You are an expert bilingual interpreter. Translate the following meeting transcript into {langEnglishName}. " +
+                "Preserve the [Speaker] labels at the start of each line. Output ONLY the translated transcript, without any introduction or commentary.";
+
+            bool firstChunk = true;
+            var result = await _foundryClient.AskStreamingAsync(
+                systemPrompt: sysPrompt,
+                userPrompt: sourceTranscript,
+                onChunkReceived: chunk =>
+                {
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        if (firstChunk)
+                        {
+                            bodyTxt.Text = string.Empty;
+                            firstChunk = false;
+                        }
+                        bodyTxt.Text += chunk;
+                        ScrollerTranscript.ScrollToEnd();
+                    }));
+                },
+                preferredParentModel: "phi-4-mini",
+                preferredDevice: targetSilicon,
+                temperature: 0.1,
+                maxTokens: 700);
+
+            string finalTranslated = (result.Content ?? bodyTxt.Text).Trim();
+            bodyTxt.Text = finalTranslated;
+            _fullTranslatedTranscript = finalTranslated;
+            _translateTarget = targetLang;
+
+            string effDev = !string.IsNullOrWhiteSpace(result.TargetDevice) ? result.TargetDevice.ToUpperInvariant() : targetSilicon;
+            headerTxt.Text = isEn
+                ? $"🌐 FULL TRANSCRIPT TRANSLATION → {langLabel} ({effDev} • {result.TokensPerSecond:F1} tok/s)"
+                : $"🌐 TRADUCTION INTÉGRALE DU TRANSCRIPT → {langLabel} ({effDev} • {result.TokensPerSecond:F1} tok/s)";
+
+            _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
+                demoName: $"Audio Studio - Traduction Transcript ({targetLang.ToUpperInvariant()})",
+                requestedSilicon: targetSilicon,
+                effectiveSilicon: effDev,
+                siliconDeviceName: result.ModelId,
+                latencyMs: (int)result.LatencyMilliseconds,
+                tokensPerSecond: result.TokensPerSecond
+            );
+        }
+        catch (Exception ex)
+        {
+            bodyTxt.Text = isEn
+                ? $"⚠️ Translation error: {ex.Message}"
+                : $"⚠️ Erreur de traduction : {ex.Message}";
+        }
+        finally
+        {
+            BtnTranslateFullFr.IsEnabled = true;
+            BtnTranslateFullEn.IsEnabled = true;
+            ScrollerTranscript.ScrollToEnd();
+        }
+    }
+
     private async void BtnSummarizeMeeting_Click(object sender, RoutedEventArgs e)
     {
         bool isEn = _localizer.CurrentLanguage == "en";

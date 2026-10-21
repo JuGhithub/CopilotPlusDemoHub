@@ -263,12 +263,18 @@
                             <Grid Grid.Row="3" Margin="0,12,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="8" />
+                                    <ColumnDefinition Width="6" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="6" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="6" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
-                                <Button Grid.Column="0" x:Name="BtnCopyText" Content="📋 Copier le texte" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="10,0" Click="BtnCopyText_Click" />
-                                <Button Grid.Column="2" x:Name="BtnSummarizeMeeting" Content="✨ Résumer les décisions avec Phi-4-mini (NPU)" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="12,0" FontWeight="SemiBold" Click="BtnSummarizeMeeting_Click" />
+                                <Button Grid.Column="0" x:Name="BtnCopyText" Content="📋 Copier" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="10,0" Click="BtnCopyText_Click" />
+                                <Button Grid.Column="2" x:Name="BtnTranslateFullFr" Content="🌐 → 🇫🇷 Français" ToolTip="Traduire l'intégralité du transcript en Français à la fin du transcript (NPU)" Style="{StaticResource ModernButtonStyle}" Background="#132F4C" Foreground="{StaticResource CopilotCyanBrush}" Height="30" Padding="10,0" FontWeight="SemiBold" Click="BtnTranslateFullFr_Click" />
+                                <Button Grid.Column="4" x:Name="BtnTranslateFullEn" Content="🌐 → 🇬🇧 English" ToolTip="Traduire l'intégralité du transcript en Anglais à la fin du transcript (NPU)" Style="{StaticResource ModernButtonStyle}" Background="#132F4C" Foreground="{StaticResource CopilotCyanBrush}" Height="30" Padding="10,0" FontWeight="SemiBold" Click="BtnTranslateFullEn_Click" />
+                                <Button Grid.Column="6" x:Name="BtnSummarizeMeeting" Content="✨ Résumer avec Phi-4-mini (NPU)" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="30" Padding="10,0" FontWeight="SemiBold" Click="BtnSummarizeMeeting_Click" />
                             </Grid>
 
                             <!-- Meeting Summary Output Box (When Phi-4-mini summarizes) -->
