@@ -17,7 +17,7 @@ for _lvl in range(1, 6):
         sys.path.insert(0, _cand_root)
         break
 from speaker_service import SpeakerManager
-from lang_utils import detect_language, lang_code, whisper_translate_to_english, smart_transcribe_turn, is_hallucinated_or_junk
+from lang_utils import detect_language, lang_code, whisper_translate_to_english, smart_transcribe_turn, is_hallucinated_or_junk, _get_lang_probe_pipe
 
 
 def load_whisper_and_speaker(model_dir_arg, requested_device):
@@ -70,6 +70,11 @@ def load_whisper_and_speaker(model_dir_arg, requested_device):
         spk_mgr = SpeakerManager()
     except Exception as e:
         print(json.dumps({"type": "warning", "message": f"Could not initialize SpeakerManager: {e}"}), flush=True)
+
+    try:
+        _get_lang_probe_pipe()
+    except Exception:
+        pass
 
     effective_device = target_device
     is_fallback = requested_device.upper() not in effective_device.upper()

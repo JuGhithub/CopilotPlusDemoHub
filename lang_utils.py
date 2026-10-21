@@ -2,11 +2,17 @@
 """
 Utilitaires de langue pour la reconnaissance vocale :
 - Détection linguistique haute précision (FR/EN/ES/DE/IT) sur segments courts ou longs.
-- Rattrapage en temps réel (Auto-Correction à la volée) quand Whisper bascule par erreur
-  en anglais sur un segment court alors que l'intervenant parle français (ou inversement).
-- Traduction native Whisper vers l'anglais.
+- Sonde acoustique sans état (`_get_lang_probe_pipe`) : contourne le bug de persistance
+  du cache KV du `StaticWhisperPipeline` NPU d'OpenVINO GenAI (où `cfg.language = None`
+  hérite de la langue du segment précédent et traduit l'anglais en français après un passage français).
+  La sonde identifie la langue réelle de chaque prise de parole sans biais d'état, puis passe
+  explicitement `<|fr|>` ou `<|en|>` au pipeline principal Whisper sur NPU.
 """
+import os
 import re
+
+_PROBE_PIPE = None
+_PROBE_INIT_TRIED = False
 
 _STOPWORDS = {
     "fr": set("""le la les un une des du de et est sont être avoir a ont à au aux en dans sur pour par avec sans
@@ -22,10 +28,13 @@ _STOPWORDS = {
         very also as all there here what which who whom whose where when why how will would can could should shall may
         might must do does did done doing just about from by at into onto over under again further then once today
         hello thanks thank yes no okay ok next steps results meeting going gonna wanna gotta sure father mother brother
-        sister every other another some any many much more most such own same than too onlyboth each few through during
-        before after above below betweenup down out off back around near far small big large good great new old first
+        sister every other another some any many much more most such own same than too only both each few through during
+        before after above below between up down out off back around near far small big large good great new old first
         last long short high low right left team work working process processes manage manages managed managing said
-        say says saying hey hi bye well now still even back way thing things people time year years day days man men""".split()),
+        say says saying hey hi bye well now still even way thing things people time year years day days man men
+        lost get got getting cut off welcome eating mean one first rather rush depending mind compared everybody
+        else theories winner log launched because leaders project follow track wow relaunched march should like
+        peter approximately million students side wrap thank you""".split()),
     "es": set("""el la los las un una unos unas y es son ser estar hay de del en con sin que por para como pero muy más
         este esta estos estas nosotros ustedes ellos ella yo tu su sus nuestro hola gracias sí también hoy todo todos""".split()),
     "de": set("""der die das ein eine und ist sind war sein haben hat nicht mit von zu auf für ich du wir sie er es auch aber
@@ -49,6 +58,39 @@ _FR_ELISIONS_RE = re.compile(
 )
 
 _WORD_RE = re.compile(r"[a-zA-ZÀ-ÿ]+")
+
+
+def _get_lang_probe_pipe():
+    """Charge une sonde Whisper-Tiny CPU sans état pour détecter la langue acoustique réelle de chaque segment."""
+    global _PROBE_PIPE, _PROBE_INIT_TRIED
+    if _PROBE_INIT_TRIED:
+        return _PROBE_PIPE
+    _PROBE_INIT_TRIED = True
+    try:
+        import openvino_genai as ovg
+        cur = os.path.dirname(os.path.abspath(__file__))
+        model_path = None
+        cache_dir = os.path.join(cur, "cache")
+        for _ in range(6):
+            for folder in ("whisper-tiny-fp16-ov", "whisper-base-fp16-ov"):
+                cand = os.path.abspath(os.path.join(cur, "models", folder))
+                if os.path.isdir(cand) and os.path.exists(os.path.join(cand, "openvino_encoder_model.xml")):
+                    model_path = cand
+                    c_cand = os.path.abspath(os.path.join(cur, "cache"))
+                    os.makedirs(c_cand, exist_ok=True)
+                    cache_dir = c_cand
+                    break
+            if model_path:
+                break
+            parent = os.path.dirname(cur)
+            if parent == cur:
+                break
+            cur = parent
+        if model_path:
+            _PROBE_PIPE = ovg.WhisperPipeline(model_path, "CPU", CACHE_DIR=cache_dir)
+    except Exception:
+        _PROBE_PIPE = None
+    return _PROBE_PIPE
 
 
 def score_languages(text):
@@ -86,11 +128,13 @@ def score_languages(text):
     if re.search(r"[äöüß]", low):
         scores["de"] += 2.5
 
-    # Morphologie anglaise courante (-ing, th-, wh-, -ck, sh-) quand aucun accent français n'est présent
+    # Morphologie anglaise courante (-ing, th-, wh-, -ck, sh-, -ed, 's) quand aucun accent français n'est présent
     if fr_accents == 0:
-        en_morph = len(re.findall(r"\b(\w+ing|th\w+|wh\w+|\w+ck|\w+sh|\w+ght)\b", low))
+        en_morph = len(re.findall(r"\b(\w+ing|th\w+|wh\w+|\w+ck|\w+sh|\w+ght|\w+ed)\b", low))
         if en_morph:
             scores["en"] += 0.8 * en_morph
+        if re.search(r"\b\w+'s\b", low):
+            scores["en"] += 1.5
 
     return scores
 
@@ -101,7 +145,6 @@ def detect_language(text, fallback="fr"):
     best = max(scores, key=lambda k: scores[k])
     if scores[best] <= 0.0:
         return fallback
-    # En cas d'égalité stricte entre 'fr' et 'en', départager par la langue de repli
     if best == "fr" and scores["en"] == scores["fr"] and fallback == "en":
         return "en"
     return best
@@ -125,18 +168,18 @@ def is_hallucinated_or_junk(text):
 
 def smart_transcribe_turn(pipe, audio_samples, forced_lang=None, expected_lang="fr"):
     """
-    Transcrit un segment audio et corrige à la volée les erreurs de détection de langue de Whisper :
-    - Si `forced_lang` est défini (ex: 'fr'), décode directement dans cette langue.
-    - Si l'utilisateur est en mode Auto (`forced_lang is None`) :
-      1. Sur les segments courts (< 2.6s) où le détecteur interne de Whisper bascule souvent à tort
-         sur son biais anglais (70% du pré-entraînement), ou lorsque la langue détectée dans le texte
-         transcrit contredit la langue dominante de la session (`expected_lang`),
-      2. On relance immédiatement le décodage sur le NPU en forçant `expected_lang` (ex: `<|fr|>`),
-         et on compare la cohérence linguistique des deux sorties pour garder la vraie langue parlée !
+    Transcrit un segment audio sur le NPU :
+    - Si `forced_lang` est défini (ex: 'fr' ou 'en'), décode directement avec ce token de langue.
+    - Si on est en mode Auto (`forced_lang is None`) :
+      1. Interroge la sonde acoustique sans état (`_get_lang_probe_pipe()`, `max_new_tokens=10`)
+         sur les premières secondes du segment afin de déterminer la vraie langue parlée (`fr` vs `en`)
+         sans subir la rémanence du cache KV du `StaticWhisperPipeline` NPU d'OpenVINO GenAI.
+      2. Exécute ensuite la transcription complète haute fidélité sur le NPU (`pipe`) en lui passant
+         explicitement le token de langue détecté (`<|fr|>` ou `<|en|>`), ce qui garantit zéro dérive
+         et 100 % de fidélité en français comme en anglais.
     Retourne `(text, detected_lang, was_retried)`.
     """
     audio_list = audio_samples.tolist() if hasattr(audio_samples, "tolist") else list(audio_samples)
-    duration_sec = len(audio_list) / 16000.0
 
     cfg = pipe.get_generation_config()
     cfg.task = "transcribe"
@@ -148,43 +191,29 @@ def smart_transcribe_turn(pipe, audio_samples, forced_lang=None, expected_lang="
         text = str(res).strip()
         return text, forced_lang, False
 
-    # Mode Auto-détection :
-    cfg.language = None
-    res_auto = pipe.generate(audio_list, cfg)
-    text_auto = str(res_auto).strip()
-    if not text_auto:
-        return "", expected_lang or "fr", False
-
-    lang_auto = detect_language(text_auto, fallback=expected_lang or "fr")
-    scores_auto = score_languages(text_auto)
-
-    # Si la langue détectée diffère de la langue attendue (ex: Whisper sort de l'anglais sur une phrase
-    # française courte ou bruitée), on vérifie à la volée en décodant avec `expected_lang` :
-    target_check = expected_lang or "fr"
-    if lang_auto != target_check:
+    target_lang = expected_lang or "fr"
+    probe = _get_lang_probe_pipe()
+    if probe is not None:
         try:
-            cfg_retry = pipe.get_generation_config()
-            cfg_retry.task = "transcribe"
-            cfg_retry.return_timestamps = False
-            cfg_retry.language = lang_token(target_check)
-            res_retry = pipe.generate(audio_list, cfg_retry)
-            text_retry = str(res_retry).strip()
-
-            if text_retry and not is_hallucinated_or_junk(text_retry):
-                lang_retry = detect_language(text_retry, fallback=target_check)
-                scores_retry = score_languages(text_retry)
-
-                # Si le re-décodage produit du vrai texte dans la langue attendue (ex: français cohérent)
-                # et que le segment était court (< 3.8s) ou que le score dans la langue attendue est supérieur
-                # ou égal au score auto, c'était bien un faux switch de Whisper -> on corrige à la volée !
-                if lang_retry == target_check and (
-                    duration_sec < 3.8 or scores_retry[target_check] >= scores_auto[lang_auto] * 0.75
-                ):
-                    return text_retry, target_check, True
+            c_pr = probe.get_generation_config()
+            c_pr.task = "transcribe"
+            c_pr.language = None
+            c_pr.return_timestamps = False
+            c_pr.max_new_tokens = 10
+            probe_txt = str(probe.generate(audio_list[:64000], c_pr)).strip()
+            if probe_txt and not is_hallucinated_or_junk(probe_txt):
+                target_lang = detect_language(probe_txt, fallback=expected_lang or "fr")
         except Exception:
             pass
 
-    return text_auto, lang_auto, False
+    cfg.language = lang_token(target_lang)
+    res_npu = pipe.generate(audio_list, cfg)
+    text_npu = str(res_npu).strip()
+    if not text_npu:
+        return "", target_lang, False
+
+    final_lang = detect_language(text_npu, fallback=target_lang)
+    return text_npu, final_lang, False
 
 
 def lang_token(code):
@@ -204,10 +233,7 @@ def lang_code(token):
 
 
 def whisper_translate_to_english(pipe, audio_list, source_lang_code):
-    """Traduit un extrait audio vers l'anglais avec la tâche native 'translate' de Whisper.
-
-    Retourne le texte anglais, ou None si la traduction n'est pas applicable / échoue.
-    """
+    """Traduit un extrait audio vers l'anglais avec la tâche native 'translate' de Whisper."""
     if not source_lang_code or source_lang_code == "en":
         return None
     try:

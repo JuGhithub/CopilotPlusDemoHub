@@ -16,7 +16,7 @@ for _lvl in range(1, 6):
         sys.path.insert(0, _cand_root)
         break
 from speaker_service import SpeakerManager
-from lang_utils import detect_language, lang_code, whisper_translate_to_english, smart_transcribe_turn, is_hallucinated_or_junk
+from lang_utils import detect_language, lang_code, whisper_translate_to_english, smart_transcribe_turn, is_hallucinated_or_junk, _get_lang_probe_pipe
 
 def main():
     parser = argparse.ArgumentParser(description="Real-Time Streaming Speech Transcription & Diarization")
@@ -103,12 +103,17 @@ def main():
 
     load_time_ms = int((time.perf_counter() - load_start) * 1000)
 
-    # 2. Initialize Speaker Manager
+    # 2. Initialize Speaker Manager & Stateless Language Probe
     spk_mgr = None
     try:
         spk_mgr = SpeakerManager()
     except Exception as e:
         print(json.dumps({"type": "warning", "message": f"SpeakerManager init: {e}"}), flush=True)
+
+    try:
+        _get_lang_probe_pipe()
+    except Exception:
+        pass
 
     # 3. Audio file writer
     try:
