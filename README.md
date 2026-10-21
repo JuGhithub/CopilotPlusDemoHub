@@ -78,25 +78,24 @@ flowchart TD
 
 ### 3. 🛡️ Contrôle d'Accès Zero-Trust (Vision par Ordinateur Temps Réel & Démineur)
 - **Modèle** : `YOLOv8s-World` (OpenVINO IR, ONNX DirectML ou Microsoft Olive FP16).
-- **Accélération** : Pipeline hybride **NPU / GPU DirectML**.
-- **Flux Vidéo** : Capture webcam fluide à 30 IPS.
+- **Accélération** : Exécution sur **NPU par défaut** (avec bascule dynamique GPU / CPU et remontée du `effective_device` réel).
+- **Anti-Spoofing & Sécurité** : Détection de fraude par présentation (smartphone / écran présenté devant la caméra) et galerie d'échantillons de test.
 - **Matrice de Conformité de Sécurité** : Détection simultanée 3/3 (Tasse ☕, Lunettes 👓, Casque 🎧) pour déverrouiller la console exécutive et dévoiler le jeu de Démineur souverain.
 
 ---
 
-### 4. 🎙️ Audio Studio & Locuteurs (STT & Biométrie Vocale)
-- **Transcription** : Modèles `Whisper-Tiny`, `Whisper-Base` et `Whisper-Small` quantifiés FP16 pour une retranscription vocale ultra-rapide.
-- **Bilingue FR / EN** : détection automatique de la langue **phrase par phrase** (on peut alterner français et anglais en parlant), ou langue forcée.
-- **Traduction locale** : chaque phrase peut être traduite vers FR / EN / ES / DE / IT (anglais via la tâche native Whisper, autres langues via Phi-4-mini local). La copie du texte inclut original + traduction.
-- **Biométrie du Locuteur** : Réseau neuronal profond `VoxCeleb ECAPA-TDNN ONNX` extrayant l'empreinte acoustique unique de chaque participant.
-- **Sécurité TPM 2.0** : Scellement cryptographique des profils biométriques dans le matériel Windows via DPAPI / TPM.
+### 4. 🎙️ Audio Studio & Locuteurs (STT, Diarisation & Traduction NPU)
+- **Daemon Whisper NPU Pré-chauffé (`--daemon` + Cache Blob)** : Modèles `Whisper-Tiny`, `Whisper-Base` (INT8 NPU) et `Whisper-Small` maintenus chauds en mémoire NPU dès l'ouverture de l'onglet (**`8 ms`** au clic et **`1,48 s`** au total pour transcrire et diariser 25 s d'audio).
+- **Bilingue FR / EN & Rattrapage Temps Réel (`lang_utils.py`)** : Détection automatique de la langue intervention par intervention avec **auto-correction à la volée sur NPU** (`smart_transcribe_turn`) si Whisper en mode `Auto` dérive vers l'anglais sur un segment court prononcé en français.
+- **Traduction Intégrale en 1 Clic (`🌐 → 🇫🇷 Français` / `🌐 → 🇬🇧 English`)** : Ajout d'une carte de traduction complète à la fin du transcript générée en streaming sur le **NPU (`phi-4-mini-instruct-openvino-npu`)** en conservant les étiquettes `[Intervenant] : ...`, plus traduction à la volée segment par segment.
+- **Biométrie du Locuteur & Sécurité TPM 2.0** : Réseau neuronal `VoxCeleb ECAPA-TDNN ONNX` extrayant l'empreinte vocale de chaque participant avec scellement cryptographique DPAPI / TPM et télémétrie énergétique réelle (`HardwareTelemetryService`).
 
 ---
 
-### 5. 📄 PDF Studio & OCR Intelligent
-- **Moteur Vectoriel** : `PyMuPDF` haute performance pour l'extraction de texte et la manipulation de structures PDF.
-- **OCR Neuronal Hybride** : `RapidOCR` accéléré par **NPU / GPU DirectML** pour les scans et documents numérisés dégradés.
-- **Anonymisation & Conformité RGPD** : Détection et caviardage automatique des données sensibles (IBAN, numéros de sécurité sociale, noms, montants).
+### 5. 📄 PDF Studio, OCR Intelligent & Audit Juridique NPU
+- **Moteur Vectoriel & OCR Neuronal Hybride** : `PyMuPDF` haute performance combiné à `RapidOCR` accéléré par **NPU / GPU DirectML** pour les scans et documents numérisés.
+- **Audit Sémantique, Juridique & RGPD sur NPU (`Phi-4-mini`)** : Analyse locale en streaming (`phi-4-mini-instruct-openvino-npu`) produisant une synthèse exécutive, l'identification des clauses sensibles et l'extraction contextuelle des entités personnelles et confidentielles (noms, sociétés, adresses, identifiants) invisibles aux simples Regex.
+- **Caviardage Hybride IA + RGPD en 1 Clic (`--mode ai_audit`)** : Combinaison des entités détectées par le LLM sur NPU et des expressions régulières RGPD (IBAN, NIR, emails, téléphones, montants) pour générer un PDF définitivement anonymisé, accompagnée de la télémétrie batterie réelle en Watts et Joules.
 
 ---
 
@@ -232,6 +231,16 @@ Pour les collègues qui ne souhaitent pas installer Git ni compiler le code :
    - Vérifiez dans *Paramètres Windows > Confidentialité et sécurité > Caméra* que l'accès aux applications de bureau est activé.
 4. **Diagnostic global** :
    - Exécutez `python scripts\verify_installation.py` à tout moment pour obtenir un rapport d'intégrité complet.
+
+---
+
+## 🆕 Dernières Mises à Jour (Octobre 2026)
+
+- **🎙️ Audio Studio — Traduction Intégrale en 1 Clic sur NPU (`Phi-4-mini`)** : Ajout des boutons `🌐 → 🇫🇷 Français` et `🌐 → 🇬🇧 English` permettant d'insérer à la fin du transcript une carte de traduction complète générée en streaming sur le NPU (`phi-4-mini-instruct-openvino-npu`), avec conservation des intervenants `[Speaker] : ...` et export au presse-papiers.
+- **🎙️ Audio Studio — Auto-Correction Linguistique Temps Réel (`lang_utils.py`)** : Détection et rattrapage automatique à la volée (`smart_transcribe_turn`) lorsque Whisper en mode `Auto` dérive vers l'anglais sur un segment court prononcé en français, avec re-décodage instantané sur NPU (`<|fr|>`).
+- **⚡ Audio Studio — Daemon Whisper NPU Pré-chauffé (`8 ms` au clic)** : Préchargement persistant en arrière-plan (`transcribe_service.py --daemon`) et mise en cache des blobs compilés OpenVINO (`models/.ov_cache`), réduisant le temps d'initialisation au clic de `3,4 s–10,2 s` à **`8 ms`** (`1,48 s` au total pour 25 s d'audio avec diarisation).
+- **📄 PDF Studio — Audit Juridique & RGPD sur NPU + Caviardage Hybride IA** : Intégration d'un audit sémantique local en streaming (`Phi-4-mini` sur NPU) détectant les clauses à risque et extrayant les entités personnelles hors-portée des Regex classiques, suivi d'un caviardage PDF en 1 clic (`--mode ai_audit`).
+- **🔋 Télémétrie Matérielle 100 % Réelle (`HardwareTelemetryService`)** : Suppression de toutes les valeurs simulées dans l'Audio Studio et le PDF Studio au profit des mesures réelles de puissance batterie/SoC (Watts, Joules) et du reporting transparent du périphérique effectif (`effective_device` + `fallback`).
 
 ---
 
