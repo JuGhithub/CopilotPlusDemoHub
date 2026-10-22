@@ -36,14 +36,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         _isInitialized = true;
 
-        if (_localizer.CurrentLanguage == "en")
-        {
-            RadLangEn.IsChecked = true;
-        }
-        else
-        {
-            RadLangFr.IsChecked = true;
-        }
+        UpdateLanguageToggleUi();
 
         Loaded += (s, e) =>
         {
@@ -158,29 +151,25 @@ public partial class MainWindow : Window
 
     private static bool _modelsWarmedUp;
 
-    private void Language_Checked(object sender, RoutedEventArgs e)
+    private void BtnLanguageToggle_Click(object sender, RoutedEventArgs e)
     {
         if (!_isInitialized || _localizer == null) return;
 
-        string target = "fr";
-        if (ReferenceEquals(sender, RadLangEn) || (sender is FrameworkElement fe && fe.Name == "RadLangEn"))
-        {
-            target = "en";
-        }
-        else if (ReferenceEquals(sender, RadLangFr) || (sender is FrameworkElement fe2 && fe2.Name == "RadLangFr"))
-        {
-            target = "fr";
-        }
-        else
-        {
-            target = (RadLangEn?.IsChecked == true) ? "en" : "fr";
-        }
+        string nextLang = _localizer.CurrentLanguage.Equals("en", StringComparison.OrdinalIgnoreCase) ? "fr" : "en";
+        _localizer.SetLanguage(nextLang);
+        ApplyLocalization();
+    }
 
-        if (!_localizer.CurrentLanguage.Equals(target, StringComparison.OrdinalIgnoreCase))
-        {
-            _localizer.SetLanguage(target);
-            ApplyLocalization();
-        }
+    private void UpdateLanguageToggleUi()
+    {
+        if (BtnLanguageToggle == null) return;
+        bool isEn = _localizer?.CurrentLanguage == "en";
+        if (TxtLangFlag != null) TxtLangFlag.Text = isEn ? "🇬🇧" : "🇫🇷";
+        if (TxtLangCurrent != null) TxtLangCurrent.Text = isEn ? "EN" : "FR";
+        if (TxtLangOther != null) TxtLangOther.Text = isEn ? "FR" : "EN";
+        BtnLanguageToggle.ToolTip = isEn
+            ? "Switch language to French (FR)"
+            : "Basculer la langue en Anglais (EN)";
     }
 
     private void ApplyLocalization()
@@ -233,13 +222,7 @@ public partial class MainWindow : Window
         _securityAccessView?.ApplyLocalization(_localizer);
         _fleetTelemetryView?.ApplyLocalization(_localizer);
 
-        // Keep language selector pills strictly synchronized
-        if (RadLangEn != null && RadLangFr != null)
-        {
-            bool isEn = _localizer.CurrentLanguage == "en";
-            if (isEn && RadLangEn.IsChecked != true) RadLangEn.IsChecked = true;
-            else if (!isEn && RadLangFr.IsChecked != true) RadLangFr.IsChecked = true;
-        }
+        UpdateLanguageToggleUi();
 
         CheckServerStatusAsync();
     }

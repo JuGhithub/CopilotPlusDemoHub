@@ -80,13 +80,18 @@
                     <TextBlock Text="❓" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Button>
 
-                <!-- Language Selector Pills [ 🇫🇷 FR | 🇬🇧 EN ] -->
-                <Border Grid.Column="8" Background="#131F33" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="4,2" VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal">
-                        <RadioButton x:Name="RadLangFr" GroupName="LangGrp" Content="🇫🇷 FR" Style="{StaticResource PillButtonStyle}" Checked="Language_Checked" />
-                        <RadioButton x:Name="RadLangEn" GroupName="LangGrp" Content="🇬🇧 EN" Style="{StaticResource PillButtonStyle}" Checked="Language_Checked" />
+                <!-- Language Toggle Button [ 🇫🇷 FR ⇄ EN / 🇬🇧 EN ⇄ FR ] -->
+                <Button Grid.Column="8" x:Name="BtnLanguageToggle" Style="{StaticResource ModernButtonStyle}"
+                        Background="#0F243E" BorderBrush="{StaticResource CopilotCyanBrush}" BorderThickness="1"
+                        Padding="10,4" Height="36" Click="BtnLanguageToggle_Click"
+                        ToolTip="Basculer la langue / Toggle language (FR / EN)">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtLangFlag" Text="🇫🇷" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center" />
+                        <TextBlock x:Name="TxtLangCurrent" Text="FR" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="⇄" FontSize="11" Foreground="{StaticResource CopilotCyanBrush}" Margin="6,0,6,0" VerticalAlignment="Center" />
+                        <TextBlock x:Name="TxtLangOther" Text="EN" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
                     </StackPanel>
-                </Border>
+                </Button>
 
                 <!-- Right: Window State Toggle (Fullscreen / Windowed) -->
                 <Button Grid.Column="10" x:Name="BtnWindowToggle" Style="{StaticResource ModernButtonStyle}"
