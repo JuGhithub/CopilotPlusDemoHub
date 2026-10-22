@@ -156,10 +156,26 @@ public partial class MainWindow : Window
         }
     }
 
+    private static bool _modelsWarmedUp;
+
     private void Language_Checked(object sender, RoutedEventArgs e)
     {
-        if (!_isInitialized || _localizer == null || RadLangEn == null || RadLangFr == null) return;
-        string target = RadLangEn.IsChecked == true ? "en" : "fr";
+        if (!_isInitialized || _localizer == null) return;
+
+        string target = "fr";
+        if (ReferenceEquals(sender, RadLangEn) || (sender is FrameworkElement fe && fe.Name == "RadLangEn"))
+        {
+            target = "en";
+        }
+        else if (ReferenceEquals(sender, RadLangFr) || (sender is FrameworkElement fe2 && fe2.Name == "RadLangFr"))
+        {
+            target = "fr";
+        }
+        else
+        {
+            target = (RadLangEn?.IsChecked == true) ? "en" : "fr";
+        }
+
         if (!_localizer.CurrentLanguage.Equals(target, StringComparison.OrdinalIgnoreCase))
         {
             _localizer.SetLanguage(target);
@@ -217,6 +233,14 @@ public partial class MainWindow : Window
         _securityAccessView?.ApplyLocalization(_localizer);
         _fleetTelemetryView?.ApplyLocalization(_localizer);
 
+        // Keep language selector pills strictly synchronized
+        if (RadLangEn != null && RadLangFr != null)
+        {
+            bool isEn = _localizer.CurrentLanguage == "en";
+            if (isEn && RadLangEn.IsChecked != true) RadLangEn.IsChecked = true;
+            else if (!isEn && RadLangFr.IsChecked != true) RadLangFr.IsChecked = true;
+        }
+
         CheckServerStatusAsync();
     }
 
@@ -261,18 +285,22 @@ public partial class MainWindow : Window
                     UpdateAcceleratorUi();
                 });
 
-                // Warm up default models in background and compile compute graph
-                _ = Task.Run(async () =>
+                // Warm up default models in background and compile compute graph (once only)
+                if (!_modelsWarmedUp)
                 {
-                    try
+                    _modelsWarmedUp = true;
+                    _ = Task.Run(async () =>
                     {
-                        await FoundryClient.TryLoadModelAsync("phi-4-mini-instruct-openvino-npu");
-                        await FoundryClient.TryLoadModelAsync("phi-4-mini-instruct-openvino-gpu");
-                        var warmModel = await _foundryClient.GetBestModelAsync("phi-4-mini", "AUTO");
-                        await _foundryClient.AskAsync("System ping", "Hi", warmModel.Parent, warmModel.TargetDevice, maxTokens: 2);
-                    }
-                    catch { }
-                });
+                        try
+                        {
+                            await FoundryClient.TryLoadModelAsync("phi-4-mini-instruct-openvino-npu");
+                            await FoundryClient.TryLoadModelAsync("phi-4-mini-instruct-openvino-gpu");
+                            var warmModel = await _foundryClient.GetBestModelAsync("phi-4-mini", "AUTO");
+                            await _foundryClient.AskAsync("System ping", "Hi", warmModel.Parent, warmModel.TargetDevice, maxTokens: 2);
+                        }
+                        catch { }
+                    });
+                }
             }
             else
             {

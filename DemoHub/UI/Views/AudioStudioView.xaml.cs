@@ -62,6 +62,12 @@ public partial class AudioStudioView : UserControl, IDisposable
         public string AudioFilePath { get; set; } = string.Empty;
         public TextBlock? NameTextBlock { get; set; }
         public Border? BadgeBorder { get; set; }
+        public StackPanel? MainStack { get; set; }
+        public TextBlock? BodyTextBlock { get; set; }
+        public TextBlock? TranslationTextBlock { get; set; }
+        public string DetectedLang { get; set; } = string.Empty;
+        public string TranslationText { get; set; } = string.Empty;
+        public string TranslationTargetLang { get; set; } = string.Empty;
     }
 
     private readonly List<TranscriptSegmentData> _transcriptSegments = new();
@@ -378,7 +384,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         };
     }
 
-    private void CmbTranslate_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void CmbTranslate_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (!_isViewLoaded) return;
         if (CmbTranslate.SelectedItem is ComboBoxItem item && item.Tag is string tag)
@@ -392,6 +398,130 @@ public partial class AudioStudioView : UserControl, IDisposable
                     _liveProcess.StandardInput.Flush();
                 }
                 catch { }
+            }
+            else if (_transcriptSegments.Count > 0)
+            {
+                await TranslateAllSegmentsAsync(tag);
+            }
+        }
+    }
+
+    public async Task TranslateAllSegmentsAsync(string targetLang)
+    {
+        if (_transcriptSegments.Count == 0) return;
+
+        bool isEn = _localizer?.CurrentLanguage == "en";
+        string targetSilicon = _selectedSilicon.ToString();
+        string langEnglishName = LangNameEnglish(targetLang);
+
+        if (targetLang == "none")
+        {
+            _translateTarget = "none";
+            foreach (var seg in _transcriptSegments)
+            {
+                if (seg.TranslationTextBlock != null)
+                {
+                    seg.TranslationTextBlock.Visibility = Visibility.Collapsed;
+                }
+            }
+            return;
+        }
+
+        _translateTarget = targetLang;
+        string trPrefix = $"🌐 → {LangFlag(targetLang)} {targetLang.ToUpperInvariant()} : ";
+
+        // 1. Instantly display loading state on every segment card
+        foreach (var seg in _transcriptSegments)
+        {
+            if (seg.TranslationTextBlock == null)
+            {
+                var trBlock = new TextBlock
+                {
+                    Text = trPrefix + (isEn ? "⏳ Translating..." : "⏳ Traduction en cours..."),
+                    FontSize = 12,
+                    FontStyle = FontStyles.Italic,
+                    Foreground = (Brush)FindResource("CopilotCyanBrush"),
+                    TextWrapping = TextWrapping.Wrap,
+                    LineHeight = 17,
+                    Margin = new Thickness(0, 6, 0, 0)
+                };
+                seg.TranslationTextBlock = trBlock;
+                seg.MainStack?.Children.Add(trBlock);
+            }
+            else
+            {
+                seg.TranslationTextBlock.Visibility = Visibility.Visible;
+                seg.TranslationTextBlock.Text = trPrefix + (isEn ? "⏳ Translating..." : "⏳ Traduction en cours...");
+            }
+        }
+
+        try
+        {
+            await _foundryClient.EnsureServerReadyAsync();
+            var selectedModel = await _foundryClient.GetBestModelAsync("phi-4-mini", targetSilicon);
+
+            var lines = new List<string>();
+            for (int i = 0; i < _transcriptSegments.Count; i++)
+            {
+                lines.Add($"[{i + 1}] {_transcriptSegments[i].Text}");
+            }
+            string userPrompt = string.Join(Environment.NewLine, lines);
+
+            string sysPrompt =
+                $"You are a professional translator. Translate each numbered line into {langEnglishName}. " +
+                "Preserve the exact line numbering [1], [2], etc. Output ONLY the translated numbered lines, with no preface or commentary.";
+
+            var result = await _foundryClient.AskAsync(selectedModel, sysPrompt, userPrompt, temperature: 0.1, maxTokens: 1200);
+            string content = result.Content ?? string.Empty;
+
+            var translatedLines = new Dictionary<int, string>();
+            foreach (var rawLine in content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var trimmed = rawLine.Trim();
+                if (trimmed.StartsWith("["))
+                {
+                    int closeBracket = trimmed.IndexOf(']');
+                    if (closeBracket > 1 && int.TryParse(trimmed.Substring(1, closeBracket - 1), out int num))
+                    {
+                        string lineText = trimmed.Substring(closeBracket + 1).Trim().TrimStart(':', '-', ' ');
+                        translatedLines[num] = lineText;
+                    }
+                }
+            }
+
+            _fullTranslatedTranscript = string.Empty;
+            for (int i = 0; i < _transcriptSegments.Count; i++)
+            {
+                var seg = _transcriptSegments[i];
+                string translatedText;
+                if (translatedLines.TryGetValue(i + 1, out var tl) && !string.IsNullOrWhiteSpace(tl))
+                {
+                    translatedText = tl;
+                }
+                else
+                {
+                    translatedText = await TranslateWithLlmAsync(seg.Text, targetLang);
+                }
+
+                seg.TranslationText = translatedText;
+                seg.TranslationTargetLang = targetLang;
+                if (seg.TranslationTextBlock != null)
+                {
+                    seg.TranslationTextBlock.Text = trPrefix + translatedText;
+                }
+                _fullTranslatedTranscript += $" [{seg.SpeakerName}] " + translatedText;
+            }
+        }
+        catch (Exception ex)
+        {
+            foreach (var seg in _transcriptSegments)
+            {
+                if (seg.TranslationTextBlock != null && seg.TranslationTextBlock.Text.Contains("⏳"))
+                {
+                    seg.TranslationTextBlock.Text = trPrefix + (isEn
+                        ? $"⚠️ Translation error: {ex.Message}"
+                        : $"⚠️ Erreur traduction : {ex.Message}");
+                }
             }
         }
     }
@@ -446,6 +576,18 @@ public partial class AudioStudioView : UserControl, IDisposable
                     }
                 }
                 catch { }
+            }
+            else
+            {
+                string langName = (tag == "auto")
+                    ? (_localizer?.CurrentLanguage == "en" ? "Auto-Detect" : "Auto-Détection")
+                    : FormatLanguageFriendlyName(tag.Replace("<|", "").Replace("|>", ""));
+                if (LblTranscriptionStatus != null && string.IsNullOrWhiteSpace(_fullAccumulatedTranscript))
+                {
+                    LblTranscriptionStatus.Text = (_localizer?.CurrentLanguage == "en")
+                        ? $"Language: {langName}. Click 'Transcribe file' to run recognition."
+                        : $"Langue : {langName}. Cliquez sur 'Transcrire le fichier' pour lancer la reconnaissance.";
+                }
             }
         }
     }
@@ -1116,7 +1258,13 @@ public partial class AudioStudioView : UserControl, IDisposable
             Embedding = embedding,
             AudioFilePath = !string.IsNullOrEmpty(audioFilePath) ? audioFilePath : _currentAudioPath,
             NameTextBlock = spkTxt,
-            BadgeBorder = spkBadge
+            BadgeBorder = spkBadge,
+            MainStack = mainStack,
+            BodyTextBlock = txtBlock,
+            TranslationTextBlock = trBlock,
+            DetectedLang = detectedLang,
+            TranslationText = translation ?? string.Empty,
+            TranslationTargetLang = hasTranslation ? "en" : (needsLlm ? target : string.Empty)
         };
         _transcriptSegments.Add(segData);
 
@@ -1798,6 +1946,22 @@ public partial class AudioStudioView : UserControl, IDisposable
         ScrollerTranscript.UpdateLayout();
         trCard.BringIntoView();
         ScrollerTranscript.ScrollToEnd();
+
+        // Synchronize CmbTranslate selection in top right
+        if (CmbTranslate != null)
+        {
+            foreach (ComboBoxItem itm in CmbTranslate.Items)
+            {
+                if (itm.Tag as string == targetLang)
+                {
+                    CmbTranslate.SelectedItem = itm;
+                    break;
+                }
+            }
+        }
+
+        // Visibly translate each individual segment card in place
+        _ = TranslateAllSegmentsAsync(targetLang);
 
         try
         {
