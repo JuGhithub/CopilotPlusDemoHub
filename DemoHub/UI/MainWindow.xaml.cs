@@ -493,6 +493,7 @@ public partial class MainWindow : Window
     {
         if (!_isInitialized || ViewContainer == null) return;
         _pdfStudioView ??= new PdfStudioView(_foundryClient, _localizer, GetSelectedDevice, GetEffectiveDevice, SetSelectedDevice);
+        _pdfStudioView.ApplyLocalization(_localizer);
         _pdfStudioView.RefreshDeviceUI();
         ViewContainer.Content = _pdfStudioView;
     }

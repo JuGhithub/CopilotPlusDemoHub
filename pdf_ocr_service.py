@@ -429,11 +429,13 @@ def action_redact(args):
             for kw in [k.strip() for k in args.keyword.split("|") if k.strip()]:
                 patterns.append((re.escape(kw), f"Entité IA : {kw}"))
         if args.mode in ("auto_rgpd", "ai_audit") and (not getattr(args, 'keyword', None) or args.mode == "ai_audit"):
-            # GDPR sensitive patterns: Emails, French Phones, IBANs, NIR/Social Security
+            # GDPR sensitive patterns: Emails, French & International Phones, IBANs (with or without spaces), BIC, NIR/Social Security
             patterns.extend([
                 (r'[\w\.-]+@[\w\.-]+\.\w+', "Adresse Email RGPD"),
-                (r'(?:\+33|0)[1-9](?:[\s.-]?\d{2}){4}', "Numéro de Téléphone"),
-                (r'[A-Z]{2}\d{2}[A-Z0-9]{4}\d{7}([A-Z0-9]?){0,16}', "Coordonnées Bancaires (IBAN)"),
+                (r'(?:(?<=[\s,;:(])|^)(?:(?:\+|00)33[\s.-]?(?:\(0\)[\s.-]?)?|0)[1-9](?:[\s.-]?\d{2}){4}\b', "Numéro de Téléphone (FR)"),
+                (r'(?:(?<=[\s,;:(])|^)(?:\+|00)\d{1,3}[\s.-]?(?:\(?\d{1,4}\)?[\s.-]?){2,4}\d{2,4}\b', "Numéro de Téléphone (Intl)"),
+                (r'\b[A-Z]{2}\d{2}(?:[\s-]?[A-Z0-9]{4}){3,7}(?:[\s-]?[A-Z0-9]{1,4})?\b', "Coordonnées Bancaires (IBAN)"),
+                (r'(?:BIC|SWIFT|Code BIC)[\s:]*[A-Z0-9]{8,11}\b', "Code Identifiant Bancaire (BIC)"),
                 (r'[12]\s?\d{2}\s?(?:0[1-9]|1[0-2])\s?\d{2}\s?\d{3}\s?\d{3}(?:\s?\d{2})?', "Numéro Sécurité Sociale (NIR)"),
                 (r'\b\d{1,3}(?:\s\d{3})*,\d{2}\s?EUR\b', "Montant Financier Confidentiel")
             ])

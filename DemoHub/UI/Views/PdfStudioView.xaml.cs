@@ -1504,6 +1504,16 @@ public partial class PdfStudioView : UserControl, IDisposable
             }
         }
 
+        if (TxtTabMode1 != null)
+            TxtTabMode1.Text = isEn
+                ? "🔍  MODE 1: OCR RECOGNITION & STRUCTURED EXTRACTION"
+                : "🔍  MODE 1 : RECONNAISSANCE OCR & EXTRACTION STRUCTURÉE";
+
+        if (TxtTabMode2 != null)
+            TxtTabMode2.Text = isEn
+                ? "✍️  MODE 2: LEGAL EDITION, GDPR REDACTION & STAMPS"
+                : "✍️  MODE 2 : ÉDITION LÉGALE, CAVIARDAGE RGPD & TAMPONS";
+
         BtnSampleContract.Content = isEn ? "📄 Sample Contract (PDF)" : "📄 Exemple Contrat Cadre (PDF)";
         BtnSampleInvoice.Content = isEn ? "🧾 Sample Scanned Invoice (Scan)" : "🧾 Exemple Facture Numérisée (Scan)";
         BtnImportDoc.Content = isEn ? "📂 Import Document (PDF / Image)" : "📂 Importer un Document (PDF / Image)";
@@ -1519,6 +1529,32 @@ public partial class PdfStudioView : UserControl, IDisposable
         BtnQuickExecuteReplace.Content = isEn ? "✏️ Replace (Enter)" : "✏️ Remplacer (Entrée)";
         BtnQuickExecuteRedact.Content = isEn ? "🛡️ Redact" : "🛡️ Caviarder";
 
+        if (LblOcrSectionTitle != null)
+            LblOcrSectionTitle.Text = isEn
+                ? "NEURAL OPTICAL RECOGNITION (RAPIDOCR)"
+                : "RECONNAISSANCE OPTIQUE NEURALE (RAPIDOCR)";
+
+        if (LblOcrSectionDesc != null)
+            LblOcrSectionDesc.Text = isEn
+                ? "Scan and vectorize any scanned document, invoice or receipt to extract full text with precise spatial coordinates."
+                : "Scannez et vectorisez tout document scanné, facture ou reçu pour en extraire le texte intégral avec coordonnées spatiales précises.";
+
+        if (TxtRadEngineOlive != null)
+            TxtRadEngineOlive.Text = isEn ? "⚡ Olive Model (FP16)" : "⚡ Modèle Olive (FP16)";
+
+        if (TxtRadEngineRaw != null)
+            TxtRadEngineRaw.Text = isEn ? "🌐 Raw Model (FP32)" : "🌐 Modèle Brut (FP32)";
+
+        if (TxtOliveOcrKpiTitle != null)
+            TxtOliveOcrKpiTitle.Text = isEn
+                ? "⚡ Active Microsoft Olive Optimization:"
+                : "⚡ Optimisation Microsoft Olive Active :";
+
+        if (TxtOliveOcrKpiDesc != null)
+            TxtOliveOcrKpiDesc.Text = isEn
+                ? "Disk size: 9.8 MB (-34%) • RAM: ~33 MB (-17%) • Energy: -50% Joules"
+                : "Poids disque : 9.8 Mo (-34%) • RAM : ~33 Mo (-17%) • Énergie : -50% Joules";
+
         string ocrTargetDev = GetTargetDevice();
         BtnRunOcr.Content = isEn ? $"🚀 Run Local Neural OCR ({ocrTargetDev})" : $"🚀 Lancer l'Extraction OCR Locale ({ocrTargetDev})";
         BtnMakeSearchablePdf.Content = isEn
@@ -1526,6 +1562,16 @@ public partial class PdfStudioView : UserControl, IDisposable
             : "📄 Convertir en PDF Rechercheable (Couche Texte Ctrl+F)";
         BtnCopyText.Content = isEn ? "📋 Copy Text" : "📋 Copier Texte";
         BtnExportTxt.Content = isEn ? "📥 Export TXT" : "📥 Exporter TXT";
+
+        if (LblRedactSectionTitle != null)
+            LblRedactSectionTitle.Text = isEn
+                ? "ANONYMIZATION & IRREVERSIBLE GDPR REDACTION"
+                : "ANONYMISATION & CAVIARDAGE RGPD IRRÉVERSIBLE";
+
+        if (LblRedactSectionDesc != null)
+            LblRedactSectionDesc.Text = isEn
+                ? "True legal redaction: Materially removes confidential data from the PDF stream without leaving traces under the black bar."
+                : "True Redaction légale : Supprime matériellement les données confidentielles du flux PDF sans laisser de traces sous le bandeau noir.";
 
         BtnAutoRedactRgpd.Content = isEn
             ? "🛡️ Redact Sensitive GDPR Data (Emails, Phones, IBAN, SSN)"
@@ -1548,12 +1594,44 @@ public partial class PdfStudioView : UserControl, IDisposable
                 ? "🛡️ Redact AI-Detected Entities + GDPR"
                 : "🛡️ Caviarder les Entités Détectées par l'IA + RGPD";
 
+        if (LblStampSectionTitle != null)
+            LblStampSectionTitle.Text = isEn
+                ? "OFFICIAL STAMP & TIMESTAMPED SEAL"
+                : "TAMPON OFFICIEL & SCEAU HORODATÉ";
+
+        if (LblStampSectionDesc != null)
+            LblStampSectionDesc.Text = isEn
+                ? "Apply an indelible legal notice with date, time and compliance reference."
+                : "Apposez une mention juridique indélébile avec date, heure et référence de conformité.";
+
         RadStampConfidential.Content = isEn ? "🔒 CONFIDENTIAL" : "🔒 CONFIDENTIEL";
         RadStampApproved.Content = isEn ? "✅ APPROVED BY IT" : "✅ APPROUVÉ DSI";
         RadStampCertified.Content = isEn ? "📄 CERTIFIED COPY" : "📄 COPIE CONFORME";
 
         BtnApplyStamp.Content = isEn ? "🏷️ Apply Legal Stamp" : "🏷️ Apposer le Tampon Juridique";
+
+        if (LblReplaceSectionTitle != null)
+            LblReplaceSectionTitle.Text = isEn
+                ? "VECTOR TEXT REPLACEMENT"
+                : "REMPLACEMENT DE TEXTE VECTORIEL";
+
+        if (LblReplaceSectionDesc != null)
+            LblReplaceSectionDesc.Text = isEn
+                ? "Directly replace a term in the PDF without altering original layout. (Or select with mouse on document to the left)."
+                : "Remplacez directement un terme dans le PDF sans altérer la mise en page originale. (Ou sélectionnez à la souris sur le document à gauche).";
+
+        if (LblSearchTermLabel != null)
+            LblSearchTermLabel.Text = isEn ? "Search:" : "Chercher :";
+
+        if (LblReplaceTermLabel != null)
+            LblReplaceTermLabel.Text = isEn ? "Replace:" : "Remplacer :";
+
         BtnExecuteReplace.Content = isEn ? "✏️ Replace in Document (Enter)" : "✏️ Remplacer dans le Document (Entrée)";
+
+        if (LblExportSectionTitle != null)
+            LblExportSectionTitle.Text = isEn
+                ? "SAVE & EXPORT CERTIFIED DOCUMENT"
+                : "SAUVEGARDE & EXPORT DU DOCUMENT CERTIFIÉ";
 
         BtnSavePdf.Content = isEn ? "💾 Save Modified PDF" : "💾 Sauvegarder le PDF Modifié";
         BtnOpenExternal.Content = isEn ? "👁️ Open File" : "👁️ Ouvrir le Fichier";
@@ -1563,6 +1641,30 @@ public partial class PdfStudioView : UserControl, IDisposable
             BtnOpenDocHeader.ToolTip = isEn
                 ? "Open this document in default PDF reader (Edge / Acrobat)"
                 : "Ouvrir ce document dans le lecteur par défaut (Edge / Acrobat)";
+        }
+
+        if (LblBottomSovereign != null)
+            LblBottomSovereign.Text = isEn
+                ? "100% Sovereign • Fleet Telemetry Traceability Active"
+                : "100% Souverain • Traçabilité Télémétrie Flotte Active";
+
+        if (LblStatus != null && (LblStatus.Text.StartsWith("Prêt") || LblStatus.Text.StartsWith("Ready")))
+        {
+            LblStatus.Text = isEn
+                ? "Ready. Select a sample document or import your own file."
+                : "Prêt. Sélectionnez un document échantillon ou importez votre propre fichier.";
+        }
+
+        if (TxtOcrStats != null && (TxtOcrStats.Text.StartsWith("En attente") || TxtOcrStats.Text.StartsWith("Waiting")))
+        {
+            TxtOcrStats.Text = isEn ? "Waiting to start..." : "En attente du lancement...";
+        }
+
+        if (TxtOcrResult != null && (TxtOcrResult.Text.StartsWith("Le texte") || TxtOcrResult.Text.StartsWith("Text extracted")))
+        {
+            TxtOcrResult.Text = isEn
+                ? "Text extracted by the neural OCR will appear here..."
+                : "Le texte extrait par le réseau de neurones OCR apparaîtra ici...";
         }
 
         if (TxtDocHelp != null) TxtDocHelp.Text = isEn ? "Guide & Doc" : "Guide & Doc";
