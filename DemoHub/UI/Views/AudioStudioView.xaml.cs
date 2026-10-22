@@ -1732,11 +1732,20 @@ public partial class AudioStudioView : UserControl, IDisposable
             ? string.Join(Environment.NewLine, _transcriptSegments.Select(seg => $"[{seg.SpeakerName}] : {seg.Text}"))
             : _fullAccumulatedTranscript.Trim();
 
+        if (string.IsNullOrWhiteSpace(sourceTranscript))
+        {
+            return;
+        }
+
         string targetSilicon = _selectedSilicon.ToString();
         string langLabel = targetLang == "fr"
             ? (isEn ? "🇫🇷 FRENCH" : "🇫🇷 FRANÇAIS")
             : (isEn ? "🇬🇧 ENGLISH" : "🇬🇧 ANGLAIS");
         string langEnglishName = targetLang == "fr" ? "French" : "English";
+
+        var activeBtn = targetLang == "fr" ? BtnTranslateFullFr : BtnTranslateFullEn;
+        var originalBtnContent = activeBtn.Content;
+        activeBtn.Content = isEn ? "⏳ Translating..." : "⏳ Traduction en cours...";
 
         BtnTranslateFullFr.IsEnabled = false;
         BtnTranslateFullEn.IsEnabled = false;
@@ -1753,12 +1762,12 @@ public partial class AudioStudioView : UserControl, IDisposable
         var trCard = new Border
         {
             Tag = "FullTranslationCard",
-            Background = new SolidColorBrush(Color.FromRgb(0x0A, 0x19, 0x2F)),
+            Background = new SolidColorBrush(Color.FromRgb(0x0C, 0x22, 0x38)),
             BorderBrush = (Brush)FindResource("CopilotCyanBrush"),
-            BorderThickness = new Thickness(1.5),
+            BorderThickness = new Thickness(2),
             CornerRadius = new CornerRadius(8),
-            Padding = new Thickness(12, 10, 12, 10),
-            Margin = new Thickness(0, 6, 0, 8)
+            Padding = new Thickness(14, 12, 14, 12),
+            Margin = new Thickness(0, 10, 0, 10)
         };
 
         var stack = new StackPanel();
@@ -1767,14 +1776,14 @@ public partial class AudioStudioView : UserControl, IDisposable
             Text = isEn
                 ? $"🌐 FULL TRANSCRIPT TRANSLATION → {langLabel} ({targetSilicon})"
                 : $"🌐 TRADUCTION INTÉGRALE DU TRANSCRIPT → {langLabel} ({targetSilicon})",
-            FontSize = 11,
+            FontSize = 12,
             FontWeight = FontWeights.Bold,
             Foreground = (Brush)FindResource("CopilotCyanBrush"),
             Margin = new Thickness(0, 0, 0, 6)
         };
         var bodyTxt = new TextBlock
         {
-            Text = isEn ? "⏳ Translating full transcript on NPU..." : "⏳ Traduction intégrale en cours sur NPU...",
+            Text = isEn ? "⏳ Translating full transcript on NPU with Phi-4-mini..." : "⏳ Traduction intégrale en cours sur NPU avec Phi-4-mini...",
             FontSize = 12,
             Foreground = (Brush)FindResource("TextPrimaryBrush"),
             TextWrapping = TextWrapping.Wrap,
@@ -1786,19 +1795,26 @@ public partial class AudioStudioView : UserControl, IDisposable
 
         TxtTranscriptPlaceholder.Visibility = Visibility.Collapsed;
         StackTranscriptSegments.Children.Add(trCard);
+        ScrollerTranscript.UpdateLayout();
+        trCard.BringIntoView();
         ScrollerTranscript.ScrollToEnd();
 
         try
         {
+            await _foundryClient.EnsureServerReadyAsync();
+
             string sysPrompt =
                 $"You are an expert bilingual interpreter. Translate the following meeting transcript into {langEnglishName}. " +
                 "Preserve the [Speaker] labels at the start of each line. Output ONLY the translated transcript, without any introduction or commentary.";
 
             bool firstChunk = true;
+            var selectedModel = await _foundryClient.GetBestModelAsync("phi-4-mini", targetSilicon);
+
             var result = await _foundryClient.AskStreamingAsync(
-                systemPrompt: sysPrompt,
-                userPrompt: sourceTranscript,
-                onChunkReceived: chunk =>
+                selectedModel,
+                sysPrompt,
+                sourceTranscript,
+                chunk =>
                 {
                     Dispatcher.BeginInvoke(new Action(() =>
                     {
@@ -1811,10 +1827,16 @@ public partial class AudioStudioView : UserControl, IDisposable
                         ScrollerTranscript.ScrollToEnd();
                     }));
                 },
-                preferredParentModel: "phi-4-mini",
-                preferredDevice: targetSilicon,
                 temperature: 0.1,
-                maxTokens: 700);
+                maxTokens: 1000);
+
+            // Fallback sync si le streaming n'a rien produit
+            if (string.IsNullOrWhiteSpace(bodyTxt.Text) || bodyTxt.Text.StartsWith("⏳"))
+            {
+                var syncResult = await _foundryClient.AskAsync(selectedModel, sysPrompt, sourceTranscript, temperature: 0.1, maxTokens: 1000);
+                bodyTxt.Text = syncResult.Content;
+                result = syncResult;
+            }
 
             string finalTranslated = (result.Content ?? bodyTxt.Text).Trim();
             bodyTxt.Text = finalTranslated;
@@ -1843,8 +1865,11 @@ public partial class AudioStudioView : UserControl, IDisposable
         }
         finally
         {
+            activeBtn.Content = originalBtnContent;
             BtnTranslateFullFr.IsEnabled = true;
             BtnTranslateFullEn.IsEnabled = true;
+            ScrollerTranscript.UpdateLayout();
+            trCard.BringIntoView();
             ScrollerTranscript.ScrollToEnd();
         }
     }

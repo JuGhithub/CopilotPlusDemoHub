@@ -220,13 +220,13 @@ def smart_transcribe_turn(pipe, audio_samples, forced_lang=None, expected_lang="
     """
     audio_list = audio_samples.tolist() if hasattr(audio_samples, "tolist") else list(audio_samples)
     duration_sec = max(0.5, len(audio_list) / 16000.0)
-    # Plafond physique réaliste : ~8 tokens/seconde + marge de 12 tokens (borné entre 16 et 140)
-    dynamic_max_tokens = max(16, min(140, int(duration_sec * 8.0) + 12))
+    # Plafond dynamique proportionnel à la durée réelle (jusqu'à 256 tokens)
+    dynamic_max_tokens = max(32, min(256, int(duration_sec * 12.0) + 32))
 
     cfg = pipe.get_generation_config()
     cfg.task = "transcribe"
-    cfg.return_timestamps = False
-    cfg.no_repeat_ngram_size = 3
+    cfg.return_timestamps = True
+    cfg.no_repeat_ngram_size = 4
     cfg.repetition_penalty = 1.15
     cfg.max_new_tokens = dynamic_max_tokens
 
@@ -287,10 +287,10 @@ def whisper_translate_to_english(pipe, audio_list, source_lang_code):
         cfg = pipe.get_generation_config()
         cfg.task = "translate"
         cfg.language = lang_token(source_lang_code)
-        cfg.return_timestamps = False
-        cfg.no_repeat_ngram_size = 3
+        cfg.return_timestamps = True
+        cfg.no_repeat_ngram_size = 4
         cfg.repetition_penalty = 1.15
-        cfg.max_new_tokens = max(16, min(140, int(duration_sec * 8.0) + 12))
+        cfg.max_new_tokens = max(32, min(256, int(duration_sec * 12.0) + 32))
         res = pipe.generate(audio_list, cfg)
         texts = getattr(res, "texts", None)
         out = (texts[0] if texts else str(res)).strip()

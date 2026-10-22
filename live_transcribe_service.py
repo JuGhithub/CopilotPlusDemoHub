@@ -137,10 +137,10 @@ def main():
     # VAD & Streaming Settings
     FRAME_SIZE = 1600  # 100ms at 16kHz
     PRE_SPEECH_FRAMES = 3   # 300ms pre-buffer
-    SILENCE_TRIGGER_FRAMES = 7  # 700ms pause triggers phrase end (avoids chopping mid-sentence breaths)
-    MAX_PHRASE_SAMPLES = int(args.samplerate * 6.5)  # 6.5s max phrase length
-    MIN_PHRASE_SAMPLES = int(args.samplerate * 0.85)  # 0.85s min phrase length
-    SPEECH_RMS_THRESHOLD = 0.014  # Minimum energy for speech
+    SILENCE_TRIGGER_FRAMES = 8  # 800ms pause triggers phrase end (avoids chopping mid-sentence breaths)
+    MAX_PHRASE_SAMPLES = int(args.samplerate * 8.0)  # 8.0s max phrase length
+    MIN_PHRASE_SAMPLES = int(args.samplerate * 0.60)  # 0.60s min phrase length
+    SPEECH_RMS_THRESHOLD = 0.0045  # Minimum energy for speech (calibrated for laptop microphones)
     session_lang_votes = collections.deque(["fr", "fr"], maxlen=7)
 
     # Ring buffer for pre-speech frames

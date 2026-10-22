@@ -334,7 +334,7 @@ class SpeakerManager:
         return vec
 
     @staticmethod
-    def find_speech_islands(audio_16k, sr=16000, min_island_sec=0.42, bridge_sec=0.20):
+    def find_speech_islands(audio_16k, sr=16000, min_island_sec=0.35, bridge_sec=0.35):
         """Detect active speech islands in 16kHz audio while stripping silence and background noise."""
         blk = int(0.020 * sr)  # 20ms blocks (320 samples at 16kHz)
         n = len(audio_16k) // blk
@@ -347,7 +347,8 @@ class SpeakerManager:
             return []
 
         noise = float(np.percentile(rms, 20))
-        thr = max(noise * 2.5, p95 * 0.12, 0.008)
+        # Seuil adaptatif : sensible aux micros de PC portables tout en rejetant le souffle ambiant
+        thr = max(noise * 1.5, p95 * 0.06, 0.002)
         bridge_blocks = max(1, int(round(bridge_sec / 0.020)))
         active = np.convolve((rms >= thr).astype(int), np.ones(bridge_blocks, dtype=int), mode="same") > 0
         if not np.any(active):
@@ -359,7 +360,7 @@ class SpeakerManager:
 
         islands = []
         min_blocks = int(round(min_island_sec / 0.020))
-        peak_gate = max(p95 * 0.22, 0.018)
+        peak_gate = max(p95 * 0.10, 0.0035)
         for sb, eb in zip(starts, ends):
             if (eb - sb) < min_blocks:
                 continue
@@ -633,7 +634,7 @@ class SpeakerManager:
         """
         self._reload_profiles_if_modified()
         audio_16k = self._to_16k_mono(audio_data, sr)
-        islands = self.find_speech_islands(audio_16k, sr=16000, min_island_sec=0.42, bridge_sec=0.20)
+        islands = self.find_speech_islands(audio_16k, sr=16000, min_island_sec=0.35, bridge_sec=0.35)
         if not islands:
             islands = [(0, len(audio_16k))]
 
@@ -726,14 +727,14 @@ class SpeakerManager:
                     "embedding": centroid.tolist()
                 })
 
-        # Merge adjacent islands of the SAME speaker if pause < 1.0s and merged duration <= 9.0s
+        # Merge adjacent islands of the SAME speaker if pause < 1.2s and merged duration <= 12.0s
         merged_turns = []
         for (s, e), cid in zip(valid_islands, labels):
             if (
                 merged_turns
                 and merged_turns[-1]["cid"] == cid
-                and (s - merged_turns[-1]["end_sample"]) / 16000.0 < 1.0
-                and (e - merged_turns[-1]["start_sample"]) / 16000.0 <= 9.0
+                and (s - merged_turns[-1]["end_sample"]) / 16000.0 < 1.2
+                and (e - merged_turns[-1]["start_sample"]) / 16000.0 <= 12.0
             ):
                 merged_turns[-1]["end_sample"] = e
                 merged_turns[-1]["end_ts"] = round(e / 16000.0, 2)
