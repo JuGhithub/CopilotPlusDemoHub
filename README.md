@@ -1,29 +1,32 @@
-# 🚀 Copilot+ PC Demo Hub — Suite Universelle Multi-Constructeurs
+# 🚀 Copilot+ PC Demo Hub — Universal Multi-OEM AI Suite
+
+🌐 **Language / Langue** : **[ 🇬🇧 English Version (Active) ](README.md)** | **[ 🇫🇷 Version Française ](README.fr.md)**  
+📖 **Installation Guide** : **[ 🇬🇧 Installation Guide (EN) ](INSTALLATION_GUIDE.md)** | **[ 🇫🇷 Guide d'Installation (FR) ](GUIDE_INSTALLATION.md)**
 
 [![Windows 11](https://img.shields.io/badge/OS-Windows_11_24H2_%7C_Copilot%2B_PC-0078D4?logo=windows)](https://microsoft.com)
 [![.NET 8](https://img.shields.io/badge/Platform-.NET_8.0_WPF-512BD4?logo=dotnet)](https://dotnet.microsoft.com)
 [![Python 3.12](https://img.shields.io/badge/Backend-Python_3.12-3776AB?logo=python)](https://python.org)
-[![Silicium Universel](https://img.shields.io/badge/Hardware-Intel_%7C_AMD_%7C_Qualcomm-blue)]()
-[![NPU Copilot+](https://img.shields.io/badge/NPU-40_à_50%2B_TOPS-success)]()
-[![Moteurs d'IA](https://img.shields.io/badge/Engines-OpenVINO_%7C_DirectML_%7C_Olive-9cf)]()
-[![100% Offline](https://img.shields.io/badge/Confidentialité-100%25_Local_&_Souverain-success)]()
+[![Universal Silicon](https://img.shields.io/badge/Hardware-Intel_%7C_AMD_%7C_Qualcomm-blue)]()
+[![Copilot+ NPU](https://img.shields.io/badge/NPU-40_to_50%2B_TOPS-success)]()
+[![AI Engines](https://img.shields.io/badge/Engines-OpenVINO_%7C_DirectML_%7C_Olive-9cf)]()
+[![100% Offline](https://img.shields.io/badge/Privacy-100%25_Local_&_Sovereign-success)]()
 
-Une suite complète d'expériences logicielles d'**Intelligence Artificielle 100% locales, privées et souveraines**, universellement compatible avec l'ensemble de l'écosystème des **PC Copilot+** :
-- 🔵 **Intel Core Ultra (Lunar Lake & Meteor Lake)** via **Intel AI Boost (48 TOPS)** & iGPU Arc.
-- 🔴 **AMD Ryzen AI Série 300 (Strix Point)** via **AMD XDNA 2 (50 TOPS)** & GPU Radeon.
-- 🟣 **Qualcomm Snapdragon X Elite / Plus** via **Qualcomm Hexagon (45 TOPS)** & GPU Adreno.
-- ⚪ **Fallback Universel Automatique** sur GPU DirectX 12 (DirectML) et CPU multithread AVX-512 / ARM64.
+A comprehensive software showcase of **100% local, private, and sovereign Artificial Intelligence**, universally compatible across the entire **Copilot+ PC** hardware ecosystem:
+- 🔵 **Intel Core Ultra (Lunar Lake & Meteor Lake)** via **Intel AI Boost (48 TOPS)** & Arc iGPU.
+- 🔴 **AMD Ryzen AI 300 Series (Strix Point)** via **AMD XDNA 2 (50 TOPS)** & Radeon GPU.
+- 🟣 **Qualcomm Snapdragon X Elite / Plus** via **Qualcomm Hexagon (45 TOPS)** & Adreno GPU.
+- ⚪ **Automatic Universal Fallback** on DirectX 12 GPU (DirectML) and multi-threaded CPU (AVX-512 / ARM64).
 
 ---
 
-## 🏗️ Architecture Silicium Universelle & Auto-Détection
+## 🏗️ Universal Silicon Architecture & Auto-Detection
 
-Le **Copilot+ Demo Hub** embarque un composant d'auto-détection matérielle en temps réel (`SiliconDetector.cs`) qui analyse le processeur, le GPU et les co-processeurs neuronaux, et commute dynamiquement sur le runtime d'IA le plus efficient :
+The **Copilot+ Demo Hub** embeds a real-time hardware auto-detection engine (`SiliconDetector.cs`) that continuously analyzes the host CPU, GPU, and neural co-processors (NPU) to dynamically select the most power-efficient AI runtime:
 
 ```mermaid
 flowchart TD
-    App["🖥️ Application Copilot+ Demo Hub (WPF .NET 8)"]
-    Detect["🔍 Détecteur Silicium Dynamique (SiliconDetector)"]
+    App["🖥️ Copilot+ Demo Hub App (WPF .NET 8)"]
+    Detect["🔍 Dynamic Silicon Detector (SiliconDetector)"]
     App --> Detect
     
     subgraph Intel["🔵 Intel Core Ultra (Lunar Lake / Meteor Lake)"]
@@ -41,8 +44,8 @@ flowchart TD
         QcomGPU["🎮 GPU Adreno (DirectML)"]
     end
     
-    subgraph Universal["⚪ Fallback Universel Silicium"]
-        UnivCPU["⚙️ CPU Multithread (x86_64 AVX-VNNI / ARM64 NEON)"]
+    subgraph Universal["⚪ Universal Hardware Fallback"]
+        UnivCPU["⚙️ Multithreaded CPU (x86_64 AVX-VNNI / ARM64 NEON)"]
     end
     
     Detect --> Intel
@@ -53,197 +56,191 @@ flowchart TD
 
 ---
 
-## 🌟 Catalogue des Démonstrations Métiers
+## 🌟 Enterprise & Engineering Demo Catalog
 
-### 1. 🏢 Assistant Métier & Business (LLM Local Phi-4)
-- **Modèle** : `Phi-4-mini-instruct` (Microsoft Foundry Local & OpenVINO / DirectML).
-- **Accélération** : Compilé nativement pour le NPU détecté (**Intel AI Boost**, **AMD Ryzen AI** ou **Qualcomm Hexagon**), avec fallback automatique et transparent sur GPU DirectML puis CPU.
-- **Pipeline de Raisonnement en 4 étapes** : Décomposition dynamique en temps réel (`1. Analyse contextuelle`, `2. Vérification réglementaire`, `3. Synthèse opérationnelle`, `4. Recommandations`).
-- **Télémétrie en direct** : Chronomètre à 75ms, jauge de débit d'inférence en temps réel (`tok/s`), compteur de tokens générés et surveillance de la charge SoC.
-- **4 Personas Métiers intégrés** :
-  - **Services Financiers** : Audit de solvabilité et analyse de risques de crédit entreprise.
-  - **Opérations Industrielles** : Diagnostic prédictif d'avarie sur groupe CVC et criticité d'intervention.
-  - **Ingénierie & R&D** : Dépannage électromécanique et procédures de sécurité d'urgence.
-  - **Sinistres Automobile** : Évaluation conjointe devis / constat d'accident.
-
----
-
-### 2. 🪄 Gomme Magique Studio (Segmentation Sémantique Instantanée)
-- **Modèle** : `YOLOv8n-Seg` (OpenVINO IR, ONNX DirectML ou Microsoft Olive FP16).
-- **Accélération** : Inférence sur **NPU Copilot+ (Intel / AMD / Qualcomm)** ou GPU DirectML.
-- **Architecture Daemon IPC Résident** : Travailleur d'arrière-plan préchargé réduisant la latence de détection de **4 500 ms à seulement 84 ms (accélération x53)**.
-- **Fonctionnalités** : Détection automatique des personnes et objets gênants, masque de segmentation précis au pixel près, et inpainting haute fidélité sans altérer le fond.
+### 1. 🏢 Business & Industry AI Assistant (Local Phi-4 LLM)
+- **Model**: `Phi-4-mini-instruct` (Microsoft Foundry Local & OpenVINO / DirectML).
+- **Silicon Acceleration**: Natively compiled for the detected NPU (**Intel AI Boost**, **AMD Ryzen AI**, or **Qualcomm Hexagon**), with graceful fallback to DirectML GPU then host CPU.
+- **4-Stage Reasoning Pipeline**: Dynamic real-time chain-of-thought (`1. Contextual Analysis`, `2. Regulatory Verification`, `3. Operational Synthesis`, `4. Actionable Recommendations`).
+- **Live Telemetry**: 75ms timer, real-time throughput gauge (`tok/s`), generated token counter, and live SoC load monitoring.
+- **4 Built-in Industry Personas**:
+  - **Financial Services**: Corporate solvency audit and business credit risk scoring.
+  - **Industrial Operations**: Predictive HVAC failure diagnostic and emergency intervention criticality.
+  - **Engineering & R&D**: Electro-mechanical troubleshooting and safety override protocols.
+  - **Automotive Claims**: Joint repair quote & accident liability report assessment.
 
 ---
 
-### 3. 🛡️ Contrôle d'Accès Zero-Trust (Vision par Ordinateur Temps Réel & Démineur)
-- **Modèle** : `YOLOv8s-World` (OpenVINO IR, ONNX DirectML ou Microsoft Olive FP16).
-- **Accélération** : Exécution sur **NPU par défaut** (avec bascule dynamique GPU / CPU et remontée du `effective_device` réel).
-- **Anti-Spoofing & Sécurité** : Détection de fraude par présentation (smartphone / écran présenté devant la caméra) et galerie d'échantillons de test.
-- **Matrice de Conformité de Sécurité** : Détection simultanée 3/3 (Tasse ☕, Lunettes 👓, Casque 🎧) pour déverrouiller la console exécutive et dévoiler le jeu de Démineur souverain.
+### 2. 🪄 Magic Eraser Studio (Instant Semantic Segmentation & Inpainting)
+- **Model**: `YOLOv8n-Seg` (OpenVINO IR, ONNX DirectML, or Microsoft Olive FP16).
+- **Silicon Acceleration**: Execution on **Copilot+ NPU (Intel / AMD / Qualcomm)** or DirectML GPU.
+- **Resident IPC Daemon Architecture**: Pre-warmed background worker cutting detection latency from **4,500 ms down to only 84 ms (53x speedup)**.
+- **Capabilities**: Pixel-accurate instance segmentation masks for unwanted objects and people, paired with high-fidelity context-aware inpainting that preserves backgrounds.
 
 ---
 
-### 4. 🎙️ Audio Studio & Locuteurs (STT, Diarisation & Traduction NPU)
-- **Daemon Whisper NPU Pré-chauffé (`--daemon` + Cache Blob)** : Modèles `Whisper-Tiny`, `Whisper-Base` (INT8 NPU) et `Whisper-Small` maintenus chauds en mémoire NPU dès l'ouverture de l'onglet (**`8 ms`** au clic et **`1,48 s`** au total pour transcrire et diariser 25 s d'audio).
-- **Bilingue FR / EN & Rattrapage Temps Réel (`lang_utils.py`)** : Détection automatique de la langue intervention par intervention avec **auto-correction à la volée sur NPU** (`smart_transcribe_turn`) si Whisper en mode `Auto` dérive vers l'anglais sur un segment court prononcé en français.
-- **Traduction Intégrale en 1 Clic (`🌐 → 🇫🇷 Français` / `🌐 → 🇬🇧 English`)** : Ajout d'une carte de traduction complète à la fin du transcript générée en streaming sur le **NPU (`phi-4-mini-instruct-openvino-npu`)** en conservant les étiquettes `[Intervenant] : ...`, plus traduction à la volée segment par segment.
-- **Biométrie du Locuteur & Sécurité TPM 2.0** : Réseau neuronal `VoxCeleb ECAPA-TDNN ONNX` extrayant l'empreinte vocale de chaque participant avec scellement cryptographique DPAPI / TPM et télémétrie énergétique réelle (`HardwareTelemetryService`).
+### 3. 🛡️ Zero-Trust Physical Access Control (Real-Time Vision & Minesweeper)
+- **Model**: `YOLOv8s-World` open-vocabulary zero-shot vision (OpenVINO IR, ONNX DirectML, or Microsoft Olive FP16).
+- **Silicon Acceleration**: Runs on **NPU by default** (with real-time GPU/CPU switching and reporting of the actual `effective_device`).
+- **Anti-Spoofing & Security**: Presentation attack detection (identifying smartphones/tablets held in front of the lens) with a built-in gallery of test samples.
+- **Compliance Matrix**: 3-out-of-3 concurrent compliance check (Coffee Mug ☕, Eyeglasses 👓, Audio Headset 🎧) to unlock the executive workstation and reveal the sovereign Minesweeper game.
 
 ---
 
-### 5. 📄 PDF Studio, OCR Intelligent & Audit Juridique NPU
-- **Moteur Vectoriel & OCR Neuronal Hybride** : `PyMuPDF` haute performance combiné à `RapidOCR` accéléré par **NPU / GPU DirectML** pour les scans et documents numérisés.
-- **Audit Sémantique, Juridique & RGPD sur NPU (`Phi-4-mini`)** : Analyse locale en streaming (`phi-4-mini-instruct-openvino-npu`) produisant une synthèse exécutive, l'identification des clauses sensibles et l'extraction contextuelle des entités personnelles et confidentielles (noms, sociétés, adresses, identifiants) invisibles aux simples Regex.
-- **Caviardage Hybride IA + RGPD en 1 Clic (`--mode ai_audit`)** : Combinaison des entités détectées par le LLM sur NPU et des expressions régulières RGPD (IBAN, NIR, emails, téléphones, montants) pour générer un PDF définitivement anonymisé, accompagnée de la télémétrie batterie réelle en Watts et Joules.
+### 4. 🎙️ Audio Studio & Speaker Diarization (STT, Voice Biometrics & NPU Translation)
+- **Pre-warmed NPU Whisper Daemon (`--daemon` + Blob Cache)**: `Whisper-Tiny`, `Whisper-Base` (INT8 NPU), and `Whisper-Small` maintained warm in NPU memory upon tab selection (**`8 ms`** click latency, **`1.48 s`** total to transcribe and diarize 25 s of audio).
+- **Bilingual FR / EN & Real-Time Recovery (`lang_utils.py`)**: Automatic language identification turn-by-turn with **on-the-fly NPU auto-correction** (`smart_transcribe_turn`) if Whisper in `Auto` mode drifts towards English during short French statements.
+- **1-Click Full Translation (`🌐 → 🇫🇷 French` / `🌐 → 🇬🇧 English`)**: Injects a complete translated transcript card streamed from the **NPU (`phi-4-mini-instruct-openvino-npu`)**, preserving speaker labels `[Speaker] : ...`, along with on-the-fly turn translation.
+- **Speaker Biometrics & TPM 2.0 Security**: `VoxCeleb ECAPA-TDNN ONNX` neural network extracting cryptographic voiceprints sealed with DPAPI / TPM hardware keys, coupled with true live power telemetry (`HardwareTelemetryService`).
 
 ---
 
-### 6. 🎨 Studio Avatar (Génération & Diffusion d'Images)
-- **Modèle** : `LCM DreamShaper v7` quantifié en 8-bit (Latent Consistency Model).
-- **Accélération** : **NPU Copilot+** et **GPU DirectML**.
-- **Performance** : Génération d'images photoréalistes et stylisées (Pixar 3D, Cyberpunk, Années 60) en seulement 4 à 8 étapes d'inférence (~3 secondes).
+### 5. 📄 Sovereign PDF Studio, Intelligent OCR & Legal NPU Audit
+- **Hybrid Vector Engine & Neural OCR**: High-performance `PyMuPDF` paired with `RapidOCR` accelerated on **NPU / GPU DirectML** for scanned invoices and receipts.
+- **Semantic Legal & GDPR Audit on NPU (`Phi-4-mini`)**: Local streaming analysis (`phi-4-mini-instruct-openvino-npu`) producing an executive summary, high-risk clause identification, and contextual PII extraction (names, company IDs, addresses) invisible to static Regex.
+- **1-Click Hybrid AI + GDPR Redaction (`--mode ai_audit`)**: Combines LLM-detected entities with standard GDPR patterns (IBAN with spaces, European tax IDs, phone numbers, emails, financial amounts) to permanently redact the PDF with zero traces under black boxes, displaying certified energy consumption in Watts and Joules.
 
 ---
 
-### 7. ⚡ Duel Silicium & Benchmark Énergétique Hardware
-- **Télémétrie Matérielle** : Mesure en temps réel de la consommation énergétique (Watts), de la fréquence et de la température.
-- **Duel Comparatif Tri-États** : Démonstration visuelle de l'efficience énergétique du **NPU Copilot+ (40 à 50+ TOPS)** confrontant le modèle natif, le modèle brut ONNX et la variante optimisée Microsoft Olive.
+### 6. 🎨 Avatar Studio (Image-to-Image Generation & Diffusion)
+- **Model**: `LCM DreamShaper v7` quantized to 8-bit (Latent Consistency Model).
+- **Silicon Acceleration**: **Copilot+ NPU** and **DirectML GPU**.
+- **Performance**: Stylized photorealistic avatar generation (3D Cartoon / Pixar, Anime, Cyberpunk, 1960s Vintage) in just 4 to 8 inference steps (~3 seconds).
 
 ---
 
-### 8. 🧪 Laboratoire d'Optimisation Microsoft Olive & Trio Multi-Agents MCP
-- **Banc d'Essai Scientifique** : Duel comparatif en temps réel entre modèles bruts FP32 et modèles compilés par Microsoft Olive (FP16 / fusion de graphe) sur la Vision, la Segmentation et l'OCR.
-- **Gains Mesurés en Direct** : Division par deux de l'empreinte mémoire (-50% RAM et SSD), accélération de la latence (+40% à +80%) et réduction de la dépense énergétique en Joules avec 100% de fidélité conservée.
-- **Flotte Multi-Agents MCP** : 3 agents autonomes exécutant en parallèle des outils neuronaux via un serveur local Model Context Protocol (MCP) conforme JSON-RPC 2.0.
+### 7. ⚡ Silicon Duel & Hardware Power Benchmark
+- **Hardware Telemetry**: Real-time measurement of battery power draw (Watts), SoC frequency, and thermal curves.
+- **Tri-State Comparative Duel**: Visual benchmark proving the energy efficiency of the **Copilot+ NPU (40 to 50+ TOPS)** versus native GPU and Microsoft Olive optimized variants.
 
 ---
 
-### 9. 📊 Console de Gouvernance & Audit Flotte DSI
-- **Supervision d'Entreprise** : Tableau de bord centralisé pour les directeurs informatiques (DSI) et responsables sécurité (RSSI).
-- **Traçabilité & Conformité** : Journalisation locale de chaque inférence (modèle exécuté, coprocesseur sollicité, latences P50/P90, statut Zero-Trust).
-- **Bilan Carbone & Green IT** : Calcul automatisé des kWh économisés et des émissions de CO2 évitées par rapport à un traitement distant en data centers hyperscalers.
+### 8. 🧪 Microsoft Olive Optimization Lab & MCP Multi-Agent Trio
+- **Scientific Test Bench**: Real-time head-to-head duel between raw FP32 models and Microsoft Olive compiled graphs (FP16 / operator fusion) across Vision, Segmentation, and OCR.
+- **Measured Gains**: 50% RAM and SSD reduction, +40% to +80% latency speedup, and significant battery Joules savings while maintaining 100% output fidelity.
+- **MCP Multi-Agent Trio**: 3 autonomous AI agents concurrently invoking neural tools via a local JSON-RPC 2.0 Model Context Protocol (MCP) server.
 
 ---
 
-## ⚡ Guide Pas à Pas pour vos Collègues
+### 9. 📊 Enterprise Governance & Fleet Audit Console
+- **CIO & CISO Supervision**: Centralized dashboard for IT executives and security officers.
+- **Traceability & Compliance**: Local audit ledger logging every inference (model executed, silicon co-processor utilized, P50/P90 latencies, Zero-Trust compliance).
+- **Carbon Footprint & Green IT**: Automated calculation of saved kWh and avoided CO2 emissions compared to cloud hyperscaler API calls.
 
-Le projet est conçu pour être déployé en **1 clic sans aucune configuration manuelle**.
+---
+
+## ⚡ Step-by-Step Deployment Guide
+
+Designed for **1-click automated deployment with zero manual configuration**.
 
 ```mermaid
 flowchart LR
-    Clone["1. Cloner le repo Git"] --> Install["2. Exécuter Installer_Prerequis.ps1"]
-    Install --> Run["3. Exécuter Lancer_DemoHub.ps1"]
-    Run --> Enjoy["🎉 Démo Prête !"]
+    Clone["1. Clone Git Repository"] --> Install["2. Run Installer_Prerequis.ps1"]
+    Install --> Run["3. Run Lancer_DemoHub.ps1"]
+    Run --> Enjoy["🎉 Demo Ready!"]
 ```
 
-### Étape 1 : Cloner le dépôt Git
-Ouvrez un terminal **PowerShell** :
+### Step 1: Clone the Git Repository
+Open a **PowerShell** terminal:
 ```powershell
 git clone https://github.com/JuGhithub/CopilotPlusDemoHub.git
 cd CopilotPlusDemoHub
 ```
 
-### Étape 2 : Lancer l'Installateur Automatique
-Dans PowerShell, lancez simplement :
+### Step 2: Run the Automated Installer
+In PowerShell, run:
 ```powershell
 .\Installer_Prerequis.ps1
 ```
-*(Ou double-cliquez sur `Installer_Prerequis.bat` depuis l'Explorateur Windows)*
+*(Or double-click `Installer_Prerequis.bat` in Windows Explorer)*
 
-Le script prend tout en charge automatiquement et séquentiellement :
-1. ✅ **Activation des chemins longs Windows** (`LongPathsEnabled`) pour PyTorch et OpenVINO.
-2. ✅ **Installation des socles système** : SDK **.NET 8.0** et **Python 3.12** via `winget`.
-3. ✅ **Installation des bibliothèques Python d'IA** listées dans `requirements.txt`.
-4. ✅ **Installation de Microsoft Foundry Local CLI** et téléchargement des modèles **Phi-4-mini** (NPU, GPU, CPU).
-5. ✅ **Téléchargement automatique de 100% des modèles d'IA locaux** (`models/`) via [`scripts/download_models.py`](scripts/download_models.py) : Whisper Tiny/Base, Biométrie VoxCeleb, Vision YOLOv8s-World, Segmentation YOLOv8n-Seg et Studio Avatar LCM.
-6. ✅ **Compilation de l'application WPF** en mode Release haute performance.
-7. ✅ **Diagnostic de santé automatique** (`scripts/verify_installation.py`) validant les 39 points de contrôle.
+The installer automatically handles everything sequentially:
+1. ✅ **Enables Windows Long Paths** (`LongPathsEnabled`) for PyTorch and OpenVINO.
+2. ✅ **Installs system runtimes**: **.NET 8.0 SDK** and **Python 3.12** via `winget`.
+3. ✅ **Installs Python AI libraries** listed in `requirements.txt`.
+4. ✅ **Installs Microsoft Foundry Local CLI** and downloads **Phi-4-mini** models (NPU, GPU, CPU).
+5. ✅ **Automatically downloads 100% of local AI models** (`models/`) via [`scripts/download_models.py`](scripts/download_models.py): Whisper Tiny/Base, VoxCeleb Biometrics, YOLOv8s-World Vision, YOLOv8n-Seg Segmentation, and Avatar LCM DreamShaper.
+6. ✅ **Compiles the WPF application** in high-performance Release mode.
+7. ✅ **Runs automated health diagnostics** (`scripts/verify_installation.py`) across 39 verification points.
 
-### Étape 3 : Lancer la Démonstration
-Dans PowerShell :
+### Step 3: Launch the Showcase
+In PowerShell:
 ```powershell
 .\Lancer_DemoHub.ps1
 ```
-*(Ou double-cliquez sur `Lancer_DemoHub.bat`)*
+*(Or double-click `Lancer_DemoHub.bat`)*
 
 ---
 
-## 📦 Distribution Alternative (Binaire "Prêt à l'emploi" via GitHub Releases)
+## 📦 Alternative Distribution (Ready-to-Use Binary via GitHub Releases)
 
-Pour les collègues qui ne souhaitent pas installer Git ni compiler le code :
-1. Sur la machine de référence, lancez `.\Creer_Package_Release.ps1` (ou double-cliquez sur `Creer_Package_Release.bat`) pour créer une archive autonome dans `Releases/`.
-2. Déposez cette archive dans l'onglet **Releases** de votre dépôt GitHub.
-3. Vos collègues n'ont qu'à télécharger l'archive ZIP, la décompresser et exécuter `.\Lancer_DemoHub.ps1`.
+For team members who do not wish to install Git or compile code:
+1. On the reference device, run `.\Creer_Package_Release.ps1` (or double-click `Creer_Package_Release.bat`) to build a standalone archive in `Releases/`.
+2. Upload this ZIP archive to the **Releases** tab of your GitHub repository.
+3. Users only need to download the ZIP, extract it, and execute `.\Lancer_DemoHub.ps1`.
 
 ---
 
-## 💻 Configuration Matérielle & Runtimes par Constructeur
+## 💻 Hardware Requirements & Runtimes by OEM
 
-| Constructeur | Processeur | NPU (40+ TOPS) | GPU & Accélération | Runtime Recommandé |
+| Manufacturer | Processor | Dedicated NPU (40+ TOPS) | GPU & Acceleration | Recommended Runtime |
 | :--- | :--- | :--- | :--- | :--- |
-| **Intel** | Core Ultra Série 2 (Lunar Lake 258V/268V/288V) ou Série 1 | **Intel AI Boost (48 TOPS)** | Intel Arc Graphics (140V Xe2) | OpenVINO IR natif + DirectML |
-| **AMD** | Ryzen AI Série 300 (ex: AI 9 HX 370 / Strix Point) | **AMD Ryzen AI / XDNA 2 (50 TOPS)** | AMD Radeon 890M / 880M | DirectML + Olive FP16 |
+| **Intel** | Core Ultra Series 2 (Lunar Lake 258V/268V/288V) or Series 1 | **Intel AI Boost (48 TOPS)** | Intel Arc Graphics (140V Xe2) | Native OpenVINO IR + DirectML |
+| **AMD** | Ryzen AI 300 Series (e.g. AI 9 HX 370 / Strix Point) | **AMD Ryzen AI / XDNA 2 (50 TOPS)** | AMD Radeon 890M / 880M | DirectML + Olive FP16 |
 | **Qualcomm** | Snapdragon X Elite / Plus (X1E-80, X1P) | **Qualcomm Hexagon (45 TOPS)** | Qualcomm Adreno GPU | DirectML / QNN + Olive FP16 |
-| **Universel** | Tout PC Windows 11 avec CPU 64-bit | Emulation logicielle CPU | GPU DirectX 12 (DirectML) | Fallback CPU AVX / ARM64 |
+| **Universal** | Any Windows 11 PC with 64-bit CPU | Software CPU Emulation | DirectX 12 GPU (DirectML) | CPU AVX / ARM64 Fallback |
 
-- **Mémoire Vive (RAM)** : 32 Go LPDDR5X recommandé (16 Go minimum).
-- **Stockage** : SSD NVMe avec 15 à 20 Go libres pour les poids de modèles d'IA locaux.
-- **Système d'exploitation** : **Windows 11 64-bit version 24H2 (Build 26100+)** requis pour le badge Copilot+.
+- **RAM**: 32 GB LPDDR5X recommended (16 GB minimum).
+- **Storage**: Fast NVMe SSD with 15 to 20 GB free space for local neural model weights.
+- **OS**: **Windows 11 64-bit version 24H2 (Build 26100+)** required for the Copilot+ designation.
 
 ---
 
-## 📁 Structure du Répertoire
+## 📁 Repository Structure
 
 ```text
-├── DemoHub/                 # Application WPF C# .NET 8 (Interface principale, Télémétrie, Démos)
-│   ├── Core/                # Services de télémétrie, audio, détection de matériel et client Foundry
-│   ├── Demos/               # Logique des démos métiers (Finance, Opérations, Ingénierie, Assurance)
-│   └── UI/Views/            # Vues XAML et Code-Behind de chaque studio
-├── Data/                    # Échantillons de test (Documents, Audios, Photos de sinistres et badges)
-├── Config/ & Prompts/       # Prompts de raisonnement métier et configurations d'inférence
-├── scripts/                 # Scripts d'automatisation
-│   ├── download_models.py   # Téléchargement et export automatique de tous les modèles d'IA
-│   ├── verify_installation.py # Diagnostic complet de santé (39 vérifications matérielles & logicielles)
-│   ├── creer_package_release.ps1 # Empaqueteur pour GitHub Releases
-│   └── optimize_with_olive.py # Script d'optimisation Microsoft Olive
-├── *.py                     # Microservices Python autonomes (Vision, Eraser, Whisper, Speaker, OCR, Avatar)
-├── Installer_Prerequis.ps1  # Script PowerShell d'installation automatisée en 1 clic (Winget + Pip + Modèles)
-├── Lancer_DemoHub.ps1       # Script PowerShell de démarrage avec préchauffage matériel NPU/GPU
-├── Compiler_DemoHub.ps1     # Script PowerShell de compilation .NET 8
-├── Creer_Package_Release.ps1# Script PowerShell de génération d'archive zip pour distribution
-├── *.bat                    # Wrappers de compatibilité pour exécution directe par double-clic
-├── requirements.txt         # Dépendances Python (OpenVINO, PyTorch, PyMuPDF, Ultralytics, etc.)
-├── GUIDE_INSTALLATION.md    # Manuel technique exhaustif et résolution des incidents
-└── README.md                # Cette documentation
+├── DemoHub/                 # C# .NET 8 WPF application (Main window, Telemetry, Demo Views)
+│   ├── Core/                # Hardware detection, Telemetry, Audio, and Foundry Local client
+│   ├── Demos/               # Industry logic handlers (Finance, Operations, Engineering, Insurance)
+│   └── UI/Views/            # XAML UI layouts and Code-Behind logic
+├── Data/                    # Test assets (Documents, Sample audio, Claim photos, Badges)
+├── Config/ & Prompts/       # Business prompts and inference configurations
+├── scripts/                 # Automation and diagnostic scripts
+│   ├── download_models.py   # Automated download and export of all local AI models
+│   ├── verify_installation.py # Full 39-point diagnostic and environment audit
+│   ├── creer_package_release.ps1 # Packaging script for standalone GitHub Releases
+│   └── optimize_with_olive.py # Microsoft Olive optimization pipeline
+├── *.py                     # Standalone Python microservices (Vision, Eraser, Whisper, Speaker, OCR, Avatar)
+├── Installer_Prerequis.ps1  # 1-click PowerShell installer (Winget + Pip + Models + Build)
+├── Lancer_DemoHub.ps1       # PowerShell launcher with NPU/GPU hardware pre-warming
+├── Compiler_DemoHub.ps1     # PowerShell build script (.NET 8 Release)
+├── Creer_Package_Release.ps1# Standalone release zip packager
+├── *.bat                    # Double-click batch wrappers for non-technical users
+├── requirements.txt         # Python dependencies (OpenVINO, PyTorch, PyMuPDF, Ultralytics, etc.)
+├── INSTALLATION_GUIDE.md    # Complete technical installation and troubleshooting guide in English
+├── GUIDE_INSTALLATION.md    # Guide d'installation complet en Français
+├── README.fr.md             # Documentation complète en Français
+└── README.md                # This complete English documentation
 ```
 
 ---
 
-## 🛠️ Résolution des Incidents Fréquents
+## 🛠️ Common Troubleshooting
 
-1. **Chemins longs Windows (`LongPathsEnabled`)** :
-   - Si PyTorch signale une erreur de chemin tronqué, lancez PowerShell en tant qu'administrateur :
+1. **Windows Long Paths (`LongPathsEnabled`)**:
+   - If PyTorch or pip reports path length errors, run PowerShell as Administrator:
      `Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1`
-2. **NPU non détecté (0% dans le Gestionnaire des tâches)** :
-   - Mettez à jour le pilote Intel NPU via l'[Assistant Pilotes Intel](https://www.intel.fr/content/www/fr/fr/support/detect.html).
-3. **Webcam indisponible dans le Contrôle d'Accès** :
-   - Vérifiez dans *Paramètres Windows > Confidentialité et sécurité > Caméra* que l'accès aux applications de bureau est activé.
-4. **Diagnostic global** :
-   - Exécutez `python scripts\verify_installation.py` à tout moment pour obtenir un rapport d'intégrité complet.
+2. **NPU Not Detected (0% usage in Task Manager)**:
+   - Ensure the latest Intel NPU driver is installed via the [Intel Driver & Support Assistant](https://www.intel.com/content/www/us/en/support/detect.html).
+3. **Webcam Unavailable in Access Control**:
+   - Check *Windows Settings > Privacy & security > Camera* to verify desktop application access is enabled.
+4. **Avatar Studio Error (Code 1)**:
+   - The LCM diffusion model is not downloaded yet. Run: `python scripts\download_models.py`.
+5. **System-wide Health Audit**:
+   - Execute `python scripts\verify_installation.py` at any time for an instant diagnostic report.
 
 ---
 
-## 🆕 Dernières Mises à Jour (Octobre 2026)
+## 🔒 Privacy & Data Sovereignty
 
-- **🎙️ Audio Studio — Traduction Intégrale en 1 Clic sur NPU (`Phi-4-mini`)** : Ajout des boutons `🌐 → 🇫🇷 Français` et `🌐 → 🇬🇧 English` permettant d'insérer à la fin du transcript une carte de traduction complète générée en streaming sur le NPU (`phi-4-mini-instruct-openvino-npu`), avec conservation des intervenants `[Speaker] : ...` et export au presse-papiers.
-- **🎙️ Audio Studio — Auto-Correction Linguistique Temps Réel (`lang_utils.py`)** : Détection et rattrapage automatique à la volée (`smart_transcribe_turn`) lorsque Whisper en mode `Auto` dérive vers l'anglais sur un segment court prononcé en français, avec re-décodage instantané sur NPU (`<|fr|>`).
-- **⚡ Audio Studio — Daemon Whisper NPU Pré-chauffé (`8 ms` au clic)** : Préchargement persistant en arrière-plan (`transcribe_service.py --daemon`) et mise en cache des blobs compilés OpenVINO (`models/.ov_cache`), réduisant le temps d'initialisation au clic de `3,4 s–10,2 s` à **`8 ms`** (`1,48 s` au total pour 25 s d'audio avec diarisation).
-- **📄 PDF Studio — Audit Juridique & RGPD sur NPU + Caviardage Hybride IA** : Intégration d'un audit sémantique local en streaming (`Phi-4-mini` sur NPU) détectant les clauses à risque et extrayant les entités personnelles hors-portée des Regex classiques, suivi d'un caviardage PDF en 1 clic (`--mode ai_audit`).
-- **🔋 Télémétrie Matérielle 100 % Réelle (`HardwareTelemetryService`)** : Suppression de toutes les valeurs simulées dans l'Audio Studio et le PDF Studio au profit des mesures réelles de puissance batterie/SoC (Watts, Joules) et du reporting transparent du périphérique effectif (`effective_device` + `fallback`).
-
----
-
-## 🔒 Confidentialité & Souveraineté des Données
-
-Toutes les inférences d'IA (LLM, vision par ordinateur, transcription audio, biométrie vocale et segmentation) s'exécutent **exclusivement sur les puces locales de la machine**. **Aucune donnée, image, document ou flux audio ne transite par le cloud.**
+All AI inferences (LLM reasoning, computer vision, speech transcription, voice biometrics, and semantic segmentation) execute **strictly on local on-device silicon**. **Zero telemetry, documents, photos, or audio streams ever leave your device or transit through the cloud.**

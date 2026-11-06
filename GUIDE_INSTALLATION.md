@@ -1,5 +1,8 @@
 # 🚀 Guide d'Installation Complet sur un Autre PC — Copilot+ PC Demo (Multi-Constructeurs)
 
+🌐 **Langue / Language** : **[ 🇫🇷 Français (Actif) ](GUIDE_INSTALLATION.md)** | **[ 🇬🇧 English Installation Guide ](INSTALLATION_GUIDE.md)**  
+📖 **Documentation Principale** : **[ 🇫🇷 README en Français ](README.fr.md)** | **[ 🇬🇧 README in English ](README.md)**
+
 Ce guide détaille l'intégralité des prérequis matériels, logiciels, modèles d'IA et pilotes nécessaires pour installer et faire fonctionner **Copilot+ PC Demo** sur n'importe quel PC Copilot+ (**Intel**, **AMD**, ou **Qualcomm Snapdragon**) en mode 100% autonome et local.
 
 ---
@@ -144,13 +147,17 @@ foundry status
 
 ### Étape 4 : Modèles Locaux Embarqués dans le Projet
 
-Le dossier [`models/`](models/) contient tous les modèles pré-convertis et quantifiés pour l'architecture Intel OpenVINO :
+Téléchargez les modèles neuronaux locaux via le script automatisé :
+```powershell
+python scripts\download_models.py
+```
 
+Le dossier [`models/`](models/) sera peuplé avec :
 1. **`models/yolov8s-world_openvino_model/`** : Détection visuelle temps réel (tasse, badge, casque, lunettes, personne).
 2. **`models/yolov8n-seg_openvino_model/`** : Segmentation spatiale pour la gomme magique.
 3. **`models/whisper-tiny-fp16-ov/` & `models/whisper-base-fp16-ov/`** : Transcription Speech-to-Text en français & anglais.
 4. **`models/speaker/`** : Réseau neuronal de reconnaissance biométrique vocale du locuteur.
-5. **`models/lcm_dreamshaper_8bit/`** : Modèle de diffusion d'images rapide (Latent Consistency Model).
+5. **`models/lcm_dreamshaper_8bit/`** : Modèle de diffusion d'images rapide (Latent Consistency Model pour Studio Avatar).
 6. **`models/npu_cache/`** : Blobs binaires compilés pour le NPU Intel pour un démarrage immédiat à froid.
 
 ---
@@ -160,7 +167,7 @@ Le dossier [`models/`](models/) contient tous les modèles pré-convertis et qua
 Vous pouvez compiler le projet soit via le script [`Compiler_DemoHub.bat`](Compiler_DemoHub.bat), soit via la ligne de commande :
 
 ```powershell
-# Compilation Release haute performance (Recommandee)
+# Compilation Release haute performance (Recommandée)
 dotnet build DemoHub\DemoHub.csproj -c Release
 
 # Publication complète autonome (x64)
@@ -193,6 +200,10 @@ Puis lancez la démonstration :
 ### 4. La webcam ne s'ouvre pas dans la démo Contrôle d'Accès
 - **Cause** : Autorisation caméra Windows désactivée ou webcam occupée par Teams/Zoom.
 - **Solution** : Allez dans *Paramètres Windows > Confidentialité et sécurité > Caméra* et vérifiez que l'accès aux applications de bureau est activé. Fermez Teams/Zoom.
+
+### 5. Erreur « Code 1 » dans la démo Studio Avatar
+- **Cause** : Le modèle LCM DreamShaper n'est pas téléchargé dans `models/lcm_dreamshaper_8bit` (non inclus dans git car > 1 Go) ou la bibliothèque `openvino-genai` n'est pas installée.
+- **Solution** : Exécutez simplement `python scripts\download_models.py` puis `python -m pip install openvino-genai`.
 
 ---
 

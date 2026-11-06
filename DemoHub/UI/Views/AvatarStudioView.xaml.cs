@@ -309,7 +309,14 @@ public partial class AvatarStudioView : UserControl, IDisposable
                     _avatarProcess.WaitForExit();
                     if (_avatarProcess.ExitCode != 0 && string.IsNullOrEmpty(finalOutput))
                     {
-                        lastError = !string.IsNullOrWhiteSpace(stderr) ? stderr : $"Code d'erreur {_avatarProcess.ExitCode}";
+                        if (!string.IsNullOrWhiteSpace(stderr))
+                        {
+                            lastError = stderr.Trim();
+                        }
+                        else if (string.IsNullOrWhiteSpace(lastError))
+                        {
+                            lastError = $"Code d'erreur {_avatarProcess.ExitCode} (Modèle manquant dans models/ ou dépendance OpenVINO manquante)";
+                        }
                     }
                 }
             }
