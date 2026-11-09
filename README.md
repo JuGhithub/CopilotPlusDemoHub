@@ -129,14 +129,14 @@ flowchart TD
 
 ---
 
-### 10. 🧠 Enterprise AI Landscape (Raw SLM, Domain SLM, NLU & Autonomous Agent)
-- **Executive Decision Framework**: Solves the fundamental enterprise client dilemma: *"When should we use an open-ended SLM, a specialized SLM, a structured NLU engine, or a full autonomous agent?"*
-- **4 Live Paradigms Evaluated Concurrently**:
-  1. 🟣 **Raw Generalist SLM**: Compact language model (e.g. standard Phi-4) outputting conversational plain text; ideal for drafting and general queries, but lacks sector-specific compliance.
-  2. 🔵 **Specialized Domain SLM**: Enforces certified industry standards (ATA 72-30 aeronautics, Basel III banking ratios, IRSA insurance claims) with formal audit conclusions (NO-GO AOG, compliance escalation).
-  3. 🟢 **Domain NLU (Deterministic JSON)**: 100% structured Intent & Named Entity Recognition (NER) output in strict JSON format, zero conversational filler, directly injectable into enterprise ERP, CRM, and SQL pipelines.
-  4. 🟠 **Autonomous Business Agent**: Multi-step reasoning with live simulated/real tool calling (`query_fleet_telemetry`, `check_hub_inventory`, `create_sap_work_order`) executing transactions end-to-end.
-- **Decision Matrix**: Live comparison of consumer targets (human vs API vs SI), determinism, action autonomy, and deployment complexity.
+### 10. 🩺 Healthcare AI Landscape (General SLM, Domain SLM, Clinical NLU & Medical Agent)
+- **Sovereign Clinical Copilot Showcase**: High-impact demonstration illustrating the absolute privacy and security of on-device healthcare AI (100% HIPAA / GDPR / HDS compliant, zero cloud leaks).
+- **The 4 Paradigms Compared on an Authentic Case** (Mr. Robert, 64 yrs, lower back pain under daily Kardegic / Aspirin):
+  1. 🟣 **Generalist SLM (Raw)**: Basic public health advice. Dangerously suggests Ibuprofen without verifying patient history.
+  2. 🔵 **Domain SLM (Vidal & ANSM)**: Certified pharmacology specialist revealing the level-4 lethal contraindication (NSAID + Aspirin = upper GI hemorrhage).
+  3. 🟢 **Clinical NLU (Context & Omissions)**: Understands the full consultation context and pinpoints practitioner omissions (unrequested Carte Vitale, missing blood pressure).
+  4. 🟠 **Active Medical Agent**: Dual-mode execution (**👣 Interactive Step-by-Step** with action buttons & **🩺 Ambient Real Doctor** for live consultations). Blocks the dangerous prescription, substitutes Paracetamol, generates the official SESAM-Vitale claim (€26.50), and cryptographically seals the local health record (DMP).
+- **Clinical Decision Matrix**: Compares output consumers, contextual understanding, pharmacological safety, and autonomous execution capabilities.
 
 ---
 

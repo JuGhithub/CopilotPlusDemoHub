@@ -24,12 +24,12 @@
 
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="🧠" FontSize="22" Margin="0,0,10,0" VerticalAlignment="Center" />
-                            <TextBlock x:Name="LblTitle" Text="PANORAMA IA : SLM, SLM MÉTIER, NLU &amp; AGENT AUTONOME"
+                            <TextBlock Text="🩺" FontSize="22" Margin="0,0,10,0" VerticalAlignment="Center" />
+                            <TextBlock x:Name="LblTitle" Text="PANORAMA IA : SLM STANDARD, SLM MÉTIER, NLU &amp; AGENT MÉDICAL"
                                        FontSize="16" FontWeight="Black"
                                        Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" TextWrapping="Wrap" />
                         </StackPanel>
-                        <TextBlock x:Name="LblSubtitle" Text="Guide décisionnel &amp; benchmark en direct pour décideurs : comprendre la valeur, les limites et l'adéquation métier de chaque paradigme d'IA locale."
+                        <TextBlock x:Name="LblSubtitle" Text="Cas d'usage souverain : Consultation Médicale locale. Comprendre la valeur clinique, la détection d'oublis et l'exécution d'un Agent actif sur PC Copilot+."
                                    FontSize="11.5" Margin="32,4,0,0"
                                    Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
                     </StackPanel>
@@ -82,25 +82,25 @@
                             <TextBlock x:Name="LblSelectScenario" Text="Scénario Métier :" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0" />
 
                             <WrapPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <RadioButton x:Name="RadScenarioAero" GroupName="ScenarioGrp" IsChecked="True"
+                                <RadioButton x:Name="RadScenarioMedical" GroupName="ScenarioGrp" IsChecked="True"
                                              Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="Bold"
                                              Checked="Scenario_Checked">
-                                    <TextBlock Text="✈️ Aéronautique &amp; Maintenance (Avarie Moteur OACI)" />
+                                    <TextBlock Text="🩺 Consultation Cabinet (Lombalgie &amp; Kardégic)" />
                                 </RadioButton>
-                                <RadioButton x:Name="RadScenarioFinance" GroupName="ScenarioGrp"
+                                <RadioButton x:Name="RadScenarioPediatric" GroupName="ScenarioGrp"
                                              Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="SemiBold"
                                              Checked="Scenario_Checked">
-                                    <TextBlock Text="🏦 Banque &amp; Crédit (Analyse Risque &amp; KYC)" />
+                                    <TextBlock Text="👶 Urgences Pédiatrie (Fièvre &amp; Posologie Poids)" />
                                 </RadioButton>
-                                <RadioButton x:Name="RadScenarioInsurance" GroupName="ScenarioGrp"
+                                <RadioButton x:Name="RadScenarioCardio" GroupName="ScenarioGrp"
                                              Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="SemiBold"
                                              Checked="Scenario_Checked">
-                                    <TextBlock Text="📋 Assurance &amp; Sinistre (Garantie &amp; Plafond)" />
+                                    <TextBlock Text="💊 Cardiologie (Insuffisance rénale &amp; Conflit AINS)" />
                                 </RadioButton>
                                 <RadioButton x:Name="RadScenarioCustom" GroupName="ScenarioGrp"
                                              Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="SemiBold"
                                              Checked="Scenario_Checked">
-                                    <TextBlock Text="✍️ Saisie Libre (Prompt Client)" />
+                                    <TextBlock Text="✍️ Saisie Libre (Prompt Médecin / Client)" />
                                 </RadioButton>
                             </WrapPanel>
                         </Grid>
@@ -110,7 +110,7 @@
                             <TextBox x:Name="TxtInputPrompt" Background="Transparent" Foreground="{StaticResource TextPrimaryBrush}"
                                      BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True"
                                      FontSize="11.5" FontFamily="Segoe UI" MinHeight="48" MaxHeight="90" VerticalScrollBarVisibility="Auto"
-                                     Text="Détection surchauffe palier compresseur HP à 94°C avec vibration anormale niveau 4 sur aéronef F-HBNX lors de l'escale Nice. Demande statut décollage et référence ATA." />
+                                     Text="M. Robert (64 ans, suivi pour cardiopathie sous Kardégic 75 mg) : 'Bonjour Docteur, j'ai une violente douleur dans le bas du dos depuis 3 jours. Prescrivez-moi un anti-inflammatoire puissant comme de l'Ibuprofène 400 mg pour calmer l'inflammation !'" />
                         </Border>
 
                         <!-- Action Bar: Run All Button & Mode Selector -->
@@ -180,13 +180,13 @@
                                     <Border Background="#2E1065" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
                                         <TextBlock Text="NIVEAU 1" FontSize="9.5" FontWeight="Bold" Foreground="#C084FC" />
                                     </Border>
-                                    <TextBlock Text="🟣 SLM GÉNÉRIQUE (BRUT)" FontSize="12.5" FontWeight="Bold" Foreground="#D8B4FE" />
+                                    <TextBlock Text="🟣 SLM STANDARD (SANTÉ GÉNÉRALE)" FontSize="12.5" FontWeight="Bold" Foreground="#D8B4FE" />
                                 </StackPanel>
                                 <Button Grid.Column="1" x:Name="BtnRunSlmRaw" Content="▶ Lancer" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="22" Padding="8,0" FontSize="10" Click="BtnRunSlmRaw_Click" />
                             </Grid>
 
                             <!-- Role description -->
-                            <TextBlock Grid.Row="1" x:Name="LblRoleSlmRaw" Text="Modèle de langage compact brut (ex: Phi-4 standard) sans prompt métier. Texte libre, informel, connaissances généralistes." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
+                            <TextBlock Grid.Row="1" x:Name="LblRoleSlmRaw" Text="Modèle compact standard (Phi-4 mini) sans base pharmacologique ni dossier patient. Vulgarisation grand public, ignore les risques vitaux." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
 
                             <!-- Response Area -->
                             <Border Grid.Row="2" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
@@ -204,21 +204,21 @@
                                     <TextBlock x:Name="TxtTelemetrySlmRaw" Text="⚡ Latence: -- ms • Vitesse: -- tok/s" FontSize="10" Foreground="#A5B4FC" />
                                 </Border>
                                 <Border Background="#0C1424" BorderBrush="#334155" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
-                                    <TextBlock Text="Format: Texte Libre" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="Format: Texte Grand Public" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
                                 </Border>
                             </WrapPanel>
 
                             <!-- Collapsible Pedagogical Guide -->
                             <Border Grid.Row="4" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="6" Padding="8,6">
                                 <StackPanel>
-                                    <TextBlock Text="💡 Quand l'utiliser en entreprise ?" FontSize="10" FontWeight="Bold" Foreground="#C084FC" Margin="0,0,0,3" />
-                                    <TextBlock Text="✓ Résumé rapide, reformulation, brainstorming interne, emails informels.&#x0a;✗ Pas de terminologie certifiée, hallucine facilement sur des normes strictes." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                                    <TextBlock Text="💡 Pourquoi insuffisant en consultation ?" FontSize="10" FontWeight="Bold" Foreground="#C084FC" Margin="0,0,0,3" />
+                                    <TextBlock Text="✗ Ignore les antécédents cardiaques du patient.&#x0a;✗ Propose volontiers de l'Ibuprofène en vente libre sans déceler l'interaction mortelle avec le Kardégic." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Border>
                         </Grid>
                     </Border>
 
-                    <!-- CARD 2: SLM MÉTIER (SPÉCIALISÉ / RAG) -->
+                    <!-- CARD 2: SLM MÉTIER (PHARMACOPÉE & VIDAL) -->
                     <Border x:Name="CardSlmDomain" Grid.Row="0" Grid.Column="2" Background="#0C1424" BorderBrush="#0369A1" BorderThickness="1.5" CornerRadius="8" Padding="14">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -239,13 +239,13 @@
                                     <Border Background="#082F49" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
                                         <TextBlock Text="NIVEAU 2" FontSize="9.5" FontWeight="Bold" Foreground="#38BDF8" />
                                     </Border>
-                                    <TextBlock Text="🔵 SLM MÉTIER (SPÉCIALISÉ)" FontSize="12.5" FontWeight="Bold" Foreground="#38BDF8" />
+                                    <TextBlock Text="🔵 SLM MÉTIER (PHARMACOPÉE &amp; VIDAL)" FontSize="12.5" FontWeight="Bold" Foreground="#38BDF8" />
                                 </StackPanel>
                                 <Button Grid.Column="1" x:Name="BtnRunSlmDomain" Content="▶ Lancer" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="22" Padding="8,0" FontSize="10" Click="BtnRunSlmDomain_Click" />
                             </Grid>
 
                             <!-- Role description -->
-                            <TextBlock Grid.Row="1" x:Name="LblRoleSlmDomain" Text="SLM injecté de directives d'experts, normes sectorielles (ATA, OACI, FINMA) et ton certifié. Décisions formelles et terminologie exacte." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
+                            <TextBlock Grid.Row="1" x:Name="LblRoleSlmDomain" Text="SLM spécialisé sur les monographies ANSM / VIDAL, effets secondaires, posologies rénales et contre-indications croisées absolues." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
 
                             <!-- Response Area -->
                             <Border Grid.Row="2" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
@@ -263,21 +263,21 @@
                                     <TextBlock x:Name="TxtTelemetrySlmDomain" Text="⚡ Latence: -- ms • Vitesse: -- tok/s" FontSize="10" Foreground="#38BDF8" />
                                 </Border>
                                 <Border Background="#0C1424" BorderBrush="#334155" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
-                                    <TextBlock Text="Format: Rapport Normé" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="Format: Analyse Médicamenteuse" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
                                 </Border>
                             </WrapPanel>
 
                             <!-- Collapsible Pedagogical Guide -->
                             <Border Grid.Row="4" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="6" Padding="8,6">
                                 <StackPanel>
-                                    <TextBlock Text="💡 Quand l'utiliser en entreprise ?" FontSize="10" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,3" />
-                                    <TextBlock Text="✓ Aide à la décision ingénieur, audit qualité, conformité juridique et réglementaire.&#x0a;✗ Reste du texte libre destiné aux humains, pas directement exploitable par une API." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                                    <TextBlock Text="💡 Quelle est sa valeur et sa limite ?" FontSize="10" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,3" />
+                                    <TextBlock Text="✓ Détecte immédiatement le danger AINS + Kardégic (hémorragie digestive).&#x0a;✗ Reste passif : ne dialogue pas avec le patient, ne gère pas la carte vitale ni la facturation." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Border>
                         </Grid>
                     </Border>
 
-                    <!-- CARD 3: NLU MÉTIER (STRUCTURÉ JSON) -->
+                    <!-- CARD 3: NLU MÉTIER (COMPRÉHENSION CONTEXTE & OUBLIS) -->
                     <Border x:Name="CardNlu" Grid.Row="2" Grid.Column="0" Background="#0C1424" BorderBrush="#047857" BorderThickness="1.5" CornerRadius="8" Padding="14">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -298,13 +298,13 @@
                                     <Border Background="#064E3B" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
                                         <TextBlock Text="NIVEAU 3" FontSize="9.5" FontWeight="Bold" Foreground="#34D399" />
                                     </Border>
-                                    <TextBlock Text="🟢 NLU MÉTIER (STRUCTURÉ JSON)" FontSize="12.5" FontWeight="Bold" Foreground="#34D399" />
+                                    <TextBlock Text="🟢 NLU MÉTIER (CONTEXTE &amp; OUBLIS)" FontSize="12.5" FontWeight="Bold" Foreground="#34D399" />
                                 </StackPanel>
                                 <Button Grid.Column="1" x:Name="BtnRunNlu" Content="▶ Lancer" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="22" Padding="8,0" FontSize="10" Click="BtnRunNlu_Click" />
                             </Grid>
 
                             <!-- Role description -->
-                            <TextBlock Grid.Row="1" x:Name="LblRoleNlu" Text="Natural Language Understanding : extraction d'intention et d'entités (NER). 0% bavardage, 100% déterministe sous schéma JSON strict." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
+                            <TextBlock Grid.Row="1" x:Name="LblRoleNlu" Text="Compréhension du dialogue clinique et du contexte patient : antécédents résolus, symptômes extraits ET détection des oublis (Carte Vitale, constantes)." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
 
                             <!-- Response Area -->
                             <Border Grid.Row="2" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
@@ -319,36 +319,37 @@
                             <!-- Live Telemetry Pill -->
                             <WrapPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
                                 <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
-                                    <TextBlock x:Name="TxtTelemetryNlu" Text="⚡ Latence: -- ms • Vitesse: -- tok/s" FontSize="10" Foreground="#34D399" />
+                                    <TextBlock x:Name="TxtTelemetryNlu" Text="⚡ Latence: -- ms • Contexte &amp; Oublis Détectés" FontSize="10" Foreground="#34D399" />
                                 </Border>
                                 <Border Background="#0C1424" BorderBrush="#334155" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
-                                    <TextBlock Text="Format: JSON Strict (API)" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="Format: JSON Contexte &amp; Oublis" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
                                 </Border>
                             </WrapPanel>
 
                             <!-- Collapsible Pedagogical Guide -->
                             <Border Grid.Row="4" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="6" Padding="8,6">
                                 <StackPanel>
-                                    <TextBlock Text="💡 Quand l'utiliser en entreprise ?" FontSize="10" FontWeight="Bold" Foreground="#34D399" Margin="0,0,0,3" />
-                                    <TextBlock Text="✓ Intégration directe ERP, CRM, SAP, bases SQL, webhooks et micro-services.&#x0a;✗ N'exécute pas d'action et n'explique pas le contexte à l'utilisateur." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                                    <TextBlock Text="💡 La rupture apportée par le NLU Métier :" FontSize="10" FontWeight="Bold" Foreground="#34D399" Margin="0,0,0,3" />
+                                    <TextBlock Text="✓ Repère ce qui a été dit (douleur lombaire L4-L5, Kardégic) ET ce qui manque (Carte Vitale non demandée, tension omise).&#x0a;✗ Ne prend pas de décision d'action par lui-même (nécessite l'Agent)." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Border>
                         </Grid>
                     </Border>
 
-                    <!-- CARD 4: AGENT MÉTIER (TOOL CALLING & ACTIONS) -->
+                    <!-- CARD 4: AGENT MÉTIER (COPILOTE ACTIF DU MÉDECIN) -->
                     <Border x:Name="CardAgent" Grid.Row="2" Grid.Column="2" Background="#0C1424" BorderBrush="#B45309" BorderThickness="1.5" CornerRadius="8" Padding="14">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" MinHeight="190" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" MinHeight="170" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <!-- Header Card 4 -->
-                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                            <Grid Grid.Row="0" Margin="0,0,0,6">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
@@ -357,17 +358,39 @@
                                     <Border Background="#451A03" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
                                         <TextBlock Text="NIVEAU 4" FontSize="9.5" FontWeight="Bold" Foreground="#FBBF24" />
                                     </Border>
-                                    <TextBlock Text="🟠 AGENT MÉTIER (AUTONOME + OUTILS)" FontSize="12.5" FontWeight="Bold" Foreground="#FBBF24" />
+                                    <TextBlock Text="🟠 AGENT MÉTIER (COPILOTE ACTIF)" FontSize="12.5" FontWeight="Bold" Foreground="#FBBF24" />
                                 </StackPanel>
-                                <Button Grid.Column="1" x:Name="BtnRunAgent" Content="▶ Lancer" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="22" Padding="8,0" FontSize="10" Click="BtnRunAgent_Click" />
+                                <Button Grid.Column="1" x:Name="BtnRunAgent" Content="▶ Lancer" Style="{StaticResource ModernButtonStyle}" Background="#0284C7" Height="24" Padding="10,0" FontSize="10.5" FontWeight="Bold" Click="BtnRunAgent_Click" />
                             </Grid>
 
-                            <!-- Role description -->
-                            <TextBlock Grid.Row="1" x:Name="LblRoleAgent" Text="IA Agentique : planifie en multi-étapes, appelle des outils réels (BDD pièces, calculatrice, ERP), vérifie et clôture le problème." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
+                            <!-- Mode Selector Toggle: Pas-à-Pas vs Médecin Réel -->
+                            <Border Grid.Row="1" Background="#141E2E" BorderBrush="#2A3B5C" BorderThickness="1" CornerRadius="6" Padding="6,4" Margin="0,0,0,6">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Mode Agent :" FontSize="10" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" Margin="2,0,8,0" />
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <RadioButton x:Name="RadAgentStepByStep" GroupName="AgentModeGrp" IsChecked="True" Content="👣 Pas-à-Pas (Interactif)" Style="{StaticResource PillButtonStyle}" Height="22" FontSize="9.5" FontWeight="Bold" Checked="AgentMode_Checked" Margin="0,0,4,0" />
+                                        <RadioButton x:Name="RadAgentRealDoctor" GroupName="AgentModeGrp" Content="🩺 Médecin Réel (Temps Réel)" Style="{StaticResource PillButtonStyle}" Height="22" FontSize="9.5" FontWeight="Bold" Checked="AgentMode_Checked" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Interactive Step-by-Step HUD Action Bar -->
+                            <Border Grid.Row="2" x:Name="PanelAgentStepActions" Background="#1C1917" BorderBrush="#78350F" BorderThickness="1" CornerRadius="6" Padding="6,4" Margin="0,0,0,6">
+                                <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button x:Name="BtnStep1Dossier" Content="1️⃣ Dossier Patient" Style="{StaticResource ModernButtonStyle}" Background="#292524" Height="22" Padding="6,0" FontSize="9.5" Margin="0,0,4,2" Click="BtnStep1Dossier_Click" />
+                                    <Button x:Name="BtnStep2Vitale" Content="2️⃣ 💳 Demander Carte Vitale" Style="{StaticResource ModernButtonStyle}" Background="#78350F" Height="22" Padding="6,0" FontSize="9.5" FontWeight="Bold" Margin="0,0,4,2" Click="BtnStep2Vitale_Click" />
+                                    <Button x:Name="BtnStep3Subst" Content="3️⃣ 🛡️ Paracétamol (Sécurité)" Style="{StaticResource ModernButtonStyle}" Background="#9A3412" Height="22" Padding="6,0" FontSize="9.5" FontWeight="Bold" Margin="0,0,4,2" Click="BtnStep3Subst_Click" />
+                                    <Button x:Name="BtnStep4Finalize" Content="4️⃣ 📑 Facture SESAM &amp; DMP" Style="{StaticResource ModernButtonStyle}" Background="#065F46" Height="22" Padding="6,0" FontSize="9.5" FontWeight="Bold" Margin="0,0,0,2" Click="BtnStep4Finalize_Click" />
+                                </WrapPanel>
+                            </Border>
 
                             <!-- Response Area -->
-                            <Border Grid.Row="2" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="220">
+                            <Border Grid.Row="3" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="210">
                                     <TextBox x:Name="TxtOutputAgent" Background="Transparent" Foreground="#FDE68A"
                                              BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True"
                                              FontSize="11" FontFamily="Consolas, Segoe UI"
@@ -376,20 +399,20 @@
                             </Border>
 
                             <!-- Live Telemetry Pill -->
-                            <WrapPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
+                            <WrapPanel Grid.Row="4" Orientation="Horizontal" Margin="0,0,0,6">
                                 <Border Background="#451A03" BorderBrush="#D97706" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
-                                    <TextBlock x:Name="TxtTelemetryAgent" Text="⚡ Latence: -- ms • 3 Outils Invoqués" FontSize="10" Foreground="#FBBF24" />
+                                    <TextBlock x:Name="TxtTelemetryAgent" Text="⚡ Latence: -- ms • 4 Actions Réalisées" FontSize="10" Foreground="#FBBF24" />
                                 </Border>
                                 <Border Background="#0C1424" BorderBrush="#334155" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
-                                    <TextBlock Text="Format: Plan + Actions + Bilan" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock x:Name="TxtStatusAgentDeliverables" Text="Livrables : SESAM-Vitale • Compte-Rendu • DMP" FontSize="10" Foreground="#6EE7B7" />
                                 </Border>
                             </WrapPanel>
 
                             <!-- Collapsible Pedagogical Guide -->
-                            <Border Grid.Row="4" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="6" Padding="8,6">
+                            <Border Grid.Row="5" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="6" Padding="8,6">
                                 <StackPanel>
-                                    <TextBlock Text="💡 Quand l'utiliser en entreprise ?" FontSize="10" FontWeight="Bold" Foreground="#FBBF24" Margin="0,0,0,3" />
-                                    <TextBlock Text="✓ Automatisation de bout en bout, diagnostic + commande de pièce + clôture de ticket.&#x0a;✗ Exige une orchestration rigoureuse, temps d'inférence légèrement plus élevé." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                                    <TextBlock Text="💡 Le rôle déterminant de l'Agent Médical :" FontSize="10" FontWeight="Bold" Foreground="#FBBF24" Margin="0,0,0,3" />
+                                    <TextBlock Text="✓ Bloque activement la prescription à risque vital, rappelle la carte vitale, génère la feuille de soins (26,50 €) et sauvegarde le DMP localement." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -449,14 +472,14 @@
                                         <ColumnDefinition Width="1.2*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="Consommateur de la sortie" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                    <TextBlock Grid.Column="1" Text="Humain (Lecture)" FontSize="10.5" Foreground="{StaticResource TextPrimaryBrush}" />
-                                    <TextBlock Grid.Column="2" Text="Expert / Métier" FontSize="10.5" Foreground="{StaticResource TextPrimaryBrush}" />
-                                    <TextBlock Grid.Column="3" Text="API / Logiciel (JSON)" FontSize="10.5" FontWeight="Bold" Foreground="#34D399" />
-                                    <TextBlock Grid.Column="4" Text="Processus Complet (SI)" FontSize="10.5" FontWeight="Bold" Foreground="#FBBF24" />
+                                    <TextBlock Grid.Column="1" Text="Grand Public (Lecture)" FontSize="10.5" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <TextBlock Grid.Column="2" Text="Médecin / Pharmacien" FontSize="10.5" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <TextBlock Grid.Column="3" Text="Logiciel Cabinet / DMP" FontSize="10.5" FontWeight="Bold" Foreground="#34D399" />
+                                    <TextBlock Grid.Column="4" Text="Consultation Complète" FontSize="10.5" FontWeight="Bold" Foreground="#FBBF24" />
                                 </Grid>
                             </Border>
 
-                            <!-- Row 2: Déterminisme -->
+                            <!-- Row 2: Contexte & Oublis -->
                             <Border Grid.Row="2" Grid.ColumnSpan="5" Background="#060A12" Padding="8,6" Margin="0,0,0,2">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -466,15 +489,15 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="1.2*" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Précision &amp; Déterminisme" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                    <TextBlock Grid.Column="1" Text="Moyen (Généraliste)" FontSize="10.5" Foreground="#EF4444" />
-                                    <TextBlock Grid.Column="2" Text="Élevé (Normes)" FontSize="10.5" Foreground="#38BDF8" />
-                                    <TextBlock Grid.Column="3" Text="100% (Strict)" FontSize="10.5" FontWeight="Bold" Foreground="#34D399" />
-                                    <TextBlock Grid.Column="4" Text="Très Élevé (Vérifié)" FontSize="10.5" FontWeight="Bold" Foreground="#FBBF24" />
+                                    <TextBlock Grid.Column="0" Text="Contexte Patient &amp; Oublis" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Grid.Column="1" Text="Nul (Ignore l'historique)" FontSize="10.5" Foreground="#EF4444" />
+                                    <TextBlock Grid.Column="2" Text="Notices Vidal seules" FontSize="10.5" Foreground="#38BDF8" />
+                                    <TextBlock Grid.Column="3" Text="100% (Carte Vitale / TA)" FontSize="10.5" FontWeight="Bold" Foreground="#34D399" />
+                                    <TextBlock Grid.Column="4" Text="100% + Alerte Proactive" FontSize="10.5" FontWeight="Bold" Foreground="#FBBF24" />
                                 </Grid>
                             </Border>
 
-                            <!-- Row 3: Autonomie & Action -->
+                            <!-- Row 3: Sécurité Médicamenteuse -->
                             <Border Grid.Row="3" Grid.ColumnSpan="5" Background="#080E1C" Padding="8,6" Margin="0,0,0,2">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -484,15 +507,15 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="1.2*" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Capacité d'Action Autonome" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                    <TextBlock Grid.Column="1" Text="Nulle (Texte seul)" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" />
-                                    <TextBlock Grid.Column="2" Text="Nulle (Conseil)" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" />
-                                    <TextBlock Grid.Column="3" Text="Nulle (Donnée seule)" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" />
-                                    <TextBlock Grid.Column="4" Text="TOTALE (Tool Calling)" FontSize="10.5" FontWeight="Bold" Foreground="#FBBF24" />
+                                    <TextBlock Grid.Column="0" Text="Vigilance Prescription" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Grid.Column="1" Text="Dangereux (Propose AINS)" FontSize="10.5" Foreground="#EF4444" />
+                                    <TextBlock Grid.Column="2" Text="Alerte Vidal Passive" FontSize="10.5" Foreground="#38BDF8" />
+                                    <TextBlock Grid.Column="3" Text="Flag Incompatibilité" FontSize="10.5" Foreground="#34D399" />
+                                    <TextBlock Grid.Column="4" Text="Blocage &amp; Substitution" FontSize="10.5" FontWeight="Bold" Foreground="#FBBF24" />
                                 </Grid>
                             </Border>
 
-                            <!-- Row 4: Complexité de mise en oeuvre -->
+                            <!-- Row 4: Action & Livrables -->
                             <Border Grid.Row="4" Grid.ColumnSpan="5" Background="#060A12" Padding="8,6">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -502,11 +525,11 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="1.2*" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Complexité de déploiement" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" />
-                                    <TextBlock Grid.Column="1" Text="Immédiat (0 jour)" FontSize="10.5" Foreground="#10B981" />
-                                    <TextBlock Grid.Column="2" Text="Faible (Prompt/RAG)" FontSize="10.5" Foreground="#10B981" />
-                                    <TextBlock Grid.Column="3" Text="Moyenne (Schéma)" FontSize="10.5" Foreground="#F59E0B" />
-                                    <TextBlock Grid.Column="4" Text="Moyenne+ (Outils/MCP)" FontSize="10.5" Foreground="#F59E0B" />
+                                    <TextBlock Grid.Column="0" Text="Capacité d'Action Réelle" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Grid.Column="1" Text="Nulle (Texte seul)" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" />
+                                    <TextBlock Grid.Column="2" Text="Nulle (Conseil)" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" />
+                                    <TextBlock Grid.Column="3" Text="Nulle (JSON brut)" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" />
+                                    <TextBlock Grid.Column="4" Text="TOTALE (SESAM, DMP)" FontSize="10.5" FontWeight="Bold" Foreground="#FBBF24" />
                                 </Grid>
                             </Border>
                         </Grid>

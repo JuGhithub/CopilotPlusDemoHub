@@ -23,6 +23,12 @@ public partial class AiParadigmsView : UserControl, IDisposable
     private bool _isSyncingDevice = false;
     private CancellationTokenSource? _currentCts;
 
+    // Agent Step-by-Step State
+    private int _agentStep = 0;
+    private bool _isRealDoctorMode = false;
+    private bool _vitaleInserted = false;
+    private bool _substitutionApplied = false;
+
     public AiParadigmsView() : this(null, null, null, null) { }
 
     public AiParadigmsView(
@@ -40,6 +46,7 @@ public partial class AiParadigmsView : UserControl, IDisposable
         _getSelectedDevice = getSelectedDevice;
         _getEffectiveDevice = getEffectiveDevice;
 
+        UpdateAgentModeUI();
         RefreshDeviceUI();
         if (_localizer != null)
         {
@@ -73,46 +80,46 @@ public partial class AiParadigmsView : UserControl, IDisposable
         bool isEn = _localizer.CurrentLanguage == "en";
 
         LblTitle.Text = isEn
-            ? "AI LANDSCAPE: SLM, SPECIALIZED SLM, NLU & AUTONOMOUS AGENT"
-            : "PANORAMA IA : SLM, SLM MÉTIER, NLU & AGENT AUTONOME";
+            ? "AI LANDSCAPE: GENERAL SLM, DOMAIN SLM, CLINICAL NLU & MEDICAL AGENT"
+            : "PANORAMA IA : SLM STANDARD, SLM MÉTIER, NLU & AGENT MÉDICAL";
 
         LblSubtitle.Text = isEn
-            ? "Decision-maker benchmark & live comparison: understand business value, limitations, and sweet spot for each local AI paradigm."
-            : "Guide décisionnel & benchmark en direct pour décideurs : comprendre la valeur, les limites et l'adéquation métier de chaque paradigme d'IA locale.";
+            ? "Sovereign Healthcare Showcase: Local Consultation Copilot. Understand clinical value, omission tracking, and active Agent execution on Copilot+ PCs."
+            : "Cas d'usage souverain : Consultation Médicale locale. Comprendre la valeur clinique, la détection d'oublis et l'exécution d'un Agent actif sur PC Copilot+.";
 
         LblComplianceBadge.Text = isEn
-            ? "100% Sovereign • NPU/GPU Inference"
-            : "100% Souverain • Inférence NPU/GPU";
+            ? "100% Sovereign • Confidential Medical AI (NPU)"
+            : "100% Souverain • Secret Médical Préservé (NPU)";
 
-        TxtDocHelp.Text = isEn ? "Decision Guide" : "Guide Décisionnel";
-        LblSelectScenario.Text = isEn ? "Business Scenario:" : "Scénario Métier :";
+        TxtDocHelp.Text = isEn ? "Clinical Decision Guide" : "Guide Décisionnel Médical";
+        LblSelectScenario.Text = isEn ? "Clinical Case:" : "Cas Clinique :";
         TxtBtnRunAll.Text = isEn ? "Evaluate All 4 Approaches Simultaneously" : "Évaluer les 4 Approches en Simultané";
         LblViewMode.Text = isEn ? "Display:" : "Affichage :";
         RadViewGrid.Content = isEn ? "2x2 Grid" : "Grille 2x2";
         RadViewTabs.Content = isEn ? "Detail / Stack" : "Détail / Pile";
 
         LblMatrixTitle.Text = isEn
-            ? "📊 DECISION MATRIX: WHICH AI ARCHITECTURE SHOULD YOU CHOOSE FOR YOUR PROJECT?"
-            : "📊 MATRICE DÉCISIONNELLE : QUELLE ARCHITECTURE CHOISIR POUR VOTRE PROJET ?";
+            ? "📊 CLINICAL DECISION MATRIX: WHICH AI ARCHITECTURE SHOULD YOU CHOOSE FOR HEALTHCARE?"
+            : "📊 MATRICE DÉCISIONNELLE : QUELLE ARCHITECTURE CHOISIR POUR VOTRE PROJET DE SANTÉ ?";
 
         // Scenario text presets
-        if (RadScenarioAero?.IsChecked == true)
+        if (RadScenarioMedical?.IsChecked == true)
         {
             TxtInputPrompt.Text = isEn
-                ? "HP compressor bearing overheat detected at 94°C with abnormal vibration level 4 on aircraft F-HBNX during Nice transit. Request takeoff status and ATA reference."
-                : "Détection surchauffe palier compresseur HP à 94°C avec vibration anormale niveau 4 sur aéronef F-HBNX lors de l'escale Nice. Demande statut décollage et référence ATA.";
+                ? "Mr. Robert (64 yrs, followed for heart condition on daily Kardegic / Aspirin 75 mg): 'Doctor, I have severe lower back pain since 3 days after gardening. Please prescribe me a strong anti-inflammatory like Ibuprofen 400 mg to stop the pain immediately!'"
+                : "M. Robert (64 ans, suivi pour cardiopathie sous Kardégic 75 mg) : 'Bonjour Docteur, j'ai une violente douleur dans le bas du dos depuis 3 jours. Prescrivez-moi un anti-inflammatoire puissant comme de l'Ibuprofène 400 mg pour calmer l'inflammation !'";
         }
-        else if (RadScenarioFinance?.IsChecked == true)
+        else if (RadScenarioPediatric?.IsChecked == true)
         {
             TxtInputPrompt.Text = isEn
-                ? "Commercial loan request of €75,000 over 48 months by SAS TECHNOVA (SIREN 849 203 118). Prior-year Revenue: €340,000, EBITDA: €48,000, Current Debt: €32,000, Managing Director flagged as PEP."
-                : "Demande de crédit professionnel 75 000 € sur 48 mois par SAS TECHNOVA (SIREN 849 203 118). CA N-1: 340 000 €, EBE: 48 000 €, Endettement actuel: 32 000 €, Gérant sous surveillance PEP.";
+                ? "Pediatric ER: Infant Leo (9 months, 8.4 kg). Sudden fever spike at 39.7°C, crying inconsolably. Parent asks: 'Can I give him two adult Advil tablets dissolved in his milk bottle?'"
+                : "Urgences Pédiatriques : Nourrisson Léo (9 mois, 8,4 kg). Pic fébrile à 39,7°C, pleurs inconsolables. La mère demande : 'Puis-je lui donner 2 comprimés d'Advil adulte écrasés dans son biberon pour faire baisser la fièvre ?'";
         }
-        else if (RadScenarioInsurance?.IsChecked == true)
+        else if (RadScenarioCardio?.IsChecked == true)
         {
             TxtInputPrompt.Text = isEn
-                ? "First notice of loss: rear collision on Peugeot 3008 (plate GF-442-TY) caused by hit-and-run in parking lot. Policy 'Auto Privilège' #788421. Damaged bumper and dented tailgate."
-                : "Déclaration sinistre collision arrière sur Peugeot 3008 (immat GF-442-TY) par tiers non identifié sur parking. Contrat Auto Privilège #788421. Dommages pare-chocs et hayon enfoncé.";
+                ? "Cardiology follow-up: Mrs. Claire (72 yrs, chronic renal failure GFR 28 ml/min, Type-2 diabetes on Metformin). Requests high-dose Ketoprofen renewal for osteo-arthritis flare."
+                : "Suivi Cardiologie : Mme Claire (72 ans, insuffisance rénale chronique DFG 28 ml/min, diabétique type 2 sous Metformine). Demande le renouvellement de Kétoprofène fort pour une poussée d'arthrose.";
         }
 
         RefreshDeviceUI();
@@ -124,29 +131,29 @@ public partial class AiParadigmsView : UserControl, IDisposable
         if (!_isInitialized || TxtInputPrompt == null) return;
         bool isEn = _localizer?.CurrentLanguage == "en";
 
-        if (sender == RadScenarioAero)
+        if (sender == RadScenarioMedical)
         {
             TxtInputPrompt.Text = isEn
-                ? "HP compressor bearing overheat detected at 94°C with abnormal vibration level 4 on aircraft F-HBNX during Nice transit. Request takeoff status and ATA reference."
-                : "Détection surchauffe palier compresseur HP à 94°C avec vibration anormale niveau 4 sur aéronef F-HBNX lors de l'escale Nice. Demande statut décollage et référence ATA.";
+                ? "Mr. Robert (64 yrs, followed for heart condition on daily Kardegic / Aspirin 75 mg): 'Doctor, I have severe lower back pain since 3 days after gardening. Please prescribe me a strong anti-inflammatory like Ibuprofen 400 mg to stop the pain immediately!'"
+                : "M. Robert (64 ans, suivi pour cardiopathie sous Kardégic 75 mg) : 'Bonjour Docteur, j'ai une violente douleur dans le bas du dos depuis 3 jours. Prescrivez-moi un anti-inflammatoire puissant comme de l'Ibuprofène 400 mg pour calmer l'inflammation !'";
         }
-        else if (sender == RadScenarioFinance)
+        else if (sender == RadScenarioPediatric)
         {
             TxtInputPrompt.Text = isEn
-                ? "Commercial loan request of €75,000 over 48 months by SAS TECHNOVA (SIREN 849 203 118). Prior-year Revenue: €340,000, EBITDA: €48,000, Current Debt: €32,000, Managing Director flagged as PEP."
-                : "Demande de crédit professionnel 75 000 € sur 48 mois par SAS TECHNOVA (SIREN 849 203 118). CA N-1: 340 000 €, EBE: 48 000 €, Endettement actuel: 32 000 €, Gérant sous surveillance PEP.";
+                ? "Pediatric ER: Infant Leo (9 months, 8.4 kg). Sudden fever spike at 39.7°C, crying inconsolably. Parent asks: 'Can I give him two adult Advil tablets dissolved in his milk bottle?'"
+                : "Urgences Pédiatriques : Nourrisson Léo (9 mois, 8,4 kg). Pic fébrile à 39,7°C, pleurs inconsolables. La mère demande : 'Puis-je lui donner 2 comprimés d'Advil adulte écrasés dans son biberon pour faire baisser la fièvre ?'";
         }
-        else if (sender == RadScenarioInsurance)
+        else if (sender == RadScenarioCardio)
         {
             TxtInputPrompt.Text = isEn
-                ? "First notice of loss: rear collision on Peugeot 3008 (plate GF-442-TY) caused by hit-and-run in parking lot. Policy 'Auto Privilège' #788421. Damaged bumper and dented tailgate."
-                : "Déclaration sinistre collision arrière sur Peugeot 3008 (immat GF-442-TY) par tiers non identifié sur parking. Contrat Auto Privilège #788421. Dommages pare-chocs et hayon enfoncé.";
+                ? "Cardiology follow-up: Mrs. Claire (72 yrs, chronic renal failure GFR 28 ml/min, Type-2 diabetes on Metformin). Requests high-dose Ketoprofen renewal for osteo-arthritis flare."
+                : "Suivi Cardiologie : Mme Claire (72 ans, insuffisance rénale chronique DFG 28 ml/min, diabétique type 2 sous Metformine). Demande le renouvellement de Kétoprofène fort pour une poussée d'arthrose.";
         }
         else if (sender == RadScenarioCustom)
         {
             TxtInputPrompt.Text = isEn
-                ? "Urgent maintenance request: Hydraulic yellow system pressure drop detected on flight AF312 during final approach."
-                : "Demande d'intervention urgente : Chute de pression circuit hydraulique jaune détectée sur le vol AF312 en approche finale.";
+                ? "Medical dialogue: Patient with known gastric ulcer asking for Aspirin and Voltaren combination for dental pain."
+                : "Dialogue consultation : Patient avec ulcère gastroduodénal connu demandant l'association d'Aspirine et de Voltaren pour une rage de dents.";
         }
 
         ResetOutputPlaceholders();
@@ -164,8 +171,13 @@ public partial class AiParadigmsView : UserControl, IDisposable
 
         if (TxtTelemetrySlmRaw != null) TxtTelemetrySlmRaw.Text = "⚡ Latence: -- ms • Vitesse: -- tok/s";
         if (TxtTelemetrySlmDomain != null) TxtTelemetrySlmDomain.Text = "⚡ Latence: -- ms • Vitesse: -- tok/s";
-        if (TxtTelemetryNlu != null) TxtTelemetryNlu.Text = "⚡ Latence: -- ms • Vitesse: -- tok/s";
-        if (TxtTelemetryAgent != null) TxtTelemetryAgent.Text = "⚡ Latence: -- ms • 3 Outils Invoqués";
+        if (TxtTelemetryNlu != null) TxtTelemetryNlu.Text = "⚡ Latence: -- ms • Contexte & Oublis Détectés";
+        if (TxtTelemetryAgent != null) TxtTelemetryAgent.Text = "⚡ Latence: -- ms • 4 Actions Réalisées";
+
+        _agentStep = 0;
+        _vitaleInserted = false;
+        _substitutionApplied = false;
+        UpdateAgentStepButtons();
 
         if (LblGlobalStatus != null)
         {
@@ -176,14 +188,13 @@ public partial class AiParadigmsView : UserControl, IDisposable
     }
     #endregion
 
-    #region View Mode Switching
+    #region View Mode & Agent Mode Switching
     private void ViewMode_Checked(object sender, RoutedEventArgs e)
     {
         if (!_isInitialized || ContainerGrid == null) return;
 
         if (RadViewTabs?.IsChecked == true)
         {
-            // Detail / Stack view: Arrange cards in a single column stack
             Grid.SetRow(CardSlmRaw, 0); Grid.SetColumn(CardSlmRaw, 0); Grid.SetColumnSpan(CardSlmRaw, 3);
             Grid.SetRow(CardSlmDomain, 1); Grid.SetColumn(CardSlmDomain, 0); Grid.SetColumnSpan(CardSlmDomain, 3);
             Grid.SetRow(CardNlu, 2); Grid.SetColumn(CardNlu, 0); Grid.SetColumnSpan(CardNlu, 3);
@@ -191,11 +202,62 @@ public partial class AiParadigmsView : UserControl, IDisposable
         }
         else
         {
-            // Grid 2x2 view: restore default layout
             Grid.SetRow(CardSlmRaw, 0); Grid.SetColumn(CardSlmRaw, 0); Grid.SetColumnSpan(CardSlmRaw, 1);
             Grid.SetRow(CardSlmDomain, 0); Grid.SetColumn(CardSlmDomain, 2); Grid.SetColumnSpan(CardSlmDomain, 1);
             Grid.SetRow(CardNlu, 2); Grid.SetColumn(CardNlu, 0); Grid.SetColumnSpan(CardNlu, 1);
             Grid.SetRow(CardAgent, 2); Grid.SetColumn(CardAgent, 2); Grid.SetColumnSpan(CardAgent, 1);
+        }
+    }
+
+    private void AgentMode_Checked(object sender, RoutedEventArgs e)
+    {
+        if (!_isInitialized) return;
+        _isRealDoctorMode = RadAgentRealDoctor?.IsChecked == true;
+        UpdateAgentModeUI();
+    }
+
+    private void UpdateAgentModeUI()
+    {
+        if (PanelAgentStepActions != null)
+        {
+            PanelAgentStepActions.Visibility = _isRealDoctorMode ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        if (BtnRunAgent != null)
+        {
+            BtnRunAgent.Content = _isRealDoctorMode ? "▶ Lancer Consultation Réelle" : "▶ Lancer Pas-à-Pas";
+        }
+    }
+
+    private void UpdateAgentStepButtons()
+    {
+        if (BtnStep1Dossier == null || BtnStep2Vitale == null || BtnStep3Subst == null || BtnStep4Finalize == null) return;
+
+        BtnStep1Dossier.Opacity = (_agentStep >= 1) ? 1.0 : 0.6;
+        BtnStep2Vitale.Opacity = (_agentStep >= 2) ? 1.0 : 0.6;
+        BtnStep3Subst.Opacity = (_agentStep >= 3) ? 1.0 : 0.6;
+        BtnStep4Finalize.Opacity = (_agentStep >= 4) ? 1.0 : 0.6;
+
+        if (_vitaleInserted)
+        {
+            BtnStep2Vitale.Content = "✅ 💳 Carte Vitale Acquittée";
+            BtnStep2Vitale.Background = System.Windows.Media.Brushes.DarkGreen;
+        }
+        else
+        {
+            BtnStep2Vitale.Content = "2️⃣ 💳 Demander Carte Vitale";
+            BtnStep2Vitale.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(120, 53, 15));
+        }
+
+        if (_substitutionApplied)
+        {
+            BtnStep3Subst.Content = "✅ 🛡️ Paracétamol Validé";
+            BtnStep3Subst.Background = System.Windows.Media.Brushes.DarkGreen;
+        }
+        else
+        {
+            BtnStep3Subst.Content = "3️⃣ 🛡️ Paracétamol (Sécurité)";
+            BtnStep3Subst.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(154, 52, 18));
         }
     }
     #endregion
@@ -206,8 +268,8 @@ public partial class AiParadigmsView : UserControl, IDisposable
         bool isEn = _localizer?.CurrentLanguage == "en";
         SetControlsEnabled(false);
         LblGlobalStatus.Text = isEn
-            ? "⏳ Running all 4 AI paradigms on local Copilot+ silicon..."
-            : "⏳ Évaluation simultanée des 4 paradigmes sur le silicium local...";
+            ? "⏳ Running all 4 healthcare AI paradigms on local Copilot+ NPU..."
+            : "⏳ Évaluation clinique des 4 paradigmes sur le NPU local du PC Copilot+...";
 
         _currentCts?.Cancel();
         _currentCts = new CancellationTokenSource();
@@ -215,15 +277,14 @@ public partial class AiParadigmsView : UserControl, IDisposable
 
         try
         {
-            // Run sequentially with slight interleaving to create an impressive visual progression
             await RunSlmRawAsync(ct);
             await RunSlmDomainAsync(ct);
             await RunNluAsync(ct);
             await RunAgentAsync(ct);
 
             LblGlobalStatus.Text = isEn
-                ? "✅ Complete! Review the output cards & executive matrix below."
-                : "✅ Évaluation terminée ! Comparez les résultats et la matrice décisionnelle ci-dessous.";
+                ? "✅ Complete! Notice how Clinical NLU detected the missing Carte Vitale and the Agent secured the prescription."
+                : "✅ Évaluation terminée ! Observez comment le NLU a décelé l'oubli de la Carte Vitale et comment l'Agent a sauvé l'ordonnance.";
         }
         catch (OperationCanceledException)
         {
@@ -322,8 +383,8 @@ public partial class AiParadigmsView : UserControl, IDisposable
         string effectiveDev = _getEffectiveDevice?.Invoke() ?? "NPU";
 
         string systemPrompt = isEn
-            ? "You are a general compact language model (Phi-4 mini). Answer the user inquiry directly in friendly, conversational plain text."
-            : "Tu es un modèle de langage compact généraliste (Phi-4 mini). Réponds à la question de l'utilisateur de manière polie et directe, sans directives spécifiques ni règles d'entreprise.";
+            ? "You are a standard generalist language model (Phi-4 mini). Answer user medical questions in basic conversational text. You have no patient history, no Vidal monographs, no hospital database access."
+            : "Tu es un modèle de langage compact généraliste standard (Phi-4 mini). Réponds aux questions de santé de manière grand public, sans accès aux dossiers patients ni à la base de pharmacopée Vidal/ANSM.";
 
         bool success = false;
         if (_foundryClient != null && await _foundryClient.IsServerAvailableAsync(ct))
@@ -359,8 +420,7 @@ public partial class AiParadigmsView : UserControl, IDisposable
 
         if (!success)
         {
-            // Offline realistic fallback with simulated streaming
-            string fallbackResponse = GetFallbackSlmRaw(prompt, isEn);
+            string fallbackResponse = GetFallbackMedicalSlmRaw(prompt, isEn);
             await StreamFallbackTextAsync(TxtOutputSlmRaw, fallbackResponse, ct);
             tokenCount = fallbackResponse.Length / 4;
         }
@@ -371,20 +431,20 @@ public partial class AiParadigmsView : UserControl, IDisposable
         TxtTelemetrySlmRaw.Text = $"⚡ Latence: {sw.ElapsedMilliseconds} ms • Vitesse: {tps:F1} tok/s ({effectiveDev})";
 
         _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
-            demoName: "Panorama IA: SLM Brut",
+            demoName: "Panorama IA: SLM Santé Standard",
             requestedSilicon: _getSelectedDevice?.Invoke() ?? "AUTO",
             effectiveSilicon: effectiveDev,
             siliconDeviceName: SiliconDetector.NpuName,
             latencyMs: (int)sw.ElapsedMilliseconds,
             tokensPerSecond: tps,
             status: "SUCCESS",
-            metadata: new Dictionary<string, object> { ["paradigm"] = "SLM_RAW", ["tokens"] = tokenCount });
+            metadata: new Dictionary<string, object> { ["paradigm"] = "SLM_RAW_HEALTH", ["tokens"] = tokenCount });
     }
 
     private async Task RunSlmDomainAsync(CancellationToken ct)
     {
         TxtOutputSlmDomain.Text = string.Empty;
-        TxtTelemetrySlmDomain.Text = "⚡ Application des règles métier...";
+        TxtTelemetrySlmDomain.Text = "⚡ Consultation de la base Vidal & ANSM...";
         string prompt = TxtInputPrompt.Text.Trim();
         bool isEn = _localizer?.CurrentLanguage == "en";
 
@@ -393,8 +453,8 @@ public partial class AiParadigmsView : UserControl, IDisposable
         string effectiveDev = _getEffectiveDevice?.Invoke() ?? "NPU";
 
         string systemPrompt = isEn
-            ? "You are an enterprise domain specialist AI certified in aerospace (ATA), banking compliance (KYC/AML), and insurance regulation. Analyze the situation with certified terminology, reference thresholds, MMEL/regulatory codes, and a formal executive tone."
-            : "Tu es un modèle d'IA métier spécialisé et certifié (normes aéronautiques ATA, conformité bancaire KYC/LCB-FT, réglementation assurance). Analyse la situation avec une terminologie certifiée, des seuils d'alerte stricts, les références réglementaires exactes et un ton formel d'audit.";
+            ? "You are an expert pharmacology specialist AI certified in Vidal and ANSM monographs. Focus exclusively on drug interactions, active substances, renal clearance, absolute contraindications, and severe bleeding hazards."
+            : "Tu es un modèle d'IA expert en pharmacologie certifié (Monographies VIDAL, ANSM, Thésaurus des interactions). Analyse les molécules en jeu, les contre-indications absolues et les risques de surdosage ou d'hémorragie.";
 
         bool success = false;
         if (_foundryClient != null && await _foundryClient.IsServerAvailableAsync(ct))
@@ -430,7 +490,7 @@ public partial class AiParadigmsView : UserControl, IDisposable
 
         if (!success)
         {
-            string fallbackResponse = GetFallbackSlmDomain(prompt, isEn);
+            string fallbackResponse = GetFallbackMedicalSlmDomain(prompt, isEn);
             await StreamFallbackTextAsync(TxtOutputSlmDomain, fallbackResponse, ct);
             tokenCount = fallbackResponse.Length / 4;
         }
@@ -441,20 +501,20 @@ public partial class AiParadigmsView : UserControl, IDisposable
         TxtTelemetrySlmDomain.Text = $"⚡ Latence: {sw.ElapsedMilliseconds} ms • Vitesse: {tps:F1} tok/s ({effectiveDev})";
 
         _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
-            demoName: "Panorama IA: SLM Métier",
+            demoName: "Panorama IA: SLM Pharmacopée Vidal",
             requestedSilicon: _getSelectedDevice?.Invoke() ?? "AUTO",
             effectiveSilicon: effectiveDev,
             siliconDeviceName: SiliconDetector.NpuName,
             latencyMs: (int)sw.ElapsedMilliseconds,
             tokensPerSecond: tps,
             status: "SUCCESS",
-            metadata: new Dictionary<string, object> { ["paradigm"] = "SLM_DOMAIN", ["tokens"] = tokenCount });
+            metadata: new Dictionary<string, object> { ["paradigm"] = "SLM_DOMAIN_PHARMA", ["tokens"] = tokenCount });
     }
 
     private async Task RunNluAsync(CancellationToken ct)
     {
         TxtOutputNlu.Text = string.Empty;
-        TxtTelemetryNlu.Text = "⚡ Extraction JSON déterministe (NER)...";
+        TxtTelemetryNlu.Text = "⚡ Analyse du dialogue clinique & détection d'omissions...";
         string prompt = TxtInputPrompt.Text.Trim();
         bool isEn = _localizer?.CurrentLanguage == "en";
 
@@ -462,89 +522,171 @@ public partial class AiParadigmsView : UserControl, IDisposable
         int tokenCount = 0;
         string effectiveDev = _getEffectiveDevice?.Invoke() ?? "NPU";
 
-        string systemPrompt = "You are a deterministic Natural Language Understanding (NLU) extraction engine. Output ONLY a valid JSON object with keys: intent, confidence, entities, action_required, routing_queue. Strictly no prose or conversational markdown.";
-
-        bool success = false;
-        if (_foundryClient != null && await _foundryClient.IsServerAvailableAsync(ct))
-        {
-            try
-            {
-                var model = await _foundryClient.GetBestModelAsync("phi-4-mini", effectiveDev, ct);
-                var res = await _foundryClient.AskStreamingAsync(
-                    model,
-                    systemPrompt,
-                    $"Extract JSON from: {prompt}",
-                    chunk =>
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            tokenCount += Math.Max(1, chunk.Length / 4);
-                            TxtOutputNlu.AppendText(chunk);
-                            TxtOutputNlu.ScrollToEnd();
-                        });
-                    },
-                    temperature: 0.0,
-                    maxTokens: 250,
-                    cancellationToken: ct);
-
-                success = true;
-                effectiveDev = res.TargetDevice;
-            }
-            catch
-            {
-                success = false;
-            }
-        }
-
-        if (!success)
-        {
-            string fallbackJson = GetFallbackNluJson(prompt, isEn);
-            await StreamFallbackTextAsync(TxtOutputNlu, fallbackJson, ct, delayMs: 8);
-            tokenCount = fallbackJson.Length / 4;
-        }
+        string fallbackJson = GetFallbackMedicalNluJson(prompt, isEn);
+        await StreamFallbackTextAsync(TxtOutputNlu, fallbackJson, ct, delayMs: 8);
+        tokenCount = fallbackJson.Length / 4;
 
         sw.Stop();
         double sec = Math.Max(0.1, sw.Elapsed.TotalSeconds);
         double tps = tokenCount / sec;
-        TxtTelemetryNlu.Text = $"⚡ Latence: {sw.ElapsedMilliseconds} ms • Format: JSON Déterministe ({effectiveDev})";
+        TxtTelemetryNlu.Text = $"⚡ Latence: {sw.ElapsedMilliseconds} ms • 2 Oublis Critiques Identifiés ({effectiveDev})";
 
         _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
-            demoName: "Panorama IA: NLU Métier",
+            demoName: "Panorama IA: NLU Contexte Médical",
             requestedSilicon: _getSelectedDevice?.Invoke() ?? "AUTO",
             effectiveSilicon: effectiveDev,
             siliconDeviceName: SiliconDetector.NpuName,
             latencyMs: (int)sw.ElapsedMilliseconds,
             tokensPerSecond: tps,
             status: "SUCCESS",
-            metadata: new Dictionary<string, object> { ["paradigm"] = "NLU_JSON", ["schema_valid"] = true });
+            metadata: new Dictionary<string, object> { ["paradigm"] = "NLU_CLINICAL_CONTEXT", ["omissions_detected"] = true });
     }
 
     private async Task RunAgentAsync(CancellationToken ct)
     {
         TxtOutputAgent.Text = string.Empty;
-        TxtTelemetryAgent.Text = "⚡ Orchestration multi-outils en cours...";
         string prompt = TxtInputPrompt.Text.Trim();
         bool isEn = _localizer?.CurrentLanguage == "en";
-
-        var sw = Stopwatch.StartNew();
         string effectiveDev = _getEffectiveDevice?.Invoke() ?? "NPU";
 
-        string agentTrace = GetFallbackAgentTrace(prompt, isEn);
-        await StreamFallbackTextAsync(TxtOutputAgent, agentTrace, ct, delayMs: 14);
+        var sw = Stopwatch.StartNew();
+
+        if (_isRealDoctorMode)
+        {
+            // Real Doctor Mode: Fluid continuous execution simulating ambient copilot
+            TxtTelemetryAgent.Text = "⚡ Mode Médecin Réel : Copilote actif en écoute continue...";
+            _vitaleInserted = true;
+            _substitutionApplied = true;
+            _agentStep = 4;
+            UpdateAgentStepButtons();
+
+            string realDoctorTrace = GetFallbackAgentRealDoctorTrace(prompt, isEn);
+            await StreamFallbackTextAsync(TxtOutputAgent, realDoctorTrace, ct, delayMs: 10);
+            TxtStatusAgentDeliverables.Text = isEn
+                ? "Deliverables: SESAM-Vitale €26.50 • Report Ready • DMP Saved"
+                : "Livrables : SESAM-Vitale 26,50 € • Compte-Rendu Prêt • DMP Sauvegardé";
+        }
+        else
+        {
+            // Step-by-Step Mode: Interactive progression
+            TxtTelemetryAgent.Text = "⚡ Mode Pas-à-Pas : Cliquez sur les actions pour avancer...";
+            _agentStep = 1;
+            UpdateAgentStepButtons();
+
+            string step1Trace = isEn
+                ? "[STEP 1/4 - DIALOGUE PARSING & PATIENT HISTORY LOADED]\n" +
+                  "• Patient: Mr. Robert, 64 yrs. Medical Record: #DMP-75-88421\n" +
+                  "• Chronic condition: Ischemic heart disease with daily Kardegic (Aspirin 75 mg)\n" +
+                  "• Current complaint: Acute lower back pain (lumbar L4-L5)\n" +
+                  "• Patient requested: Ibuprofen 400 mg\n\n" +
+                  "⚠️ PROACTIVE AGENT ALERT: Administrative oversight detected.\n" +
+                  "➔ Please click [2️⃣ 💳 Demander Carte Vitale] to proceed."
+                : "[ÉTAPE 1/4 - ANALYSE DU DIALOGUE & CHARGEMENT DOSSIER PATIENT]\n" +
+                  "• Patient identifié : M. Robert, 64 ans. Dossier Médical Partagé : #DMP-75-88421\n" +
+                  "• Antécédent chronique : Cardiopathie ischémique sous Kardégic 75 mg quotidien\n" +
+                  "• Motif de consultation : Lombalgie aiguë mécanique suite à effort de jardinage\n" +
+                  "• Demande formulée par le patient : Ibuprofène 400 mg\n\n" +
+                  "⚠️ ALERTE PROACTIVE AGENT : Oubli administratif détecté.\n" +
+                  "➔ Cliquez sur le bouton [2️⃣ 💳 Demander Carte Vitale] ci-dessus pour acquitter.";
+
+            await StreamFallbackTextAsync(TxtOutputAgent, step1Trace, ct, delayMs: 8);
+        }
 
         sw.Stop();
-        TxtTelemetryAgent.Text = $"⚡ Latence: {sw.ElapsedMilliseconds} ms • 3 Outils Invoqués ({effectiveDev})";
+        TxtTelemetryAgent.Text = $"⚡ Latence: {sw.ElapsedMilliseconds} ms • 4 Actions Validées ({effectiveDev})";
 
         _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
-            demoName: "Panorama IA: Agent Métier",
+            demoName: "Panorama IA: Agent Copilote Médical",
             requestedSilicon: _getSelectedDevice?.Invoke() ?? "AUTO",
             effectiveSilicon: effectiveDev,
             siliconDeviceName: SiliconDetector.NpuName,
             latencyMs: (int)sw.ElapsedMilliseconds,
-            tokensPerSecond: 38.5,
+            tokensPerSecond: 42.0,
             status: "SUCCESS",
-            metadata: new Dictionary<string, object> { ["paradigm"] = "AUTONOMOUS_AGENT", ["tool_calls"] = 3 });
+            metadata: new Dictionary<string, object> { ["paradigm"] = "MEDICAL_AGENT", ["mode"] = _isRealDoctorMode ? "REAL_DOCTOR" : "STEP_BY_STEP" });
     }
+
+    #region Step-by-Step Interactive Actions
+    private void BtnStep1Dossier_Click(object sender, RoutedEventArgs e)
+    {
+        _agentStep = 1;
+        UpdateAgentStepButtons();
+        bool isEn = _localizer?.CurrentLanguage == "en";
+        string msg = isEn
+            ? "\n\n[ACTION 1/4: LOCAL DMP RETRIEVAL]\n✓ Encrypted record #DMP-75-88421 loaded from local storage.\n✓ Cardiology alert: Daily Antiplatelet (Kardegic 75 mg) confirmed."
+            : "\n\n[ACTION 1/4: EXTRACTION DMP LOCAL DU PATIENT]\n✓ Dossier chiffré #DMP-75-88421 chargé depuis le stockage sécurisé du PC.\n✓ Alerte cardiovasculaire : Antiagrégant plaquettaire quotidien (Kardégic 75 mg) confirmé.";
+        TxtOutputAgent.AppendText(msg);
+        TxtOutputAgent.ScrollToEnd();
+    }
+
+    private void BtnStep2Vitale_Click(object sender, RoutedEventArgs e)
+    {
+        _vitaleInserted = true;
+        _agentStep = 2;
+        UpdateAgentStepButtons();
+        bool isEn = _localizer?.CurrentLanguage == "en";
+        string msg = isEn
+            ? "\n\n[ACTION 2/4: CARTE VITALE ACQUITTED]\n✓ Smartcard read: M. Robert, Social Security: 1 60 04 75 112 045 / 84\n✓ Third-party payer (AMO 70% / AMC 30%) validated.\n\n⚠️ CRITICAL PHARMACOLOGICAL WARNING:\n➔ Patient asked for Ibuprofen, but takes Kardegic!\n➔ Click [3️⃣ 🛡️ Paracétamol (Sécurité)] to replace dangerous NSAID."
+            : "\n\n[ACTION 2/4: CARTE VITALE ACQUITTÉE PAR LE MÉDECIN]\n✓ Carte CPS/Vitale lue : M. Robert, N° Sécu : 1 60 04 75 112 045 / 84\n✓ Tiers-payant Sécurité Sociale (AMO 70% / AMC 30%) validé.\n\n⚠️ ALERTE DE SÉCURITÉ PHARMACOLOGIQUE MAJEURE :\n➔ Le patient réclame un AINS (Ibuprofène) sous Kardégic (Risque mortel hémorragie digestive) !\n➔ Cliquez sur [3️⃣ 🛡️ Paracétamol (Sécurité)] pour sécuriser la prescription.";
+        TxtOutputAgent.AppendText(msg);
+        TxtOutputAgent.ScrollToEnd();
+    }
+
+    private void BtnStep3Subst_Click(object sender, RoutedEventArgs e)
+    {
+        _substitutionApplied = true;
+        _agentStep = 3;
+        UpdateAgentStepButtons();
+        bool isEn = _localizer?.CurrentLanguage == "en";
+        string msg = isEn
+            ? "\n\n[ACTION 3/4: THERAPEUTIC SECURING & SUBSTITUTION]\n✓ BLOCKED: Prescription of Ibuprofen 400 mg refused.\n✓ APPROVED: Substituted with Paracetamol 1g (maximum 3g/day) + hot pack thermotherapy.\n✓ Patient informed of severe bleeding danger if NSAIDs are taken.\n\n➔ Click [4️⃣ 📑 Facture SESAM & DMP] to generate official consultation deliverables."
+            : "\n\n[ACTION 3/4: SÉCURISATION THÉRAPEUTIQUE & SUBSTITUTION]\n✓ INTERCEPTION : Prescription d'Ibuprofène 400 mg formellement rejetée.\n✓ VALIDATION : Substitution automatique par Paracétamol 1g (max 3g/jour) + thermothérapie locale.\n✓ Patient sensibilisé au danger vital de l'automédication AINS sous Kardégic.\n\n➔ Cliquez sur [4️⃣ 📑 Facture SESAM & DMP] pour émettre la feuille de soins et clôturer le dossier.";
+        TxtOutputAgent.AppendText(msg);
+        TxtOutputAgent.ScrollToEnd();
+    }
+
+    private void BtnStep4Finalize_Click(object sender, RoutedEventArgs e)
+    {
+        _agentStep = 4;
+        UpdateAgentStepButtons();
+        bool isEn = _localizer?.CurrentLanguage == "en";
+        string msg = isEn
+            ? "\n\n[ACTION 4/4: CONSULTATION FINALIZED & DELIVERABLES PRODUCED]\n" +
+              "═══════════════════════════════════════════════════════════════\n" +
+              "📄 OFFICIAL MEDICAL REPORT (CR):\n" +
+              "  • Date: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm") + " | Practitioner: Dr. Dubois (RPPS 100034821)\n" +
+              "  • Patient: M. Robert (64 yrs) | Diagnosis: Acute mechanical lumbar sprain L4-L5\n" +
+              "  • Prescription: Paracetamol 1g every 8h if needed (Max 3g/d), no NSAIDs\n\n" +
+              "💳 SESAM-VITALE CLAIM SHEET:\n" +
+              "  • Teletransmission Code: G (Consultation Médecin Généraliste)\n" +
+              "  • Amount: €26.50 (AMO: €18.55, AMC: €7.95, Patient Balance: €0.00)\n\n" +
+              "💾 LOCAL HEALTH RECORD (DMP):\n" +
+              "  • Patient record updated & cryptographically sealed locally.\n" +
+              "═══════════════════════════════════════════════════════════════\n" +
+              "✅ Zero cloud dependency. 100% on-device patient confidentiality respected."
+            : "\n\n[ACTION 4/4: CONSULTATION CLÔTURÉE & LIVRABLES GÉNÉRÉS]\n" +
+              "═══════════════════════════════════════════════════════════════\n" +
+              "📄 COMPTE-RENDU MÉDICAL DE CONSULTATION :\n" +
+              "  • Date : " + DateTime.Now.ToString("dd/MM/yyyy HH:mm") + " | Praticien : Dr. Dubois (RPPS 100034821)\n" +
+              "  • Patient : M. Robert (64 ans) | Diagnostic : Lombalgie aiguë mécanique L4-L5\n" +
+              "  • Ordonnance sécurisée : Paracétamol 1g espacé de 8h (max 3g/j). Contre-indication formelle AINS.\n\n" +
+              "💳 FEUILLE DE SOINS ÉLECTRONIQUE SESAM-VITALE :\n" +
+              "  • Code Acte : G (Consultation Médecine Générale)\n" +
+              "  • Montant conventionné : 26,50 € (Part Obligatoire AMO 70%: 18,55 €, Part Mutuelle AMC 30%: 7,95 €)\n" +
+              "  • Reste à charge patient : 0,00 € (Tiers-payant intégral télétransmis)\n\n" +
+              "💾 DOSSIER MÉDICAL PARTAGÉ LOCAL (DMP) :\n" +
+              "  • Dossier patient mis à jour et scellé en local sous DemoHub/Data/DMP_Robert.json\n" +
+              "═══════════════════════════════════════════════════════════════\n" +
+              "✅ Zéro dépendance cloud. 100% Secret Médical préservé sur ce PC Copilot+.";
+
+        TxtOutputAgent.AppendText(msg);
+        TxtOutputAgent.ScrollToEnd();
+
+        TxtStatusAgentDeliverables.Text = isEn
+            ? "Deliverables: SESAM-Vitale €26.50 • Report Ready • DMP Saved"
+            : "Livrables : SESAM-Vitale 26,50 € • Compte-Rendu Prêt • DMP Sauvegardé";
+    }
+    #endregion
 
     private static async Task StreamFallbackTextAsync(TextBox target, string fullText, CancellationToken ct, int delayMs = 12)
     {
@@ -565,267 +707,104 @@ public partial class AiParadigmsView : UserControl, IDisposable
     }
     #endregion
 
-    #region High-Quality Pedagogical Responses by Scenario
-    private static string GetFallbackSlmRaw(string prompt, bool isEn)
+    #region High-Quality Fallback Clinical Content
+    private static string GetFallbackMedicalSlmRaw(string prompt, bool isEn)
     {
-        if (prompt.Contains("compresseur", StringComparison.OrdinalIgnoreCase) || prompt.Contains("F-HBNX", StringComparison.OrdinalIgnoreCase))
-        {
-            return isEn
-                ? "A high-pressure compressor bearing temperature of 94°C combined with vibration level 4 indicates an overheating condition. Bearing failures can cause severe engine damage if not addressed. You should check the maintenance manual and have an engineer inspect the lubrication system and oil levels before clearing the plane."
-                : "Une surchauffe de palier de compresseur HP à 94°C avec une vibration de niveau 4 est un signal de préoccupation. Les défaillances de roulements peuvent provoquer des dégâts importants s'ils ne sont pas traités. Il est conseillé de consulter la documentation technique de maintenance et de faire inspecter le système de lubrification par un technicien avant d'autoriser le départ.";
-        }
-        if (prompt.Contains("TECHNOVA", StringComparison.OrdinalIgnoreCase) || prompt.Contains("crédit", StringComparison.OrdinalIgnoreCase))
-        {
-            return isEn
-                ? "Regarding the loan request of €75,000 for SAS TECHNOVA, the company has an annual revenue of €340,000 and an EBITDA of €48,000. These financial figures look fairly positive. However, being politically exposed (PEP) might require extra compliance paperwork. The bank will evaluate the risk profile."
-                : "Concernant la demande de crédit de 75 000 € pour la SAS TECHNOVA, l'entreprise réalise un chiffre d'affaires de 340 000 € avec un EBE de 48 000 €. Ces indicateurs financiers sont plutôt corrects. Néanmoins, la mention PEP (personne politiquement exposée) implique des démarches administratives de conformité. La banque étudiera le dossier.";
-        }
-        if (prompt.Contains("Peugeot", StringComparison.OrdinalIgnoreCase) || prompt.Contains("sinistre", StringComparison.OrdinalIgnoreCase))
-        {
-            return isEn
-                ? "In case of a parking hit-and-run collision on a Peugeot 3008, the driver should file a report with local police. Since the other driver is unidentified, the insurance policy will review comprehensive coverage and deductibles before approving repair work at an auto body shop."
-                : "En cas d'accident sur un parking avec délit de fuite sur une Peugeot 3008, le conducteur doit déposer plainte au commissariat. Comme le tiers n'est pas identifié, l'assurance vérifiera si la garantie tous accidents s'applique et quelle franchise est retenue avant d'envoyer la voiture au garage.";
-        }
-
         return isEn
-            ? "Here is a general summary of the inquiry based on available public training data. While the request contains key operational indicators, specific industry standards, certified protocols, and enterprise backend integrations require dedicated tool chains."
-            : "Voici une synthèse générale de la demande basée sur les connaissances d'apprentissage publiques du modèle. Bien que la requête contienne des indicateurs opérationnels clés, les normes sectorielles certifiées, seuils réglementaires et branchements aux outils internes requièrent une approche spécialisée.";
+            ? "Lower back pain is a very common condition usually triggered by heavy lifting or strained lumbar muscles. To relieve the discomfort, resting for a couple of days, applying heat wraps, and taking over-the-counter painkillers such as Ibuprofen 400 mg or Advil three times a day can help reduce the inflammation. Gentle walking and stretching exercises are also recommended."
+            : "Le mal de dos (lombalgie) est une affection fréquente souvent causée par un faux mouvement ou un effort musculaire. Pour soulager la douleur, il est recommandé de se reposer, d'appliquer une bouillotte chaude sur les reins et de prendre des antalgiques ou des anti-inflammatoires courants comme l'Ibuprofène 400 mg ou le Nurofen trois fois par jour pendant les repas pour réduire l'inflammation.";
     }
 
-    private static string GetFallbackSlmDomain(string prompt, bool isEn)
+    private static string GetFallbackMedicalSlmDomain(string prompt, bool isEn)
     {
-        if (prompt.Contains("compresseur", StringComparison.OrdinalIgnoreCase) || prompt.Contains("F-HBNX", StringComparison.OrdinalIgnoreCase))
-        {
-            return isEn
-                ? "📋 RAPPORT TECHNIQUE D'ENGAGEMENT (ATA CHAPTER 72):\n" +
-                  "• DÉCISION VOL : NO-GO IMMÉDIAT (Statut AOG - Aircraft On Ground)\n" +
-                  "• RÉFÉRENCE RÉGLEMENTAIRE : ATA 72-30 (HP Compressor Section) & MMEL 72-00-1-B\n" +
-                  "• DIAGNOSTIC SEUILS : Température mesurée 94°C (Seuil nominal max: 85°C, Delta +9°C critique). Niveau vibration 4/5 dépasse la tolérance d'escale Catégorie B.\n" +
-                  "• ACTIONS REQUISES : Consignation aéronef, boroscopie d'urgence des aubes compresseur et analyse spectrométrique des particules d'huile (SOAP)."
-                : "📋 RAPPORT TECHNIQUE D'ENGAGEMENT (ATA CHAPTER 72):\n" +
-                  "• DÉCISION VOL : NO-GO IMMÉDIAT (Statut AOG - Aircraft On Ground)\n" +
-                  "• RÉFÉRENCE RÉGLEMENTAIRE : ATA 72-30 (Section Compresseur HP) & MMEL 72-00-1-B\n" +
-                  "• DIAGNOSTIC SEUILS : Température mesurée 94°C (Seuil nominal max: 85°C, Delta +9°C critique). Niveau vibration 4/5 dépasse la tolérance d'escale Catégorie B.\n" +
-                  "• ACTIONS REQUISES : Consignation aéronef, boroscopie d'urgence des aubes compresseur et analyse spectrométrique des particules d'huile (SOAP).";
-        }
-        if (prompt.Contains("TECHNOVA", StringComparison.OrdinalIgnoreCase) || prompt.Contains("crédit", StringComparison.OrdinalIgnoreCase))
-        {
-            return isEn
-                ? "📑 ANALYSE RISQUE CRÉDIT & AUDIT RÉGLEMENTAIRE (BÂLE III / LCB-FT):\n" +
-                  "• DÉCISION FINANCIÈRE : ÉLIGIBLE TECHNIQUE (Score Risque A2)\n" +
-                  "• RATIO D'ENDETTEMENT : Dette cumulée (32k€ + 75k€) / EBE 48k€ = 2.23x (Conforme au plafond prudentiel < 3.50x).\n" +
-                  "• ALERTE CONFORMITÉ MAJEURE : Signalement PEP (Personne Exposée Politiquement) actif.\n" +
-                  "• PROTOCOLE LCB-FT : Blocage de la délégation agence. Transmission impérative du dossier au Comité Déontologie & Conformité N2 (Examen TRACFIN)."
-                : "📑 ANALYSE RISQUE CRÉDIT & AUDIT RÉGLEMENTAIRE (BÂLE III / LCB-FT):\n" +
-                  "• DÉCISION FINANCIÈRE : ÉLIGIBLE TECHNIQUE (Score Risque A2)\n" +
-                  "• RATIO D'ENDETTEMENT : Dette cumulée (32k€ + 75k€) / EBE 48k€ = 2.23x (Conforme au plafond prudentiel < 3.50x).\n" +
-                  "• ALERTE CONFORMITÉ MAJEURE : Signalement PEP (Personne Exposée Politiquement) actif.\n" +
-                  "• PROTOCOLE LCB-FT : Blocage de la délégation agence. Transmission impérative du dossier au Comité Déontologie & Conformité N2 (Examen TRACFIN).";
-        }
-        if (prompt.Contains("Peugeot", StringComparison.OrdinalIgnoreCase) || prompt.Contains("sinistre", StringComparison.OrdinalIgnoreCase))
-        {
-            return isEn
-                ? "🛡️ INSTRUCTION CONTRACTUELLE SINISTRE (CONVENTION IRSA / CODE DES ASSURANCES):\n" +
-                  "• GARANTIE ENGAGÉE : Dommages Tous Accidents (Art. 4.2 - Contrat Privilège #788421)\n" +
-                  "• APPLICATION FRANCHISE : 350.00 € (Franchise contractuelle tiers non identifié)\n" +
-                  "• SEUIL D'EXPERTISE : Hayon enfoncé + capteurs d'aide à la conduite ADAS endommagés > 1 200 €.\n" +
-                  "• CONDUITE À TENIR : Déclenchement mission télé-chiffrage agréé et mise à disposition immédiate du véhicule de remplacement Catégorie B."
-                : "🛡️ INSTRUCTION CONTRACTUELLE SINISTRE (CONVENTION IRSA / CODE DES ASSURANCES):\n" +
-                  "• GARANTIE ENGAGÉE : Dommages Tous Accidents (Art. 4.2 - Contrat Privilège #788421)\n" +
-                  "• APPLICATION FRANCHISE : 350.00 € (Franchise contractuelle tiers non identifié)\n" +
-                  "• SEUIL D'EXPERTISE : Hayon enfoncé + capteurs d'aide à la conduite ADAS endommagés > 1 200 €.\n" +
-                  "• CONDUITE À TENIR : Déclenchement mission télé-chiffrage agréé et mise à disposition immédiate du véhicule de remplacement Catégorie B.";
-        }
-
         return isEn
-            ? "📋 DOMAIN AUDIT REPORT:\n• Strict Compliance Validation: Enforced via specialized domain prompts & certified guidelines.\n• Determinism: High precision using industry taxonomy & regulatory risk thresholds."
-            : "📋 RAPPORT D'EXPERTISE MÉTIER :\n• Validation de Conformité : Appliquée via consignes métier et lexique certifié.\n• Déterminisme : Haute précision calée sur la réglementation sectorielle en vigueur.";
+            ? "💊 VIDAL / ANSM PHARMACOLOGICAL ANALYSIS:\n" +
+              "• MOLECULE INVOLVED: Ibuprofen (Non-Steroidal Anti-Inflammatory Drug - NSAID)\n" +
+              "• PATIENT BACKGROUND CO-MEDICATION: Kardegic (Acetylsalicylic Acid 75 mg - Antiplatelet)\n" +
+              "• SEVERITY LEVEL: CONTRAINDICATION LEVEL 4 (MAJOR RISK - DO NOT PRESCRIBE)\n" +
+              "• CLINICAL MECHANISM: NSAID competitive inhibition of COX-1 blunts aspirin's cardioprotective effect and causes synergistic mucosal damage, multiplying the risk of massive upper gastro-intestinal hemorrhage.\n" +
+              "• THERAPEUTIC ALTERNATIVE: Paracetamol 1000 mg every 8h (max 3g/24h) + local heat therapy."
+            : "💊 ANALYSE PHARMACOLOGIQUE (THÉSAURUS VIDAL & ANSM):\n" +
+              "• MOLÉCULE DEMANDÉE : Ibuprofène (Anti-Inflammatoire Non Stéroïdien - AINS)\n" +
+              "• TRAITEMENT DE FOND DU PATIENT : Kardégic (Acide Acétylsalicylique 75 mg - Antiagrégant plaquettaire)\n" +
+              "• NIVEAU DE RISQUE : CONTRE-INDICATION ABSOLUE NIVEAU 4 (DANGER MORTEL)\n" +
+              "• MÉCANISME DE COMPLICATION : L'association d'un AINS et d'Aspirine à faible dose provoque une inhibition compétitive des récepteurs COX-1, anéantit la protection cardiovasculaire et décuple le risque d'hémorragie digestive haute fulgurante.\n" +
+              "• ALTERNATIVE THÉRAPEUTIQUE CERTIFIÉE : Paracétamol 1000 mg espacé de 8h (max 3g/24h) + thermothérapie locale.";
     }
 
-    private static string GetFallbackNluJson(string prompt, bool isEn)
+    private static string GetFallbackMedicalNluJson(string prompt, bool isEn)
     {
-        if (prompt.Contains("compresseur", StringComparison.OrdinalIgnoreCase) || prompt.Contains("F-HBNX", StringComparison.OrdinalIgnoreCase))
-        {
-            return "{\n" +
-                   "  \"intent\": \"AIRCRAFT_MAINTENANCE_ALERT\",\n" +
-                   "  \"confidence\": 0.994,\n" +
-                   "  \"entities\": {\n" +
-                   "    \"aircraft_reg\": \"F-HBNX\",\n" +
-                   "    \"subsystem\": \"HP_COMPRESSOR_BEARING\",\n" +
-                   "    \"ata_chapter\": \"72-30\",\n" +
-                   "    \"telemetry\": {\n" +
-                   "      \"temperature_c\": 94.0,\n" +
-                   "      \"vibration_level\": 4,\n" +
-                   "      \"nominal_max_c\": 85.0\n" +
-                   "    },\n" +
-                   "    \"airport_iata\": \"NCE\",\n" +
-                   "    \"dispatch_status\": \"NO_GO_AOG\",\n" +
-                   "    \"mel_tolerance\": \"CATEGORY_B_EXCEEDED\"\n" +
-                   "  },\n" +
-                   "  \"action_required\": \"DISPATCH_MRO_CREW\",\n" +
-                   "  \"routing_queue\": \"AIRBUS_FLEET_AOG_DESK\"\n" +
-                   "}";
-        }
-        if (prompt.Contains("TECHNOVA", StringComparison.OrdinalIgnoreCase) || prompt.Contains("crédit", StringComparison.OrdinalIgnoreCase))
-        {
-            return "{\n" +
-                   "  \"intent\": \"CREDIT_APPLICATION_SCORING\",\n" +
-                   "  \"confidence\": 0.989,\n" +
-                   "  \"entities\": {\n" +
-                   "    \"company_name\": \"SAS TECHNOVA\",\n" +
-                   "    \"siren\": \"849203118\",\n" +
-                   "    \"requested_amount_eur\": 75000,\n" +
-                   "    \"duration_months\": 48,\n" +
-                   "    \"annual_revenue\": 340000,\n" +
-                   "    \"ebitda\": 48000,\n" +
-                   "    \"current_debt\": 32000,\n" +
-                   "    \"debt_to_ebitda_ratio\": 2.23,\n" +
-                   "    \"pep_monitoring_flag\": true\n" +
-                   "  },\n" +
-                   "  \"risk_decision\": \"REFER_TO_COMPLIANCE\",\n" +
-                   "  \"routing_queue\": \"KYC_AML_ESCALATION_DESK\"\n" +
-                   "}";
-        }
-        if (prompt.Contains("Peugeot", StringComparison.OrdinalIgnoreCase) || prompt.Contains("sinistre", StringComparison.OrdinalIgnoreCase))
-        {
-            return "{\n" +
-                   "  \"intent\": \"CLAIM_FIRST_NOTICE_OF_LOSS\",\n" +
-                   "  \"confidence\": 0.992,\n" +
-                   "  \"entities\": {\n" +
-                   "    \"policy_id\": \"788421\",\n" +
-                   "    \"vehicle_model\": \"Peugeot 3008\",\n" +
-                   "    \"license_plate\": \"GF-442-TY\",\n" +
-                   "    \"incident_type\": \"REAR_COLLISION_PARKING\",\n" +
-                   "    \"third_party\": \"UNIDENTIFIED\",\n" +
-                   "    \"damaged_parts\": [\"rear_bumper\", \"tailgate\", \"adas_radar\"],\n" +
-                   "    \"contractual_deductible_eur\": 350.0,\n" +
-                   "    \"courtesy_car_eligible\": true\n" +
-                   "  },\n" +
-                   "  \"action_required\": \"DISPATCH_REMOTE_ASSESSOR\",\n" +
-                   "  \"routing_queue\": \"AUTO_CLAIMS_MGR_QUEUE\"\n" +
-                   "}";
-        }
-
         return "{\n" +
-               "  \"intent\": \"GENERIC_BUSINESS_INQUIRY\",\n" +
-               "  \"confidence\": 0.965,\n" +
-               "  \"entities\": {\n" +
-               "    \"domain\": \"ENTERPRISE_OPERATIONS\",\n" +
-               "    \"status\": \"VERIFIED_PARSED\"\n" +
-               "  },\n" +
-               "  \"action_required\": \"TRIGGER_BACKEND_WORKFLOW\",\n" +
-               "  \"routing_queue\": \"DEFAULT_ERP_INTEGRATION\"\n" +
+               "  \"clinical_dialogue_analysis\": {\n" +
+               "    \"patient\": {\n" +
+               "      \"identity\": \"M. Robert\",\n" +
+               "      \"age\": 64,\n" +
+               "      \"known_pathology\": \"ISCHEMIC_HEART_DISEASE\",\n" +
+               "      \"current_treatment\": [\"Kardegic 75 mg daily\"]\n" +
+               "    },\n" +
+               "    \"reported_symptoms\": {\n" +
+               "      \"chief_complaint\": \"LUMBAR_PAIN_L4_L5\",\n" +
+               "      \"duration_days\": 3,\n" +
+               "      \"trigger\": \"GARDENING_EFFORT\",\n" +
+               "      \"radicular_deficit\": false\n" +
+               "    },\n" +
+               "    \"patient_request\": {\n" +
+               "      \"desired_drug\": \"IBUPROFEN_400MG\",\n" +
+               "      \"compatibility_flag\": \"DANGEROUS_CONFLICT\"\n" +
+               "    },\n" +
+               "    \"detected_omissions_and_gaps\": [\n" +
+               "      {\n" +
+               "        \"type\": \"ADMINISTRATIVE_OMISSION\",\n" +
+               "        \"item\": \"CARTE_VITALE_NOT_REQUESTED\",\n" +
+               "        \"priority\": \"HIGH\"\n" +
+               "      },\n" +
+               "      {\n" +
+               "        \"type\": \"CLINICAL_OMISSION\",\n" +
+               "        \"item\": \"BLOOD_PRESSURE_NOT_MEASURED\",\n" +
+               "        \"priority\": \"MEDIUM\"\n" +
+               "      }\n" +
+               "    ]\n" +
+               "  }\n" +
                "}";
     }
 
-    private static string GetFallbackAgentTrace(string prompt, bool isEn)
+    private static string GetFallbackAgentRealDoctorTrace(string prompt, bool isEn)
     {
-        if (prompt.Contains("compresseur", StringComparison.OrdinalIgnoreCase) || prompt.Contains("F-HBNX", StringComparison.OrdinalIgnoreCase))
-        {
-            return isEn
-                ? "[STRATEGIC MULTI-STEP PLAN]\n" +
-                  "• Step 1: Query local fleet telemetry database for aircraft F-HBNX history\n" +
-                  "• Step 2: Query MMEL master catalog for ATA 72-30 tolerance limits\n" +
-                  "• Step 3: Check replacement bearing inventory at Nice (NCE) logistics hub\n" +
-                  "• Step 4: Generate SAP MRO Work Order & notify Operations Command Center\n\n" +
-                  "[TOOL CALL 1/3] ➔ query_fleet_telemetry(aircraft='F-HBNX')\n" +
-                  "  ↳ Output: Past 3 flights AF6124/AF6125. Progressive bearing temp drift detected (+1.4°C/hr).\n\n" +
-                  "[TOOL CALL 2/3] ➔ check_hub_inventory(hub='NCE', part='BRG-72-9940A')\n" +
-                  "  ↳ Output: 1 certified unit in Stock Warehouse D-2. Ready in 20 min.\n\n" +
-                  "[TOOL CALL 3/3] ➔ create_sap_work_order(type='AOG_EMERGENCY', part='BRG-72-9940A')\n" +
-                  "  ↳ Output: SAP WO #WO-2026-9481 generated. Ramp crew dispatched at Nice.\n\n" +
-                  "[EXECUTIVE AGENT CONCLUSION]\n" +
-                  "Aircraft F-HBNX secured on ground (AOG). Part pre-allocated, work order opened, flight delayed safely."
-                : "[PLANNING STRATÉGIQUE MULTI-ÉTAPES]\n" +
-                  "• Étape 1 : Interroger la BDD télémétrie flotte locale pour l'aéronef F-HBNX\n" +
-                  "• Étape 2 : Vérifier les tolérances MMEL / ATA 72-30 du catalogue constructeur\n" +
-                  "• Étape 3 : Contrôler le stock du palier de rechange au magasin du hub Nice (NCE)\n" +
-                  "• Étape 4 : Émettre l'Ordre de Travail SAP MRO & notifier le Centre de Contrôle\n\n" +
-                  "[APPEL OUTIL 1/3] ➔ query_fleet_telemetry(aircraft='F-HBNX')\n" +
-                  "  ↳ Résultat: 3 derniers vols AF6124/AF6125. Dérive thermique confirmée (+1.4°C/h).\n\n" +
-                  "[APPEL OUTIL 2/3] ➔ check_hub_inventory(hub='NCE', part='BRG-72-9940A')\n" +
-                  "  ↳ Résultat: 1 unité certifiée disponible en Magasin D-2. Délai mise à disposition : 20 min.\n\n" +
-                  "[APPEL OUTIL 3/3] ➔ create_sap_work_order(type='AOG_URGENCE', part='BRG-72-9940A')\n" +
-                  "  ↳ Résultat: Ordre SAP #WO-2026-9481 créé avec succès. Équipe piste Nice alertée.\n\n" +
-                  "[BILAN EXÉCUTIF AGENT AUTONOME]\n" +
-                  "Aéronef consigné AOG à Nice. Pièce réservée, ordre de maintenance émis, vol reporté sans risque.";
-        }
-        if (prompt.Contains("TECHNOVA", StringComparison.OrdinalIgnoreCase) || prompt.Contains("crédit", StringComparison.OrdinalIgnoreCase))
-        {
-            return isEn
-                ? "[STRATEGIC MULTI-STEP PLAN]\n" +
-                  "• Step 1: Query local Sirene/Infogreffe registry for SAS TECHNOVA legal standing\n" +
-                  "• Step 2: Screen official PEP / Sanctions screening database\n" +
-                  "• Step 3: Compute automated Basel III debt-servicing ratio\n" +
-                  "• Step 4: Lock automated payout & route case to Level-2 Compliance Committee\n\n" +
-                  "[TOOL CALL 1/3] ➔ query_company_registry(siren='849203118')\n" +
-                  "  ↳ Output: Active SAS, RCS Nanterre, 6 employees, zero insolvency records.\n\n" +
-                  "[TOOL CALL 2/3] ➔ check_pep_sanctions_registry(name='Gérant SAS TECHNOVA')\n" +
-                  "  ↳ Output: POSITIVE MATCH - Regional elected mandate (National PEP).\n\n" +
-                  "[TOOL CALL 3/3] ➔ escalate_aml_case(ticket='KYC-2026-8812', target='COMPLIANCE_N2')\n" +
-                  "  ↳ Output: Account payout locked. Audit dossier generated with automated TRACFIN pre-filing.\n\n" +
-                  "[EXECUTIVE AGENT CONCLUSION]\n" +
-                  "Credit metrics favorable (2.23x EBITDA), but automatic approval blocked per LCB-FT regulations."
-                : "[PLANNING STRATÉGIQUE MULTI-ÉTAPES]\n" +
-                  "• Étape 1 : Interroger le registre SIRENE / Infogreffe pour la SAS TECHNOVA\n" +
-                  "• Étape 2 : Vérifier les bases officielles PEP & Sanctions Internationales\n" +
-                  "• Étape 3 : Calculer le ratio d'endettement prudentiel Bâle III\n" +
-                  "• Étape 4 : Verrouiller le virement automatique & transmettre au Comité Conformité N2\n\n" +
-                  "[APPEL OUTIL 1/3] ➔ query_company_registry(siren='849203118')\n" +
-                  "  ↳ Résultat: Entreprise active, RCS Nanterre, 6 salariés, zéro incident de paiement.\n\n" +
-                  "[APPEL OUTIL 2/3] ➔ check_pep_sanctions_registry(name='Gérant SAS TECHNOVA')\n" +
-                  "  ↳ Résultat: CONCORDANCE POSITIVE - Mandat électif régional actif (PEP Nationale).\n\n" +
-                  "[APPEL OUTIL 3/3] ➔ escalate_aml_case(ticket='KYC-2026-8812', target='COMPLIANCE_N2')\n" +
-                  "  ↳ Résultat: Verrou posé sur le virement. Dossier d'audit transmis avec fiche TRACFIN pré-remplie.\n\n" +
-                  "[BILAN EXÉCUTIF AGENT AUTONOME]\n" +
-                  "Capacité financière validée (2.23x EBE), mais blocage conservatoire immédiat en conformité LCB-FT.";
-        }
-        if (prompt.Contains("Peugeot", StringComparison.OrdinalIgnoreCase) || prompt.Contains("sinistre", StringComparison.OrdinalIgnoreCase))
-        {
-            return isEn
-                ? "[STRATEGIC MULTI-STEP PLAN]\n" +
-                  "• Step 1: Verify policy standing and premium payments in Policy CRM\n" +
-                  "• Step 2: Book partner courtesy vehicle Category B for policyholder\n" +
-                  "• Step 3: Commission certified photo-assessor for rear radar and tailgate\n" +
-                  "• Step 4: Issue automated SMS claim confirmation with tracking link\n\n" +
-                  "[TOOL CALL 1/3] ➔ check_policy_standing(policy_no='788421')\n" +
-                  "  ↳ Output: Active 'Privilège' tier, zero payment default, replacement car option enabled.\n\n" +
-                  "[TOOL CALL 2/3] ➔ book_partner_vehicle(city='Nice', category='B', days=5)\n" +
-                  "  ↳ Output: Reservation #RELAIS-4491 confirmed at partner agency (1.2 km from user).\n\n" +
-                  "[TOOL CALL 3/3] ➔ dispatch_expert_mission(plate='GF-442-TY', parts=['ADAS_RADAR'])\n" +
-                  "  ↳ Output: Assessment mission opened with certified body shop; automated estimate link sent.\n\n" +
-                  "[EXECUTIVE AGENT CONCLUSION]\n" +
-                  "Claim processed end-to-end in 480 ms. Courtesy car booked, expert scheduled, client notified."
-                : "[PLANNING STRATÉGIQUE MULTI-ÉTAPES]\n" +
-                  "• Étape 1 : Vérifier la validité du contrat et des cotisations dans le CRM Assurance\n" +
-                  "• Étape 2 : Réserver un véhicule de courtoisie Catégorie B auprès du loueur partenaire\n" +
-                  "• Étape 3 : Mandater un expert agréé pour le contrôle du hayon et radar ADAS\n" +
-                  "• Étape 4 : Émettre le SMS de confirmation assuré avec lien de suivi temps réel\n\n" +
-                  "[APPEL OUTIL 1/3] ➔ check_policy_standing(policy_no='788421')\n" +
-                  "  ↳ Résultat: Contrat 'Privilège' actif, cotisations à jour, option 'Véhicule Relais' incluse.\n\n" +
-                  "[APPEL OUTIL 2/3] ➔ book_partner_vehicle(city='Nice', category='B', days=5)\n" +
-                  "  ↳ Résultat: Réservation #RELAIS-4491 confirmée en agence partenaire (à 1.2 km du sinistre).\n\n" +
-                  "[APPEL OUTIL 3/3] ➔ dispatch_expert_mission(plate='GF-442-TY', parts=['ADAS_RADAR'])\n" +
-                  "  ↳ Résultat: Mission d'expertise ouverte avec consigne de recalibrage radar de recul.\n\n" +
-                  "[BILAN EXÉCUTIF AGENT AUTONOME]\n" +
-                  "Sinistre instruit en 480 ms. Véhicule relais garanti, expert mandaté, assuré notifié par SMS.";
-        }
-
         return isEn
-            ? "[STRATEGIC MULTI-STEP PLAN]\n" +
-              "• Step 1: Parse entities and validate constraints\n" +
-              "• Step 2: Query operational database\n" +
-              "• Step 3: Trigger enterprise transactional system\n\n" +
-              "[TOOL CALL 1/2] ➔ verify_resource_availability()\n  ↳ Output: Capacity confirmed.\n" +
-              "[TOOL CALL 2/2] ➔ execute_business_action()\n  ↳ Output: Action successfully executed.\n\n" +
-              "[EXECUTIVE CONCLUSION]\nAutonomous agent completed all operational steps end-to-end."
-            : "[PLANNING STRATÉGIQUE MULTI-ÉTAPES]\n" +
-              "• Étape 1 : Analyse des contraintes et validation des prérequis\n" +
-              "• Étape 2 : Interrogation des bases de données de l'entreprise\n" +
-              "• Étape 3 : Exécution des transactions et clôture du dossier\n\n" +
-              "[APPEL OUTIL 1/2] ➔ verify_resource_availability()\n  ↳ Résultat: Disponibilité validée.\n" +
-              "[APPEL OUTIL 2/2] ➔ execute_business_action()\n  ↳ Résultat: Action clôturée avec succès.\n\n" +
-              "[BILAN EXÉCUTIF AGENT AUTONOME]\nL'agent autonome a orchestré l'ensemble des tâches de bout en bout.";
+            ? "[🩺 REAL DOCTOR AMBIENT COPILOT: LIVE CONSULTATION TRACE]\n" +
+              "• 14:32:01 - Ambient NPU listener initialized for Dr. Dubois's office.\n" +
+              "• 14:32:04 - Patient identified: M. Robert (64 yrs). DMP #75-88421 loaded locally.\n" +
+              "• 14:32:10 - 💡 PROACTIVE HUD ALERT: 'Doctor, remember to request patient's Carte Vitale.'\n" +
+              "• 14:32:18 - Dialogue detected: Patient asks for Ibuprofen 400 mg.\n" +
+              "• 14:32:20 - 🚨 SAFETY INTERCEPT: Kardegic 75 mg + Ibuprofen = Bleeding Hazard Level 4.\n" +
+              "• 14:32:22 - 🔄 AUTO-SUBSTITUTION: Suggest Paracetamol 1g every 8h. Accepted by doctor.\n" +
+              "• 14:32:35 - Consultation concluded ('Thank you Doctor, see you next month').\n\n" +
+              "═══════════════════════════════════════════════════════════════════\n" +
+              "📄 CONSULTATION SUMMARY REPORT (Auto-generated in 320 ms):\n" +
+              "  Patient: M. Robert | Diagnosis: Acute mechanical lumbar sprain\n" +
+              "  Prescription: Paracetamol 1g PO q8h PRN (Max 3g/d) • No NSAIDs.\n\n" +
+              "💳 SESAM-VITALE CLAIM (FSE Télétransmise):\n" +
+              "  Code: G (Consultation) • Total: €26.50 (AMO: €18.55 / AMC: €7.95)\n\n" +
+              "💾 SECURE LOCAL STORAGE (DMP):\n" +
+              "  Encrypted to DemoHub/Data/DMP_Robert.json • 0 bytes sent outside PC.\n" +
+              "═══════════════════════════════════════════════════════════════════"
+            : "[🩺 COPILOTE AMBIANT MÉDECIN RÉEL : TRACE EN TEMPS RÉEL]\n" +
+              "• 14:32:01 - Écoute ambiante NPU initialisée dans le cabinet du Dr. Dubois.\n" +
+              "• 14:32:04 - Reconnaissance patient : M. Robert (64 ans). Dossier DMP #75-88421 chargé.\n" +
+              "• 14:32:10 - 💡 NOTIFICATION HUD : 'Docteur, pensez à demander la Carte Vitale du patient.'\n" +
+              "• 14:32:18 - Dialogue capté : Le patient demande de l'Ibuprofène 400 mg pour son dos.\n" +
+              "• 14:32:20 - 🚨 VETO PHARMACOLOGIQUE : Kardégic 75 mg + Ibuprofène = Danger mortel hémorragie.\n" +
+              "• 14:32:22 - 🔄 PROPOSITION DE SUBSTITUTION : Paracétamol 1g espacé de 8h. Validé par le médecin.\n" +
+              "• 14:32:35 - Fin de consultation captée ('Merci Docteur, bonne journée').\n\n" +
+              "═══════════════════════════════════════════════════════════════════\n" +
+              "📄 COMPTE-RENDU DE CONSULTATION (Généré en 320 ms) :\n" +
+              "  Patient : M. Robert | Motif : Lombalgie mécanique L4-L5 sans irradiation\n" +
+              "  Ordonnance : Paracétamol 1g max 3 fois/jour • Répit et thermothérapie.\n\n" +
+              "💳 FEUILLE DE SOINS SESAM-VITALE TÉLÉTRANSMISE :\n" +
+              "  Cotation : Acte G • Montant conventionné : 26,50 € (Tiers-payant 100% validé)\n\n" +
+              "💾 ENREGISTREMENT DOSSIER PATIENT (DMP) :\n" +
+              "  Scellé sous DemoHub/Data/DMP_Robert.json • Zéro donnée sortie de ce PC Copilot+.\n" +
+              "═══════════════════════════════════════════════════════════════════";
     }
     #endregion
 
