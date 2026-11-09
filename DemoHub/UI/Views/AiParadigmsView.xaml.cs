@@ -260,6 +260,24 @@ public partial class AiParadigmsView : UserControl, IDisposable
             BtnStep3Subst.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(154, 52, 18));
         }
     }
+
+    private void BtnToggleNluView_Click(object sender, RoutedEventArgs e)
+    {
+        if (ScrollerNluVisual == null || ScrollerNluJson == null) return;
+        bool showJson = ScrollerNluVisual.Visibility == Visibility.Visible;
+        ScrollerNluVisual.Visibility = showJson ? Visibility.Collapsed : Visibility.Visible;
+        ScrollerNluJson.Visibility = showJson ? Visibility.Visible : Visibility.Collapsed;
+        BtnToggleNluView.Content = showJson ? "👁️ Visuel" : "💻 JSON";
+    }
+
+    private void BtnToggleAgentView_Click(object sender, RoutedEventArgs e)
+    {
+        if (ScrollerAgentVisual == null || ScrollerAgentLogs == null) return;
+        bool showLogs = ScrollerAgentVisual.Visibility == Visibility.Visible;
+        ScrollerAgentVisual.Visibility = showLogs ? Visibility.Collapsed : Visibility.Visible;
+        ScrollerAgentLogs.Visibility = showLogs ? Visibility.Visible : Visibility.Collapsed;
+        BtnToggleAgentView.Content = showLogs ? "👁️ Visuel" : "💻 Logs";
+    }
     #endregion
 
     #region Execution Runners

@@ -283,7 +283,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" MinHeight="190" />
+                                <RowDefinition Height="*" MinHeight="220" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
@@ -298,39 +298,114 @@
                                     <Border Background="#064E3B" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
                                         <TextBlock Text="NIVEAU 3" FontSize="9.5" FontWeight="Bold" Foreground="#34D399" />
                                     </Border>
-                                    <TextBlock Text="🟢 NLU MÉTIER (CONTEXTE &amp; OUBLIS)" FontSize="12.5" FontWeight="Bold" Foreground="#34D399" />
+                                    <TextBlock Text="🟢 NLU MÉTIER : RADAR CLINIQUE" FontSize="12.5" FontWeight="Bold" Foreground="#34D399" />
                                 </StackPanel>
-                                <Button Grid.Column="1" x:Name="BtnRunNlu" Content="▶ Lancer" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="22" Padding="8,0" FontSize="10" Click="BtnRunNlu_Click" />
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button x:Name="BtnToggleNluView" Content="💻 JSON" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="22" Padding="6,0" FontSize="9.5" Margin="0,0,6,0" Click="BtnToggleNluView_Click" ToolTip="Basculer entre tableau de bord visuel et code JSON brut" />
+                                    <Button x:Name="BtnRunNlu" Content="▶ Lancer" Style="{StaticResource ModernButtonStyle}" Background="#059669" Height="22" Padding="8,0" FontSize="10" FontWeight="Bold" Click="BtnRunNlu_Click" />
+                                </StackPanel>
                             </Grid>
 
                             <!-- Role description -->
-                            <TextBlock Grid.Row="1" x:Name="LblRoleNlu" Text="Compréhension du dialogue clinique et du contexte patient : antécédents résolus, symptômes extraits ET détection des oublis (Carte Vitale, constantes)." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
+                            <TextBlock Grid.Row="1" x:Name="LblRoleNlu" Text="Compréhension sémantique du dialogue : extrait le contexte patient, lie les antécédents et détecte activement les omissions." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
 
-                            <!-- Response Area -->
-                            <Border Grid.Row="2" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="220">
-                                    <TextBox x:Name="TxtOutputNlu" Background="Transparent" Foreground="#6EE7B7"
-                                             BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True"
-                                             FontSize="10.5" FontFamily="Consolas"
-                                             Text="En attente du lancement..." />
-                                </ScrollViewer>
+                            <!-- Response Area: Dual Mode (Visual Dashboard OR Raw JSON) -->
+                            <Border Grid.Row="2" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,0,0,8">
+                                <Grid>
+                                    <!-- Visual Clinical Radar Dashboard -->
+                                    <ScrollViewer x:Name="ScrollerNluVisual" VerticalScrollBarVisibility="Auto" MaxHeight="240">
+                                        <StackPanel x:Name="PanelNluVisual">
+                                            <!-- Patient Identity & Clinical Tags -->
+                                            <Border Background="#0C1D18" BorderBrush="#059669" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="0,0,0,6">
+                                                <StackPanel>
+                                                    <Grid Margin="0,0,0,4">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="👤 Patient Compris : M. Robert (64 ans)" FontSize="11" FontWeight="Bold" Foreground="#6EE7B7" />
+                                                        <TextBlock Grid.Column="1" Text="Score: 99.4%" FontSize="9.5" FontWeight="SemiBold" Foreground="#34D399" />
+                                                    </Grid>
+                                                    <WrapPanel Orientation="Horizontal">
+                                                        <Border Background="#450A0A" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="4" Padding="5,2" Margin="0,0,4,2">
+                                                            <TextBlock Text="🫀 Cardiopathie Ischémique" FontSize="9.5" FontWeight="Bold" Foreground="#FCA5A5" />
+                                                        </Border>
+                                                        <Border Background="#082F49" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="4" Padding="5,2" Margin="0,0,4,2">
+                                                            <TextBlock Text="💊 Kardégic 75 mg (quotidien)" FontSize="9.5" FontWeight="Bold" Foreground="#7DD3FC" />
+                                                        </Border>
+                                                        <Border Background="#422006" BorderBrush="#D97706" BorderThickness="1" CornerRadius="4" Padding="5,2" Margin="0,0,4,2">
+                                                            <TextBlock Text="⚡ Lombalgie L4-L5 (3 jours)" FontSize="9.5" FontWeight="Bold" Foreground="#FCD34D" />
+                                                        </Border>
+                                                    </WrapPanel>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Incompatibility Alert Banner -->
+                                            <Border Background="#450A0A" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="6" Padding="8,6" Margin="0,0,0,6">
+                                                <StackPanel>
+                                                    <TextBlock Text="⛔ CONFLIT DÉTECTÉ DANS LA REQUÊTE" FontSize="10.5" FontWeight="Bold" Foreground="#FCA5A5" />
+                                                    <TextBlock Text="Le patient demande un AINS [Ibuprofène 400 mg] qui est en CONTRE-INDICATION FORMELLE avec son traitement de fond [Kardégic 75 mg]." FontSize="9.5" Foreground="#FECACA" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Radar of Detected Omissions -->
+                                            <TextBlock Text="🎯 RADAR D'OUBLIS DÉTECTÉS DANS LE DIALOGUE :" FontSize="10" FontWeight="Bold" Foreground="#FCD34D" Margin="0,0,0,4" />
+                                            
+                                            <Border Background="#291804" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="6" Padding="6" Margin="0,0,0,4">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="💳" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                    <StackPanel Grid.Column="1">
+                                                        <TextBlock Text="OUBLI ADMINISTRATIF : Carte Vitale non demandée" FontSize="10" FontWeight="Bold" Foreground="#FBBF24" />
+                                                        <TextBlock Text="Le médecin n'a pas posé la question et la carte n'est pas insérée dans le lecteur." FontSize="9" Foreground="#FDE68A" TextWrapping="Wrap" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <Border Background="#1E1B4B" BorderBrush="#818CF8" BorderThickness="1" CornerRadius="6" Padding="6">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="🩺" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                    <StackPanel Grid.Column="1">
+                                                        <TextBlock Text="OUBLI CLINIQUE : Tension Artérielle (TA) omise" FontSize="10" FontWeight="Bold" Foreground="#A5B4FC" />
+                                                        <TextBlock Text="Aucune mesure de tension artérielle relevée pour ce patient coronarien." FontSize="9" Foreground="#C7D2FE" TextWrapping="Wrap" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </StackPanel>
+                                    </ScrollViewer>
+
+                                    <!-- Raw JSON View (Hidden by default, toggleable) -->
+                                    <ScrollViewer x:Name="ScrollerNluJson" VerticalScrollBarVisibility="Auto" MaxHeight="240" Visibility="Collapsed">
+                                        <TextBox x:Name="TxtOutputNlu" Background="Transparent" Foreground="#6EE7B7"
+                                                 BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True"
+                                                 FontSize="10" FontFamily="Consolas"
+                                                 Text="En attente du lancement..." />
+                                    </ScrollViewer>
+                                </Grid>
                             </Border>
 
                             <!-- Live Telemetry Pill -->
                             <WrapPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
                                 <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
-                                    <TextBlock x:Name="TxtTelemetryNlu" Text="⚡ Latence: -- ms • Contexte &amp; Oublis Détectés" FontSize="10" Foreground="#34D399" />
+                                    <TextBlock x:Name="TxtTelemetryNlu" Text="⚡ Latence: -- ms • Radar Actif" FontSize="10" Foreground="#34D399" />
                                 </Border>
                                 <Border Background="#0C1424" BorderBrush="#334155" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
-                                    <TextBlock Text="Format: JSON Contexte &amp; Oublis" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="Format: Tableau de Bord Clinique" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
                                 </Border>
                             </WrapPanel>
 
                             <!-- Collapsible Pedagogical Guide -->
                             <Border Grid.Row="4" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="6" Padding="8,6">
                                 <StackPanel>
-                                    <TextBlock Text="💡 La rupture apportée par le NLU Métier :" FontSize="10" FontWeight="Bold" Foreground="#34D399" Margin="0,0,0,3" />
-                                    <TextBlock Text="✓ Repère ce qui a été dit (douleur lombaire L4-L5, Kardégic) ET ce qui manque (Carte Vitale non demandée, tension omise).&#x0a;✗ Ne prend pas de décision d'action par lui-même (nécessite l'Agent)." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                                    <TextBlock Text="💡 La valeur visuelle pour le client :" FontSize="10" FontWeight="Bold" Foreground="#34D399" Margin="0,0,0,3" />
+                                    <TextBlock Text="Le NLU ne fait pas du simple mot-à-mot : il comprend le profil complet du patient et repère ce qui a été OUBLIÉ par le praticien." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -343,7 +418,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" MinHeight="170" />
+                                <RowDefinition Height="*" MinHeight="220" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
@@ -358,9 +433,12 @@
                                     <Border Background="#451A03" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
                                         <TextBlock Text="NIVEAU 4" FontSize="9.5" FontWeight="Bold" Foreground="#FBBF24" />
                                     </Border>
-                                    <TextBlock Text="🟠 AGENT MÉTIER (COPILOTE ACTIF)" FontSize="12.5" FontWeight="Bold" Foreground="#FBBF24" />
+                                    <TextBlock Text="🟠 AGENT MÉTIER : LIVRABLES ACTIFS" FontSize="12.5" FontWeight="Bold" Foreground="#FBBF24" />
                                 </StackPanel>
-                                <Button Grid.Column="1" x:Name="BtnRunAgent" Content="▶ Lancer" Style="{StaticResource ModernButtonStyle}" Background="#0284C7" Height="24" Padding="10,0" FontSize="10.5" FontWeight="Bold" Click="BtnRunAgent_Click" />
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button x:Name="BtnToggleAgentView" Content="💻 Logs" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="22" Padding="6,0" FontSize="9.5" Margin="0,0,6,0" Click="BtnToggleAgentView_Click" ToolTip="Basculer entre livrables visuels et logs d'exécution" />
+                                    <Button x:Name="BtnRunAgent" Content="▶ Lancer" Style="{StaticResource ModernButtonStyle}" Background="#D97706" Height="22" Padding="8,0" FontSize="10" FontWeight="Bold" Click="BtnRunAgent_Click" />
+                                </StackPanel>
                             </Grid>
 
                             <!-- Mode Selector Toggle: Pas-à-Pas vs Médecin Réel -->
@@ -388,14 +466,104 @@
                                 </WrapPanel>
                             </Border>
 
-                            <!-- Response Area -->
-                            <Border Grid.Row="3" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="210">
-                                    <TextBox x:Name="TxtOutputAgent" Background="Transparent" Foreground="#FDE68A"
-                                             BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True"
-                                             FontSize="11" FontFamily="Consolas, Segoe UI"
-                                             Text="En attente du lancement..." />
-                                </ScrollViewer>
+                            <!-- Response Area: Dual Mode (Visual Graphic Deliverables OR Raw Text Logs) -->
+                            <Border Grid.Row="3" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,0,0,8">
+                                <Grid>
+                                    <!-- Visual Graphic Deliverables -->
+                                    <ScrollViewer x:Name="ScrollerAgentVisual" VerticalScrollBarVisibility="Auto" MaxHeight="240">
+                                        <StackPanel x:Name="PanelAgentVisual">
+                                            <!-- Document 1: Visual Prescription with Red Strikethrough & Green Approved Line -->
+                                            <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,0,0,6">
+                                                <StackPanel>
+                                                    <Grid Margin="0,0,0,4">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="📄 ORDONNANCE SÉCURISÉE EN DIRECT" FontSize="10.5" FontWeight="Bold" Foreground="#F8FAFC" />
+                                                        <Border Grid.Column="1" Background="#064E3B" CornerRadius="3" Padding="4,1">
+                                                            <TextBlock Text="🛡️ SÉCURISÉ NPU" FontSize="8.5" FontWeight="Bold" Foreground="#34D399" />
+                                                        </Border>
+                                                    </Grid>
+
+                                                    <!-- Rejected Hazardous Line -->
+                                                    <Border Background="#450A0A" BorderBrush="#DC2626" BorderThickness="1" CornerRadius="4" Padding="6,4" Margin="0,0,0,4">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Text="~~1. Ibuprofène 400 mg : 1 cp x 3/jour~~" FontSize="10" TextDecorations="Strikethrough" Foreground="#FCA5A5" VerticalAlignment="Center" />
+                                                            <Border Grid.Column="1" Background="#991B1B" CornerRadius="3" Padding="4,1">
+                                                                <TextBlock Text="⛔ REJETÉ PAR L'AGENT" FontSize="8.5" FontWeight="Bold" Foreground="#FEF2F2" />
+                                                            </Border>
+                                                        </Grid>
+                                                    </Border>
+
+                                                    <!-- Validated Safe Line -->
+                                                    <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="4" Padding="6,4">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <StackPanel>
+                                                                <TextBlock Text="✓ 1. Paracétamol 1000 mg : 1 cp toutes les 8h (Max 3g/jour)" FontSize="10" FontWeight="Bold" Foreground="#6EE7B7" />
+                                                                <TextBlock Text="✓ 2. Thermothérapie locale (bouillotte 20 min matin et soir)" FontSize="9" Foreground="#A7F3D0" />
+                                                            </StackPanel>
+                                                            <Border Grid.Column="1" Background="#047857" CornerRadius="3" Padding="4,1" VerticalAlignment="Center">
+                                                                <TextBlock Text="✅ SÉCURISÉ" FontSize="8.5" FontWeight="Bold" Foreground="#ECFDF5" />
+                                                            </Border>
+                                                        </Grid>
+                                                    </Border>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Document 2: SESAM-Vitale Smartcard Deliverable -->
+                                            <Border Background="#064E3B" BorderBrush="#10B981" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,0,0,6">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="💳" FontSize="18" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <TextBlock Text="FEUILLE DE SOINS ÉLECTRONIQUE SESAM-VITALE" FontSize="10" FontWeight="Bold" Foreground="#ECFDF5" />
+                                                        <TextBlock Text="Acte G (26,50 €) • AMO: 18,55 € (70%) • AMC: 7,95 € (30%)" FontSize="9" Foreground="#A7F3D0" />
+                                                        <TextBlock Text="Reste à charge patient : 0,00 € (Tiers-Payant Intégral)" FontSize="9" FontWeight="Bold" Foreground="#6EE7B7" />
+                                                    </StackPanel>
+                                                    <Border Grid.Column="2" Background="#047857" CornerRadius="4" Padding="5,2" VerticalAlignment="Center">
+                                                        <TextBlock Text="✅ TÉLÉTRANSMIS" FontSize="9" FontWeight="Bold" Foreground="#F0FDF4" />
+                                                    </Border>
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Document 3: Local Sealed DMP Record -->
+                                            <Border Background="#0F172A" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="6" Padding="6">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="🔒" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                                    <StackPanel Grid.Column="1">
+                                                        <TextBlock Text="DMP LOCAL SCELLÉ : DemoHub/Data/DMP_Robert.json" FontSize="9.5" FontWeight="Bold" Foreground="#38BDF8" />
+                                                        <TextBlock Text="100% Souverain sur ce PC • Zéro fuite cloud • Conforme Secret Médical HDS" FontSize="8.5" Foreground="#94A3B8" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </StackPanel>
+                                    </ScrollViewer>
+
+                                    <!-- Raw Text Logs View (Hidden by default, toggleable) -->
+                                    <ScrollViewer x:Name="ScrollerAgentLogs" VerticalScrollBarVisibility="Auto" MaxHeight="240" Visibility="Collapsed">
+                                        <TextBox x:Name="TxtOutputAgent" Background="Transparent" Foreground="#FDE68A"
+                                                 BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True"
+                                                 FontSize="10.5" FontFamily="Consolas, Segoe UI"
+                                                 Text="En attente du lancement..." />
+                                    </ScrollViewer>
+                                </Grid>
                             </Border>
 
                             <!-- Live Telemetry Pill -->
@@ -404,15 +572,15 @@
                                     <TextBlock x:Name="TxtTelemetryAgent" Text="⚡ Latence: -- ms • 4 Actions Réalisées" FontSize="10" Foreground="#FBBF24" />
                                 </Border>
                                 <Border Background="#0C1424" BorderBrush="#334155" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
-                                    <TextBlock x:Name="TxtStatusAgentDeliverables" Text="Livrables : SESAM-Vitale • Compte-Rendu • DMP" FontSize="10" Foreground="#6EE7B7" />
+                                    <TextBlock x:Name="TxtStatusAgentDeliverables" Text="Livrables : Ordonnance • SESAM-Vitale • DMP" FontSize="10" Foreground="#6EE7B7" />
                                 </Border>
                             </WrapPanel>
 
                             <!-- Collapsible Pedagogical Guide -->
                             <Border Grid.Row="5" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="6" Padding="8,6">
                                 <StackPanel>
-                                    <TextBlock Text="💡 Le rôle déterminant de l'Agent Médical :" FontSize="10" FontWeight="Bold" Foreground="#FBBF24" Margin="0,0,0,3" />
-                                    <TextBlock Text="✓ Bloque activement la prescription à risque vital, rappelle la carte vitale, génère la feuille de soins (26,50 €) et sauvegarde le DMP localement." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                                    <TextBlock Text="💡 L'impact visuel pour le client :" FontSize="10" FontWeight="Bold" Foreground="#FBBF24" Margin="0,0,0,3" />
+                                    <TextBlock Text="L'Agent ne fait pas que conseiller : il agit, produit de vrais documents officiels et protège la vie du patient en direct." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Border>
                         </Grid>
