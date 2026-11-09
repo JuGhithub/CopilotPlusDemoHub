@@ -129,6 +129,17 @@ flowchart TD
 
 ---
 
+### 10. 🧠 Panorama Décisionnel IA (SLM Brut, SLM Métier, NLU & Agent Autonome)
+- **Guide d'Arbitrage Exécutif** : Répond à la question clé de tout décideur d'entreprise : *"Quand utiliser un simple SLM, un SLM spécialisé, un moteur NLU ou un agent autonome complet ?"*
+- **4 Paradigmes Évalués en Simultané** :
+  1. 🟣 **SLM Générique (Brut)** : Modèle compact (ex : Phi-4 standard) produisant du texte conversationnel libre ; idéal pour la reformulation ou les questions générales, mais sans garantie de conformité sectorielle.
+  2. 🔵 **SLM Métier (Spécialisé)** : Règles métier et prompts d'ingénierie certifiés (normes ATA 72-30 aéronautique, ratios Bâle III bancaires, conventions IRSA assurance) avec conclusions formelles (NO-GO AOG, escalade conformité).
+  3. 🟢 **NLU Métier (Structuré JSON)** : Extraction déterministe d'intentions et d'entités (NER) en schéma JSON strict, 0% bavardage, directement exploitable par vos ERP, CRM (SAP, Salesforce) et API REST.
+  4. 🟠 **Agent Métier Autonome** : Raisonnement multi-étapes avec appel d'outils réels/simulés (`query_fleet_telemetry`, `check_hub_inventory`, `create_sap_work_order`) exécutant les actions opérationnelles de bout en bout.
+- **Matrice Décisionnelle** : Comparatif direct du destinataire (humain vs API vs SI), du niveau de déterminisme, de l'autonomie d'action et de la complexité d'intégration.
+
+---
+
 ## ⚡ Guide Pas à Pas pour Déployer
 
 Le projet est conçu pour être déployé en **1 clic sans aucune configuration manuelle**.

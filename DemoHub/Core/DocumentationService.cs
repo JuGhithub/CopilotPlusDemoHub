@@ -476,6 +476,29 @@ public sealed class DocumentationService
                 HowToRunFr = "Sélectionner le modèle désiré ou le 'Trio Multi-Agents MCP', choisir le mode 'Duel Télémétrique (Brut vs Olive)' et cliquer sur '🚀 Lancer le Benchmark Télémétrique Olive'.",
                 HowToRunEn = "Select the desired model or 'MCP Multi-Agent Trio', choose 'Telemetry Duel (Raw vs Olive)' and click '🚀 Run Olive Benchmark Duel'."
             },
+            new DocTopic
+            {
+                Key = "demo_ai_paradigms",
+                Category = "Demo",
+                Icon = "🧠",
+                TitleFr = "Panorama IA Décisionnel : SLM Brut, SLM Métier, NLU & Agent Autonome",
+                TitleEn = "Executive AI Landscape: Raw SLM, Domain SLM, NLU & Autonomous Agent",
+                SubtitleFr = "Guide d'arbitrage technologique & benchmark comparatif direct sur silicium Copilot+",
+                SubtitleEn = "Architectural decision framework & live head-to-head benchmark on Copilot+ silicon",
+                Accelerator = "⚡ NPU Copilot+ (OpenVINO / DirectML)",
+                LatencyPowerFr = "Inférence locale ultra-rapide (~20 à 45 tok/s) • ~2.5W • Zéro fuite cloud",
+                LatencyPowerEn = "Ultra-fast on-device inference (~20 to 45 tok/s) • ~2.5W • Zero cloud leak",
+                PitchFr = "Expliquez avec clarté et impact à vos clients la différence fondamentale entre les 4 grandes approches d'IA locale : pourquoi un modèle de langage brut (SLM) ne suffit pas pour piloter un processus métier, en quoi le SLM Métier apporte la rigueur normative (ATA, OACI, Bâle III), comment le NLU Métier garantit un schéma JSON 100% déterministe pour vos ERP/CRM (SAP, Salesforce), et pourquoi l'Agent Métier autonome représente le Graal de l'automatisation en orchestrant lui-même des appels d'outils réels.",
+                PitchEn = "Clearly and persuasively explain to enterprise clients the fundamental differences between the 4 major local AI paradigms: why a raw SLM lacks enterprise guardrails, how a Specialized Domain SLM enforces certified regulatory standards (ATA, ICAO, Basel III), how Domain NLU delivers 100% deterministic JSON schemas ready for ERP/CRM consumption, and why an Autonomous Business Agent unlocks end-to-end automation by orchestrating live tool calls and transactional updates.",
+                DescriptionFr = "Ce banc d'essai interactif permet de soumettre un même cas métier (Aéronautique/MRO, Banque/Risque, Assurance/Sinistre ou saisie libre) aux 4 architectures d'IA en simultané sur le silicium local du PC Copilot+ :\n1. 🟣 SLM Générique (Brut) : Réponse en langage naturel conversationnel, ton informel, sans contrainte de schéma.\n2. 🔵 SLM Métier (Spécialisé) : Prompt d'ingénierie expert et règles métier intégrées, vocabulaire normé, décisions d'audit formelles (NO-GO AOG, seuils MMEL).\n3. 🟢 NLU Métier (Structuré JSON) : Extraction déterministe d'entités nommées (NER) et intentions, schéma JSON strict exploitable immédiatement par une API REST ou base SQL.\n4. 🟠 Agent Métier (Autonome + Tool Calling) : Planification multi-étapes, interrogation de bases de données, réservation de ressources et émission d'ordres de travail réels.",
+                DescriptionEn = "This interactive evaluation arena submits the exact same business prompt (Aerospace/MRO, Banking/Risk, Insurance/Claims or custom prompt) to 4 AI paradigms running simultaneously on local Copilot+ silicon :\n1. 🟣 Raw Generalist SLM: Natural language output, conversational tone, open-ended.\n2. 🔵 Specialized Domain SLM: Expert engineering prompts and domain rules, certified taxonomy, formal audit decisions (NO-GO AOG, MMEL limits).\n3. 🟢 Domain NLU (Structured JSON): Deterministic intent and named entity recognition (NER) in strict JSON ready for enterprise ERP/APIs.\n4. 🟠 Autonomous Business Agent: Multi-step reasoning, database lookups, resource reservation, and transactional SAP/CRM work-order generation.",
+                TechnicalSpecsFr = "Exécution sur runtime Microsoft Foundry Local (phi-4-mini) avec streaming de jetons et repli résilient instantané. Télémétrie énergétique et latence enregistrées dans le journal de flotte EnterpriseTelemetryService.",
+                TechnicalSpecsEn = "Executed over Microsoft Foundry Local runtime (phi-4-mini) with token streaming and instant offline resilience. Hardware telemetry and latency recorded in EnterpriseTelemetryService audit logs.",
+                BinariesAndModelsFr = "• Vue WPF : DemoHub/UI/Views/AiParadigmsView.xaml\n• Modèle Foundry : phi-4-mini (OpenVINO NPU / GPU DirectML)\n• Télémétrie : EnterpriseTelemetryService.cs",
+                BinariesAndModelsEn = "• WPF View: DemoHub/UI/Views/AiParadigmsView.xaml\n• Foundry Model: phi-4-mini (OpenVINO NPU / GPU DirectML)\n• Telemetry: EnterpriseTelemetryService.cs",
+                HowToRunFr = "Sélectionner un scénario métier (ex: Aéronautique), puis cliquer sur 'Évaluer les 4 Approches en Simultané' pour observer la comparaison directe et consulter la matrice de décision.",
+                HowToRunEn = "Select a business scenario (e.g., Aerospace), then click 'Evaluate All 4 Approaches Simultaneously' to observe live outputs and the executive decision matrix."
+            },
         };
     }
 }

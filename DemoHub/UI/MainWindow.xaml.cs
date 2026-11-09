@@ -28,6 +28,7 @@ public partial class MainWindow : Window
     private SecurityAccessView? _securityAccessView;
     private FleetTelemetryView? _fleetTelemetryView;
     private OliveLabView? _oliveLabView;
+    private AiParadigmsView? _aiParadigmsView;
 
     public MainWindow()
     {
@@ -184,6 +185,7 @@ public partial class MainWindow : Window
         NavEngineering.Content = _localizer.Get("Nav_Engineering");
         NavInsurance.Content = _localizer.Get("Nav_Insurance");
         NavFinancial.Content = _localizer.Get("Nav_Financial");
+        if (NavAiParadigms != null) NavAiParadigms.Content = _localizer.Get("Nav_AiParadigms");
         LblNavSilicon.Text = _localizer.Get("Nav_SiliconDemos");
         NavBenchmark.Content = _localizer.Get("Nav_Benchmark");
         NavOliveLab.Content = _localizer.Get("Nav_OliveLab");
@@ -221,6 +223,7 @@ public partial class MainWindow : Window
         _pdfStudioView?.ApplyLocalization(_localizer);
         _securityAccessView?.ApplyLocalization(_localizer);
         _fleetTelemetryView?.ApplyLocalization(_localizer);
+        _aiParadigmsView?.ApplyLocalization(_localizer);
 
         UpdateLanguageToggleUi();
 
@@ -398,6 +401,7 @@ public partial class MainWindow : Window
         _magicEraserStudioView?.RefreshDeviceUI();
         _pdfStudioView?.RefreshDeviceUI();
         _securityAccessView?.RefreshDeviceUI();
+        _aiParadigmsView?.RefreshDeviceUI();
     }
 
     private void Accelerator_Checked(object sender, RoutedEventArgs e)
@@ -431,6 +435,15 @@ public partial class MainWindow : Window
         if (!_isInitialized || ViewContainer == null) return;
         _financialView ??= new FinancialView(_foundryClient, _localizer, GetSelectedDevice, GetEffectiveDevice);
         ViewContainer.Content = _financialView;
+    }
+
+    private void NavAiParadigms_Checked(object sender, RoutedEventArgs e)
+    {
+        if (!_isInitialized || ViewContainer == null) return;
+        _aiParadigmsView ??= new AiParadigmsView(_foundryClient, _localizer, GetSelectedDevice, GetEffectiveDevice);
+        _aiParadigmsView.ApplyLocalization(_localizer);
+        _aiParadigmsView.RefreshDeviceUI();
+        ViewContainer.Content = _aiParadigmsView;
     }
 
     private void NavBenchmark_Checked(object sender, RoutedEventArgs e)

@@ -129,6 +129,17 @@ flowchart TD
 
 ---
 
+### 10. 🧠 Enterprise AI Landscape (Raw SLM, Domain SLM, NLU & Autonomous Agent)
+- **Executive Decision Framework**: Solves the fundamental enterprise client dilemma: *"When should we use an open-ended SLM, a specialized SLM, a structured NLU engine, or a full autonomous agent?"*
+- **4 Live Paradigms Evaluated Concurrently**:
+  1. 🟣 **Raw Generalist SLM**: Compact language model (e.g. standard Phi-4) outputting conversational plain text; ideal for drafting and general queries, but lacks sector-specific compliance.
+  2. 🔵 **Specialized Domain SLM**: Enforces certified industry standards (ATA 72-30 aeronautics, Basel III banking ratios, IRSA insurance claims) with formal audit conclusions (NO-GO AOG, compliance escalation).
+  3. 🟢 **Domain NLU (Deterministic JSON)**: 100% structured Intent & Named Entity Recognition (NER) output in strict JSON format, zero conversational filler, directly injectable into enterprise ERP, CRM, and SQL pipelines.
+  4. 🟠 **Autonomous Business Agent**: Multi-step reasoning with live simulated/real tool calling (`query_fleet_telemetry`, `check_hub_inventory`, `create_sap_work_order`) executing transactions end-to-end.
+- **Decision Matrix**: Live comparison of consumer targets (human vs API vs SI), determinism, action autonomy, and deployment complexity.
+
+---
+
 ## ⚡ Step-by-Step Deployment Guide
 
 Designed for **1-click automated deployment with zero manual configuration**.

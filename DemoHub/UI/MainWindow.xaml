@@ -128,6 +128,7 @@
                             <RadioButton x:Name="NavEngineering" GroupName="NavGrp" Content="⚙️  Ingénierie &amp; RAG" Style="{StaticResource NavButtonStyle}" Checked="NavEngineering_Checked" Margin="0,0,0,3" />
                             <RadioButton x:Name="NavInsurance" GroupName="NavGrp" Content="📋  Assurance Sinistres" Style="{StaticResource NavButtonStyle}" Checked="NavInsurance_Checked" Margin="0,0,0,3" />
                             <RadioButton x:Name="NavFinancial" GroupName="NavGrp" Content="💼  Services Financiers" Style="{StaticResource NavButtonStyle}" Checked="NavFinancial_Checked" Margin="0,0,0,3" />
+                            <RadioButton x:Name="NavAiParadigms" GroupName="NavGrp" Content="🧠  Panorama IA : SLM, NLU &amp; Agent" Style="{StaticResource NavButtonStyle}" Checked="NavAiParadigms_Checked" Margin="0,0,0,3" />
 
                             <Border Height="1" Background="{StaticResource CardBorderBrush}" Margin="6,8,6,8" />
 

@@ -1,0 +1,518 @@
+<UserControl x:Class="CopilotPlusDemoHub.UI.Views.AiParadigmsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Focusable="True">
+    <Grid Background="#060A12">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid Margin="24">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- ======================================================== -->
+                <!-- 1. HEADER TITLE & ACCELERATOR TELEMETRY PILLS            -->
+                <!-- ======================================================== -->
+                <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🧠" FontSize="22" Margin="0,0,10,0" VerticalAlignment="Center" />
+                            <TextBlock x:Name="LblTitle" Text="PANORAMA IA : SLM, SLM MÉTIER, NLU &amp; AGENT AUTONOME"
+                                       FontSize="16" FontWeight="Black"
+                                       Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <TextBlock x:Name="LblSubtitle" Text="Guide décisionnel &amp; benchmark en direct pour décideurs : comprendre la valeur, les limites et l'adéquation métier de chaque paradigme d'IA locale."
+                                   FontSize="11.5" Margin="32,4,0,0"
+                                   Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <WrapPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
+                        <Border Background="#0C1424" BorderBrush="#2A3B5C" BorderThickness="1" CornerRadius="16" Padding="10,5" Margin="0,0,8,4">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Width="7" Height="7" Fill="{StaticResource NpuGreenBrush}" Margin="0,0,6,0" />
+                                <TextBlock x:Name="LblComplianceBadge" Text="100% Souverain • Inférence NPU/GPU" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource NpuGreenBrush}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="#162238" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="6" Padding="8,5" Margin="0,0,8,4">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="⚡" FontSize="11" Margin="0,0,5,0" VerticalAlignment="Center" />
+                                <TextBlock x:Name="TxtActiveDevice" Text="NPU (DirectML / OpenVINO)" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
+                        <Button x:Name="BtnDocHelp" Style="{StaticResource ModernButtonStyle}"
+                                Background="#1E293B" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                                Height="28" Padding="10,0" Margin="0,0,0,4"
+                                ToolTip="Fiche explicative détaillée et guide d'orientation client" Click="BtnDocHelp_Click">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="❓" FontSize="11" Margin="0,0,5,0" />
+                                <TextBlock x:Name="TxtDocHelp" Text="Guide Décisionnel" FontSize="10.5" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" />
+                            </StackPanel>
+                        </Button>
+                    </WrapPanel>
+                </Grid>
+
+                <!-- ======================================================== -->
+                <!-- 2. SCENARIO SELECTOR & INPUT PROMPT CARD                 -->
+                <!-- ======================================================== -->
+                <Border Grid.Row="1" Background="#0C1424" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,14" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Preset Scenarios -->
+                        <Grid Grid.Row="0" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock x:Name="LblSelectScenario" Text="Scénario Métier :" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0" />
+
+                            <WrapPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <RadioButton x:Name="RadScenarioAero" GroupName="ScenarioGrp" IsChecked="True"
+                                             Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="Bold"
+                                             Checked="Scenario_Checked">
+                                    <TextBlock Text="✈️ Aéronautique &amp; Maintenance (Avarie Moteur OACI)" />
+                                </RadioButton>
+                                <RadioButton x:Name="RadScenarioFinance" GroupName="ScenarioGrp"
+                                             Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="SemiBold"
+                                             Checked="Scenario_Checked">
+                                    <TextBlock Text="🏦 Banque &amp; Crédit (Analyse Risque &amp; KYC)" />
+                                </RadioButton>
+                                <RadioButton x:Name="RadScenarioInsurance" GroupName="ScenarioGrp"
+                                             Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="SemiBold"
+                                             Checked="Scenario_Checked">
+                                    <TextBlock Text="📋 Assurance &amp; Sinistre (Garantie &amp; Plafond)" />
+                                </RadioButton>
+                                <RadioButton x:Name="RadScenarioCustom" GroupName="ScenarioGrp"
+                                             Style="{StaticResource PillButtonStyle}" Height="28" FontSize="11" FontWeight="SemiBold"
+                                             Checked="Scenario_Checked">
+                                    <TextBlock Text="✍️ Saisie Libre (Prompt Client)" />
+                                </RadioButton>
+                            </WrapPanel>
+                        </Grid>
+
+                        <!-- Input Request Box -->
+                        <Border Grid.Row="1" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,12">
+                            <TextBox x:Name="TxtInputPrompt" Background="Transparent" Foreground="{StaticResource TextPrimaryBrush}"
+                                     BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True"
+                                     FontSize="11.5" FontFamily="Segoe UI" MinHeight="48" MaxHeight="90" VerticalScrollBarVisibility="Auto"
+                                     Text="Détection surchauffe palier compresseur HP à 94°C avec vibration anormale niveau 4 sur aéronef F-HBNX lors de l'escale Nice. Demande statut décollage et référence ATA." />
+                        </Border>
+
+                        <!-- Action Bar: Run All Button & Mode Selector -->
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="0" x:Name="BtnRunAllParadigms" Style="{StaticResource ModernButtonStyle}"
+                                    Background="#0284C7" Height="36" Padding="18,0" FontWeight="Bold" FontSize="12"
+                                    Click="BtnRunAllParadigms_Click">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="🚀" FontSize="13" Margin="0,0,8,0" />
+                                    <TextBlock x:Name="TxtBtnRunAll" Text="Évaluer les 4 Approches en Simultané" />
+                                </StackPanel>
+                            </Button>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                                <TextBlock x:Name="LblViewMode" Text="Affichage :" FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <RadioButton x:Name="RadViewGrid" GroupName="ViewModeGrp" IsChecked="True" Content="Grid 2x2" Style="{StaticResource PillButtonStyle}" Height="24" FontSize="10.5" Checked="ViewMode_Checked" Margin="0,0,4,0" />
+                                <RadioButton x:Name="RadViewTabs" GroupName="ViewModeGrp" Content="Détail par Onglet" Style="{StaticResource PillButtonStyle}" Height="24" FontSize="10.5" Checked="ViewMode_Checked" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock x:Name="LblGlobalStatus" Text="Prêt. Cliquez sur Évaluer pour lancer l'inférence locale sur NPU." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- ======================================================== -->
+                <!-- 3. MAIN FOUR-PARADIGM COMPARISON AREA                    -->
+                <!-- ======================================================== -->
+                <!-- MODE A: GRID 2x2 (ALL FOUR IN VIEW) -->
+                <Grid x:Name="ContainerGrid" Grid.Row="2" Margin="0,0,0,16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="16" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- CARD 1: SLM GÉNÉRIQUE (BRUT) -->
+                    <Border x:Name="CardSlmRaw" Grid.Row="0" Grid.Column="0" Background="#0C1424" BorderBrush="#3B2667" BorderThickness="1.5" CornerRadius="8" Padding="14">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" MinHeight="190" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Header Card 1 -->
+                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Background="#2E1065" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
+                                        <TextBlock Text="NIVEAU 1" FontSize="9.5" FontWeight="Bold" Foreground="#C084FC" />
+                                    </Border>
+                                    <TextBlock Text="🟣 SLM GÉNÉRIQUE (BRUT)" FontSize="12.5" FontWeight="Bold" Foreground="#D8B4FE" />
+                                </StackPanel>
+                                <Button Grid.Column="1" x:Name="BtnRunSlmRaw" Content="▶ Lancer" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="22" Padding="8,0" FontSize="10" Click="BtnRunSlmRaw_Click" />
+                            </Grid>
+
+                            <!-- Role description -->
+                            <TextBlock Grid.Row="1" x:Name="LblRoleSlmRaw" Text="Modèle de langage compact brut (ex: Phi-4 standard) sans prompt métier. Texte libre, informel, connaissances généralistes." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
+
+                            <!-- Response Area -->
+                            <Border Grid.Row="2" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="220">
+                                    <TextBox x:Name="TxtOutputSlmRaw" Background="Transparent" Foreground="{StaticResource TextPrimaryBrush}"
+                                             BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True"
+                                             FontSize="11" FontFamily="Consolas, Segoe UI"
+                                             Text="En attente du lancement..." />
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- Live Telemetry Pill -->
+                            <WrapPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
+                                <Border Background="#1E1B4B" BorderBrush="#818CF8" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
+                                    <TextBlock x:Name="TxtTelemetrySlmRaw" Text="⚡ Latence: -- ms • Vitesse: -- tok/s" FontSize="10" Foreground="#A5B4FC" />
+                                </Border>
+                                <Border Background="#0C1424" BorderBrush="#334155" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
+                                    <TextBlock Text="Format: Texte Libre" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                </Border>
+                            </WrapPanel>
+
+                            <!-- Collapsible Pedagogical Guide -->
+                            <Border Grid.Row="4" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="6" Padding="8,6">
+                                <StackPanel>
+                                    <TextBlock Text="💡 Quand l'utiliser en entreprise ?" FontSize="10" FontWeight="Bold" Foreground="#C084FC" Margin="0,0,0,3" />
+                                    <TextBlock Text="✓ Résumé rapide, reformulation, brainstorming interne, emails informels.&#x0a;✗ Pas de terminologie certifiée, hallucine facilement sur des normes strictes." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- CARD 2: SLM MÉTIER (SPÉCIALISÉ / RAG) -->
+                    <Border x:Name="CardSlmDomain" Grid.Row="0" Grid.Column="2" Background="#0C1424" BorderBrush="#0369A1" BorderThickness="1.5" CornerRadius="8" Padding="14">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" MinHeight="190" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Header Card 2 -->
+                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Background="#082F49" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
+                                        <TextBlock Text="NIVEAU 2" FontSize="9.5" FontWeight="Bold" Foreground="#38BDF8" />
+                                    </Border>
+                                    <TextBlock Text="🔵 SLM MÉTIER (SPÉCIALISÉ)" FontSize="12.5" FontWeight="Bold" Foreground="#38BDF8" />
+                                </StackPanel>
+                                <Button Grid.Column="1" x:Name="BtnRunSlmDomain" Content="▶ Lancer" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="22" Padding="8,0" FontSize="10" Click="BtnRunSlmDomain_Click" />
+                            </Grid>
+
+                            <!-- Role description -->
+                            <TextBlock Grid.Row="1" x:Name="LblRoleSlmDomain" Text="SLM injecté de directives d'experts, normes sectorielles (ATA, OACI, FINMA) et ton certifié. Décisions formelles et terminologie exacte." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
+
+                            <!-- Response Area -->
+                            <Border Grid.Row="2" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="220">
+                                    <TextBox x:Name="TxtOutputSlmDomain" Background="Transparent" Foreground="{StaticResource TextPrimaryBrush}"
+                                             BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True"
+                                             FontSize="11" FontFamily="Consolas, Segoe UI"
+                                             Text="En attente du lancement..." />
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- Live Telemetry Pill -->
+                            <WrapPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
+                                <Border Background="#082F49" BorderBrush="#0284C7" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
+                                    <TextBlock x:Name="TxtTelemetrySlmDomain" Text="⚡ Latence: -- ms • Vitesse: -- tok/s" FontSize="10" Foreground="#38BDF8" />
+                                </Border>
+                                <Border Background="#0C1424" BorderBrush="#334155" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
+                                    <TextBlock Text="Format: Rapport Normé" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                </Border>
+                            </WrapPanel>
+
+                            <!-- Collapsible Pedagogical Guide -->
+                            <Border Grid.Row="4" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="6" Padding="8,6">
+                                <StackPanel>
+                                    <TextBlock Text="💡 Quand l'utiliser en entreprise ?" FontSize="10" FontWeight="Bold" Foreground="#38BDF8" Margin="0,0,0,3" />
+                                    <TextBlock Text="✓ Aide à la décision ingénieur, audit qualité, conformité juridique et réglementaire.&#x0a;✗ Reste du texte libre destiné aux humains, pas directement exploitable par une API." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- CARD 3: NLU MÉTIER (STRUCTURÉ JSON) -->
+                    <Border x:Name="CardNlu" Grid.Row="2" Grid.Column="0" Background="#0C1424" BorderBrush="#047857" BorderThickness="1.5" CornerRadius="8" Padding="14">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" MinHeight="190" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Header Card 3 -->
+                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Background="#064E3B" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
+                                        <TextBlock Text="NIVEAU 3" FontSize="9.5" FontWeight="Bold" Foreground="#34D399" />
+                                    </Border>
+                                    <TextBlock Text="🟢 NLU MÉTIER (STRUCTURÉ JSON)" FontSize="12.5" FontWeight="Bold" Foreground="#34D399" />
+                                </StackPanel>
+                                <Button Grid.Column="1" x:Name="BtnRunNlu" Content="▶ Lancer" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="22" Padding="8,0" FontSize="10" Click="BtnRunNlu_Click" />
+                            </Grid>
+
+                            <!-- Role description -->
+                            <TextBlock Grid.Row="1" x:Name="LblRoleNlu" Text="Natural Language Understanding : extraction d'intention et d'entités (NER). 0% bavardage, 100% déterministe sous schéma JSON strict." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
+
+                            <!-- Response Area -->
+                            <Border Grid.Row="2" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="220">
+                                    <TextBox x:Name="TxtOutputNlu" Background="Transparent" Foreground="#6EE7B7"
+                                             BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True"
+                                             FontSize="10.5" FontFamily="Consolas"
+                                             Text="En attente du lancement..." />
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- Live Telemetry Pill -->
+                            <WrapPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
+                                <Border Background="#064E3B" BorderBrush="#059669" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
+                                    <TextBlock x:Name="TxtTelemetryNlu" Text="⚡ Latence: -- ms • Vitesse: -- tok/s" FontSize="10" Foreground="#34D399" />
+                                </Border>
+                                <Border Background="#0C1424" BorderBrush="#334155" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
+                                    <TextBlock Text="Format: JSON Strict (API)" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                </Border>
+                            </WrapPanel>
+
+                            <!-- Collapsible Pedagogical Guide -->
+                            <Border Grid.Row="4" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="6" Padding="8,6">
+                                <StackPanel>
+                                    <TextBlock Text="💡 Quand l'utiliser en entreprise ?" FontSize="10" FontWeight="Bold" Foreground="#34D399" Margin="0,0,0,3" />
+                                    <TextBlock Text="✓ Intégration directe ERP, CRM, SAP, bases SQL, webhooks et micro-services.&#x0a;✗ N'exécute pas d'action et n'explique pas le contexte à l'utilisateur." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- CARD 4: AGENT MÉTIER (TOOL CALLING & ACTIONS) -->
+                    <Border x:Name="CardAgent" Grid.Row="2" Grid.Column="2" Background="#0C1424" BorderBrush="#B45309" BorderThickness="1.5" CornerRadius="8" Padding="14">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" MinHeight="190" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Header Card 4 -->
+                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Background="#451A03" CornerRadius="4" Padding="6,2" Margin="0,0,8,0">
+                                        <TextBlock Text="NIVEAU 4" FontSize="9.5" FontWeight="Bold" Foreground="#FBBF24" />
+                                    </Border>
+                                    <TextBlock Text="🟠 AGENT MÉTIER (AUTONOME + OUTILS)" FontSize="12.5" FontWeight="Bold" Foreground="#FBBF24" />
+                                </StackPanel>
+                                <Button Grid.Column="1" x:Name="BtnRunAgent" Content="▶ Lancer" Style="{StaticResource ModernButtonStyle}" Background="#1E293B" Height="22" Padding="8,0" FontSize="10" Click="BtnRunAgent_Click" />
+                            </Grid>
+
+                            <!-- Role description -->
+                            <TextBlock Grid.Row="1" x:Name="LblRoleAgent" Text="IA Agentique : planifie en multi-étapes, appelle des outils réels (BDD pièces, calculatrice, ERP), vérifie et clôture le problème." FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,0,0,8" />
+
+                            <!-- Response Area -->
+                            <Border Grid.Row="2" Background="#060A12" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,8">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="220">
+                                    <TextBox x:Name="TxtOutputAgent" Background="Transparent" Foreground="#FDE68A"
+                                             BorderThickness="0" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True"
+                                             FontSize="11" FontFamily="Consolas, Segoe UI"
+                                             Text="En attente du lancement..." />
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- Live Telemetry Pill -->
+                            <WrapPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
+                                <Border Background="#451A03" BorderBrush="#D97706" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
+                                    <TextBlock x:Name="TxtTelemetryAgent" Text="⚡ Latence: -- ms • 3 Outils Invoqués" FontSize="10" Foreground="#FBBF24" />
+                                </Border>
+                                <Border Background="#0C1424" BorderBrush="#334155" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="0,0,6,4">
+                                    <TextBlock Text="Format: Plan + Actions + Bilan" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                                </Border>
+                            </WrapPanel>
+
+                            <!-- Collapsible Pedagogical Guide -->
+                            <Border Grid.Row="4" Background="#111827" BorderBrush="#1F2937" BorderThickness="1" CornerRadius="6" Padding="8,6">
+                                <StackPanel>
+                                    <TextBlock Text="💡 Quand l'utiliser en entreprise ?" FontSize="10" FontWeight="Bold" Foreground="#FBBF24" Margin="0,0,0,3" />
+                                    <TextBlock Text="✓ Automatisation de bout en bout, diagnostic + commande de pièce + clôture de ticket.&#x0a;✗ Exige une orchestration rigoureuse, temps d'inférence légèrement plus élevé." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- ======================================================== -->
+                <!-- 4. COMPARISON MATRIX (EXECUTIVE SUMMARY TABLE)           -->
+                <!-- ======================================================== -->
+                <Border Grid.Row="3" Background="#0C1424" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,14" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock x:Name="LblMatrixTitle" Text="📊 MATRICE DÉCISIONNELLE : QUELLE ARCHITECTURE CHOISIR POUR VOTRE PROJET ?" FontSize="13" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" Margin="0,0,0,10" />
+
+                        <!-- Summary Table -->
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.4*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="1.2*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Header Row -->
+                            <Border Grid.Row="0" Grid.ColumnSpan="5" Background="#131F33" CornerRadius="4" Padding="8,6" Margin="0,0,0,4">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.4*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="1.2*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Critère Décisionnel" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <TextBlock Grid.Column="1" Text="🟣 SLM Brut" FontSize="11" FontWeight="Bold" Foreground="#C084FC" />
+                                    <TextBlock Grid.Column="2" Text="🔵 SLM Métier" FontSize="11" FontWeight="Bold" Foreground="#38BDF8" />
+                                    <TextBlock Grid.Column="3" Text="🟢 NLU Métier" FontSize="11" FontWeight="Bold" Foreground="#34D399" />
+                                    <TextBlock Grid.Column="4" Text="🟠 Agent Métier" FontSize="11" FontWeight="Bold" Foreground="#FBBF24" />
+                                </Grid>
+                            </Border>
+
+                            <!-- Row 1: Destination -->
+                            <Border Grid.Row="1" Grid.ColumnSpan="5" Background="#080E1C" Padding="8,6" Margin="0,0,0,2">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.4*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="1.2*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Consommateur de la sortie" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Grid.Column="1" Text="Humain (Lecture)" FontSize="10.5" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <TextBlock Grid.Column="2" Text="Expert / Métier" FontSize="10.5" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <TextBlock Grid.Column="3" Text="API / Logiciel (JSON)" FontSize="10.5" FontWeight="Bold" Foreground="#34D399" />
+                                    <TextBlock Grid.Column="4" Text="Processus Complet (SI)" FontSize="10.5" FontWeight="Bold" Foreground="#FBBF24" />
+                                </Grid>
+                            </Border>
+
+                            <!-- Row 2: Déterminisme -->
+                            <Border Grid.Row="2" Grid.ColumnSpan="5" Background="#060A12" Padding="8,6" Margin="0,0,0,2">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.4*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="1.2*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Précision &amp; Déterminisme" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Grid.Column="1" Text="Moyen (Généraliste)" FontSize="10.5" Foreground="#EF4444" />
+                                    <TextBlock Grid.Column="2" Text="Élevé (Normes)" FontSize="10.5" Foreground="#38BDF8" />
+                                    <TextBlock Grid.Column="3" Text="100% (Strict)" FontSize="10.5" FontWeight="Bold" Foreground="#34D399" />
+                                    <TextBlock Grid.Column="4" Text="Très Élevé (Vérifié)" FontSize="10.5" FontWeight="Bold" Foreground="#FBBF24" />
+                                </Grid>
+                            </Border>
+
+                            <!-- Row 3: Autonomie & Action -->
+                            <Border Grid.Row="3" Grid.ColumnSpan="5" Background="#080E1C" Padding="8,6" Margin="0,0,0,2">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.4*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="1.2*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Capacité d'Action Autonome" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Grid.Column="1" Text="Nulle (Texte seul)" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" />
+                                    <TextBlock Grid.Column="2" Text="Nulle (Conseil)" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" />
+                                    <TextBlock Grid.Column="3" Text="Nulle (Donnée seule)" FontSize="10.5" Foreground="{StaticResource TextMutedBrush}" />
+                                    <TextBlock Grid.Column="4" Text="TOTALE (Tool Calling)" FontSize="10.5" FontWeight="Bold" Foreground="#FBBF24" />
+                                </Grid>
+                            </Border>
+
+                            <!-- Row 4: Complexité de mise en oeuvre -->
+                            <Border Grid.Row="4" Grid.ColumnSpan="5" Background="#060A12" Padding="8,6">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.4*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="1.2*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Complexité de déploiement" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Grid.Column="1" Text="Immédiat (0 jour)" FontSize="10.5" Foreground="#10B981" />
+                                    <TextBlock Grid.Column="2" Text="Faible (Prompt/RAG)" FontSize="10.5" Foreground="#10B981" />
+                                    <TextBlock Grid.Column="3" Text="Moyenne (Schéma)" FontSize="10.5" Foreground="#F59E0B" />
+                                    <TextBlock Grid.Column="4" Text="Moyenne+ (Outils/MCP)" FontSize="10.5" Foreground="#F59E0B" />
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
