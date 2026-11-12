@@ -444,6 +444,14 @@ public sealed class FoundryClient : IDisposable
                 "The user prompt cannot be empty.",
                 nameof(userPrompt));
         }
+        int estimatedInputTokens = (systemPrompt.Length + userPrompt.Length) / 3;
+        if (estimatedInputTokens + maxTokens > 4150)
+        {
+            if (estimatedInputTokens < 3900)
+            {
+                maxTokens = Math.Max(200, 4150 - estimatedInputTokens);
+            }
+        }
 
         FoundryModel selectedModel =
             await GetBestModelAsync(
@@ -490,6 +498,14 @@ public sealed class FoundryClient : IDisposable
         {
             throw new ArgumentNullException(
                 nameof(onChunkReceived));
+        }
+        int estimatedInputTokens = (systemPrompt.Length + userPrompt.Length) / 3;
+        if (estimatedInputTokens + maxTokens > 4150)
+        {
+            if (estimatedInputTokens < 3900)
+            {
+                maxTokens = Math.Max(200, 4150 - estimatedInputTokens);
+            }
         }
 
         FoundryModel selectedModel =
@@ -666,6 +682,51 @@ public sealed class FoundryClient : IDisposable
             inner);
     }
 
+    private static (string adjustedPrompt, int adjustedMaxTokens) AutoClampContextForFoundry(
+        string systemPrompt,
+        string userPrompt,
+        string errorDetails,
+        int requestedMaxTokens)
+    {
+        int maxContext = 4224;
+        int inputTokens = (systemPrompt.Length + userPrompt.Length) / 3;
+
+        try
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(
+                errorDetails,
+                @"(\d+)\s+input\s+\+\s+(\d+)\s+output.*?(\d+)\s+tokens",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+            if (match.Success)
+            {
+                inputTokens = int.Parse(match.Groups[1].Value);
+                int parsedMaxContext = int.Parse(match.Groups[3].Value);
+                if (parsedMaxContext > 1000)
+                {
+                    maxContext = parsedMaxContext;
+                }
+            }
+        }
+        catch { }
+
+        // If the input prompt alone consumes almost all context (leaving < 350 tokens for output)
+        if (inputTokens > maxContext - 350)
+        {
+            int targetChars = Math.Min(userPrompt.Length, 7500);
+            int half = (targetChars - 120) / 2;
+            string head = userPrompt.Substring(0, Math.Min(half, userPrompt.Length));
+            string tail = userPrompt.Substring(Math.Max(0, userPrompt.Length - half));
+            string truncated = head + "\n\n[... Troncature automatique : contexte condensé pour respecter la limite du modèle ...]\n\n" + tail;
+
+            return (truncated, 500);
+        }
+
+        // Input fits, but input + maxTokens exceeded context length
+        int safeTokens = Math.Clamp(maxContext - inputTokens - 40, 150, requestedMaxTokens);
+        return (userPrompt, safeTokens);
+    }
+
     public async Task<FoundryInferenceResult> AskAsync(
         FoundryModel model,
         string systemPrompt,
@@ -793,6 +854,14 @@ public sealed class FoundryClient : IDisposable
                     {
                         return await AskAsync(model, systemPrompt, userPrompt, temperature, maxTokens, cancellationToken, isRetry: true);
                     }
+                }
+
+                if (!isRetry && (responseJson.Contains("maximum context length", StringComparison.OrdinalIgnoreCase) ||
+                                 responseJson.Contains("exceeds the model's", StringComparison.OrdinalIgnoreCase) ||
+                                 responseJson.Contains("shorten your input", StringComparison.OrdinalIgnoreCase)))
+                {
+                    var (adjustedPrompt, safeTokens) = AutoClampContextForFoundry(systemPrompt, userPrompt, responseJson, maxTokens);
+                    return await AskAsync(model, systemPrompt, adjustedPrompt, temperature, safeTokens, cancellationToken, isRetry: true);
                 }
 
                 throw new FoundryClientException(
@@ -1028,6 +1097,14 @@ public sealed class FoundryClient : IDisposable
                     {
                         return await AskStreamingAsync(model, systemPrompt, userPrompt, onChunkReceived, temperature, maxTokens, cancellationToken, isRetry: true);
                     }
+                }
+
+                if (!isRetry && (errorBody.Contains("maximum context length", StringComparison.OrdinalIgnoreCase) ||
+                                 errorBody.Contains("exceeds the model's", StringComparison.OrdinalIgnoreCase) ||
+                                 errorBody.Contains("shorten your input", StringComparison.OrdinalIgnoreCase)))
+                {
+                    var (adjustedPrompt, safeTokens) = AutoClampContextForFoundry(systemPrompt, userPrompt, errorBody, maxTokens);
+                    return await AskStreamingAsync(model, systemPrompt, adjustedPrompt, onChunkReceived, temperature, safeTokens, cancellationToken, isRetry: true);
                 }
 
                 throw new FoundryClientException(

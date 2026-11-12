@@ -1971,6 +1971,13 @@ public partial class AudioStudioView : UserControl, IDisposable
                 $"You are an expert bilingual interpreter. Translate the following meeting transcript into {langEnglishName}. " +
                 "Preserve the [Speaker] labels at the start of each line. Output ONLY the translated transcript, without any introduction or commentary.";
 
+            if (sourceTranscript.Length > 8500)
+            {
+                sourceTranscript = TruncateTranscriptForContext(sourceTranscript, 8500, isEn);
+            }
+            int estimatedTransTokens = (sysPrompt.Length + sourceTranscript.Length) / 3;
+            int safeTransTokens = Math.Clamp(4150 - estimatedTransTokens, 300, 1000);
+
             bool firstChunk = true;
             var selectedModel = await _foundryClient.GetBestModelAsync("phi-4-mini", targetSilicon);
 
@@ -1992,12 +1999,12 @@ public partial class AudioStudioView : UserControl, IDisposable
                     }));
                 },
                 temperature: 0.1,
-                maxTokens: 1000);
+                maxTokens: safeTransTokens);
 
             // Fallback sync si le streaming n'a rien produit
             if (string.IsNullOrWhiteSpace(bodyTxt.Text) || bodyTxt.Text.StartsWith("⏳"))
             {
-                var syncResult = await _foundryClient.AskAsync(selectedModel, sysPrompt, sourceTranscript, temperature: 0.1, maxTokens: 1000);
+                var syncResult = await _foundryClient.AskAsync(selectedModel, sysPrompt, sourceTranscript, temperature: 0.1, maxTokens: safeTransTokens);
                 bodyTxt.Text = syncResult.Content;
                 result = syncResult;
             }
@@ -2064,25 +2071,36 @@ public partial class AudioStudioView : UserControl, IDisposable
                 ? "You are an elite executive AI assistant. You faithfully and rigorously summarize corporate meetings."
                 : "Tu es un assistant exécutif d'élite. Tu synthétises fidèlement et rigoureusement les réunions.";
 
+            // Protection dépassement contexte (fenêtre de 4224 tokens de Phi-4-mini dans Foundry Local)
+            string condensedTranscript = TruncateTranscriptForContext(
+                _fullAccumulatedTranscript.Trim(),
+                maxChars: 8500,
+                isEn: isEn);
+
             string prompt = isEn
-                ? $"Here is the complete transcript of a corporate meeting with identified speakers:\n\n" +
-                  $"{_fullAccumulatedTranscript.Trim()}\n\n" +
+                ? $"Here is the transcript of a corporate meeting with identified speakers:\n\n" +
+                  $"{condensedTranscript}\n\n" +
                   $"As an executive AI assistant, write a structured executive summary in English in 3 points:\n" +
                   $"1. Main topic and context\n" +
                   $"2. Key points and decisions made by each participant\n" +
                   $"3. Action items and next steps"
-                : $"Voici la transcription complète d'une réunion d'entreprise avec les locuteurs identifiés :\n\n" +
-                  $"{_fullAccumulatedTranscript.Trim()}\n\n" +
+                : $"Voici la transcription d'une réunion d'entreprise avec les locuteurs identifiés :\n\n" +
+                  $"{condensedTranscript}\n\n" +
                   $"En tant qu'assistant de direction IA, rédige une synthèse exécutive structurée en 3 points en français :\n" +
                   $"1. Sujet principal et contexte\n" +
                   $"2. Points clés et décisions prises par chaque intervenant\n" +
                   $"3. Plan d'actions et prochaines étapes";
 
+            int estimatedTokens = (systemPrompt.Length + prompt.Length) / 3;
+            int safeMaxTokens = Math.Clamp(4150 - estimatedTokens, 300, 700);
+
             var selectedModel = await _foundryClient.GetBestModelAsync("phi-4-mini", targetSilicon);
             var result = await _foundryClient.AskAsync(
                 selectedModel,
                 systemPrompt,
-                prompt
+                prompt,
+                temperature: 0.2,
+                maxTokens: safeMaxTokens
             );
 
             TxtMeetingSummary.Text = result.Content;
@@ -2106,6 +2124,38 @@ public partial class AudioStudioView : UserControl, IDisposable
         {
             BtnSummarizeMeeting.IsEnabled = true;
         }
+    }
+
+    private static string TruncateTranscriptForContext(string transcript, int maxChars, bool isEn)
+    {
+        if (string.IsNullOrWhiteSpace(transcript) || transcript.Length <= maxChars)
+        {
+            return transcript;
+        }
+
+        // Garde ~50% début (contexte, ordre du jour) et ~50% fin (conclusions, décisions, actions)
+        int sliceLen = (maxChars - 250) / 2;
+        string head = transcript.Substring(0, sliceLen);
+        string tail = transcript.Substring(transcript.Length - sliceLen);
+
+        int lastNewlineHead = head.LastIndexOf('\n');
+        if (lastNewlineHead > sliceLen / 2)
+        {
+            head = head.Substring(0, lastNewlineHead);
+        }
+
+        int firstNewlineTail = tail.IndexOf('\n');
+        if (firstNewlineTail > 0 && firstNewlineTail < sliceLen / 2)
+        {
+            tail = tail.Substring(firstNewlineTail + 1);
+        }
+
+        int omittedCount = transcript.Length - head.Length - tail.Length;
+        string notice = isEn
+            ? $"\n\n[... Meeting transcript condensed: {omittedCount} intermediate characters omitted to fit within AI context window ...]\n\n"
+            : $"\n\n[... Transcription condensée : {omittedCount} caractères intermédiaires omis pour respecter la fenêtre de contexte IA ...]\n\n";
+
+        return head.TrimEnd() + notice + tail.TrimStart();
     }
 
     private void BtnCopyText_Click(object sender, RoutedEventArgs e)
