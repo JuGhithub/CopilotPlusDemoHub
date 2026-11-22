@@ -114,7 +114,7 @@
                                     <TextBlock x:Name="LblTpmBadge" Text="🔒 TPM 2.0 Scellé" FontSize="10.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" ToolTip="Toutes les empreintes vocales sont chiffrées avec la clé matérielle unique de ce PC" />
                                 </Border>
                                 <TextBlock x:Name="LblAudioLanguageLabel" Text="Langue :" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,4,0" />
-                                <ComboBox x:Name="CmbLanguage" SelectedIndex="0" Width="140" Height="26" Background="#1E293B" Foreground="White" BorderBrush="{StaticResource CardBorderBrush}" SelectionChanged="CmbLanguage_SelectionChanged">
+                                <ComboBox x:Name="CmbLanguage" SelectedIndex="1" Width="140" Height="26" Background="#1E293B" Foreground="White" BorderBrush="{StaticResource CardBorderBrush}" SelectionChanged="CmbLanguage_SelectionChanged">
                                     <ComboBoxItem x:Name="CmbItemAuto" Content="🌐 Auto (Priorité FR)" Tag="auto" />
                                     <ComboBoxItem Content="🇫🇷 Français" Tag="&lt;|fr|&gt;" />
                                     <ComboBoxItem Content="🇬🇧 English" Tag="&lt;|en|&gt;" />

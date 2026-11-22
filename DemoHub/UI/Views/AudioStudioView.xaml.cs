@@ -2358,6 +2358,10 @@ public partial class AudioStudioView : UserControl, IDisposable
         if (LblAudioLanguageLabel != null) LblAudioLanguageLabel.Text = _localizer.Get("Audio_LangLabel");
         if (LblAudioTranslateLabel != null) LblAudioTranslateLabel.Text = (_localizer.CurrentLanguage == "en") ? "Translate:" : "Traduire :";
         if (CmbItemAuto != null) CmbItemAuto.Content = (_localizer.CurrentLanguage == "en") ? "🌐 Auto (FR/EN)" : "🌐 Auto (Priorité FR)";
+        if (CmbLanguage != null && !_isViewLoaded)
+        {
+            CmbLanguage.SelectedIndex = (_localizer.CurrentLanguage == "en") ? 2 : 1;
+        }
         if (CmbTrItemNone != null) CmbTrItemNone.Content = (_localizer.CurrentLanguage == "en") ? "🚫 None" : "🚫 Aucune";
         if (CmbTranslate != null) CmbTranslate.ToolTip = (_localizer.CurrentLanguage == "en")
             ? "Translate each sentence into the chosen language (English: native Whisper; other languages: local Phi-4-mini)"
