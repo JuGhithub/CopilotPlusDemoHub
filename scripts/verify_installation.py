@@ -249,6 +249,7 @@ def check_models():
     expected_items = [
         ("yolov8s-world_openvino_model", "Modele OpenVINO Vision YOLOv8-World", True),
         ("yolov8n-seg_openvino_model", "Modele OpenVINO Gomme Magique YOLOv8-Seg", True),
+        ("whisper-large-v3-turbo-int8-ov", "Modele Whisper Large v3 Turbo OpenVINO (Ultra-haute precision)", True),
         ("whisper-tiny-fp16-ov", "Modele Whisper Tiny OpenVINO (Transcription rapide)", True),
         ("whisper-base-fp16-ov", "Modele Whisper Base OpenVINO (Transcription haute precision)", True),
         ("speaker", "Modele Biometrie Vocale Locuteur", True),

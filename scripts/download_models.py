@@ -67,6 +67,7 @@ def download_whisper_models(force=False):
     models = [
         ("whisper-tiny-fp16-ov", "OpenVINO/whisper-tiny-fp16-ov", "Whisper Tiny (Ultra-rapide)"),
         ("whisper-base-fp16-ov", "OpenVINO/whisper-base-fp16-ov", "Whisper Base (Haute précision)"),
+        ("whisper-large-v3-turbo-int8-ov", "OpenVINO/whisper-large-v3-turbo-int8-ov", "Whisper Large v3 Turbo INT8 (Ultra-haute precision)"),
         ("whisper-small-fp16-ov", "OpenVINO/whisper-small-fp16-ov", "Whisper Small (Transcription en direct)")
     ]
     ok_all = True

@@ -23,7 +23,7 @@ def main():
     parser.add_argument("--output", required=True, help="Path to output WAV file")
     parser.add_argument("--device", default="NPU", choices=["NPU", "GPU", "CPU"], help="Whisper compute device")
     parser.add_argument("--language", default="<|fr|>", help="Language token (<|fr|>, <|en|>, etc.)")
-    parser.add_argument("--model_dir", default="models/whisper-small-fp16-ov", help="Path to OpenVINO Whisper model")
+    parser.add_argument("--model_dir", default="models/whisper-large-v3-turbo-int8-ov", help="Path to OpenVINO Whisper model")
     parser.add_argument("--samplerate", type=int, default=16000, help="Audio sample rate (default 16000)")
     parser.add_argument("--translate_to", default="none", help="Langue cible de traduction Whisper ('en') ou 'none'. Les autres langues sont traduites côté application (LLM).")
     args = parser.parse_args()
@@ -43,7 +43,7 @@ def main():
         found = False
         for _ in range(6):
             # small (meilleur) puis base puis tiny : on prend le premier modèle réellement installé
-            for name in ("whisper-small-fp16-ov", "whisper-base-fp16-ov", "whisper-tiny-fp16-ov"):
+            for name in ("whisper-large-v3-turbo-int8-ov", "whisper-small-fp16-ov", "whisper-base-fp16-ov", "whisper-tiny-fp16-ov"):
                 cand = os.path.abspath(os.path.join(cur, "models", name))
                 if os.path.isdir(cand) and os.path.exists(os.path.join(cand, "openvino_encoder_model.xml")):
                     model_path = cand

@@ -32,7 +32,7 @@
                         <Border x:Name="BadgeModelContainer" Background="#162238" BorderBrush="{StaticResource CopilotBlueBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,10,0" VerticalAlignment="Center" ToolTip="Modèle d'Intelligence Artificielle exécuté localement">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="🧠" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center" />
-                                <TextBlock x:Name="TxtModelBadge" Text="Modèle : OpenAI Whisper (Tiny/Base FP16 OpenVINO)" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
+                                <TextBlock x:Name="TxtModelBadge" Text="Modèle : OpenAI Whisper Large v3 Turbo (INT8 NPU)" FontSize="11.5" FontWeight="SemiBold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                         </Border>
                         <Button x:Name="BtnDocHelp" Style="{StaticResource ModernButtonStyle}"
@@ -105,7 +105,7 @@
 
                             <!-- Current File Info Badge -->
                             <Border Grid.Column="10" Background="#0A101D" CornerRadius="4" Padding="10,4" VerticalAlignment="Center" Margin="0,0,8,0">
-                                <TextBlock x:Name="LblLoadedTrackInfo" Text="Fichier actif : reunion_codir.wav (22.3s • Whisper Small NPU)" FontSize="11" Foreground="{StaticResource CopilotCyanBrush}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock x:Name="LblLoadedTrackInfo" Text="Fichier actif : reunion_codir.wav (22.3s • Whisper Large v3 Turbo NPU)" FontSize="11" Foreground="{StaticResource CopilotCyanBrush}" TextTrimming="CharacterEllipsis" />
                             </Border>
 
                             <!-- Language hint, Auto-Detect & TPM Badge -->
@@ -392,7 +392,7 @@
                                     </Grid>
                                     <Grid Margin="0,0,0,8">
                                         <TextBlock x:Name="LblModelLoadedLabel" Text="Modèle IA chargé :" FontSize="10" Foreground="{StaticResource TextMutedBrush}" />
-                                        <TextBlock x:Name="LblModelLoadedValue" Text="Whisper Small FP16 (OpenVINO NPU)" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
+                                        <TextBlock x:Name="LblModelLoadedValue" Text="Whisper Large v3 Turbo INT8 (OpenVINO NPU)" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" HorizontalAlignment="Right" />
                                     </Grid>
                                     <ProgressBar x:Name="PrgTranscription" Height="4" Minimum="0" Maximum="100" Value="0" Foreground="{StaticResource NpuGreenBrush}" Background="#1E293B" />
                                 </StackPanel>
@@ -433,7 +433,7 @@
                             <TextBlock Grid.Row="0" Grid.Column="2" x:Name="LblDsiCol3" Text="NPU INTEL AI BOOST (Dédié)" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" Margin="0,0,0,8" />
 
                             <!-- Row 1: Vitesse -->
-                            <TextBlock Grid.Row="1" Grid.Column="0" x:Name="LblDsiRow1Crit" Text="Vitesse de transcription (Whisper Small)" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,5" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" x:Name="LblDsiRow1Crit" Text="Vitesse de transcription (Whisper Large v3 Turbo)" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,5" />
                             <TextBlock Grid.Row="1" Grid.Column="1" x:Name="LblDsiRow1Gpu" Text="~ 15 - 20x temps réel (~ 700 ms)" Foreground="{StaticResource DangerRedBrush}" Margin="0,5" />
                             <TextBlock Grid.Row="1" Grid.Column="2" x:Name="LblDsiRow1Npu" Text="~ 25 - 30x temps réel (~ 500 ms • 100% Hors-ligne)" Foreground="{StaticResource NpuGreenBrush}" FontWeight="SemiBold" Margin="0,5" />
 

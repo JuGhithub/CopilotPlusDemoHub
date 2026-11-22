@@ -27,7 +27,7 @@ def load_whisper_and_speaker(model_dir_arg, requested_device):
     if not os.path.isabs(model_path) or not os.path.exists(os.path.join(model_path, "openvino_encoder_model.xml")):
         cur = script_dir
         for _ in range(6):
-            for folder in ("whisper-small-fp16-ov", "whisper-base-fp16-ov", "whisper-tiny-fp16-ov"):
+            for folder in ("whisper-large-v3-turbo-int8-ov", "whisper-small-fp16-ov", "whisper-base-fp16-ov", "whisper-tiny-fp16-ov"):
                 cand = os.path.abspath(os.path.join(cur, "models", folder))
                 if os.path.isdir(cand) and os.path.exists(os.path.join(cand, "openvino_encoder_model.xml")):
                     model_path = cand
@@ -251,7 +251,7 @@ def main():
     parser.add_argument("--daemon", action="store_true", help="Keep Whisper pipeline warm in memory and accept JSON jobs on stdin")
     parser.add_argument("--device", default="NPU", choices=["NPU", "GPU", "CPU"], help="Hardware accelerator")
     parser.add_argument("--language", default="<|fr|>", help="Language token, e.g. <|fr|> or <|en|>")
-    parser.add_argument("--model_dir", default="models/whisper-small-fp16-ov", help="Path to OpenVINO Whisper model")
+    parser.add_argument("--model_dir", default="models/whisper-large-v3-turbo-int8-ov", help="Path to OpenVINO Whisper model")
     parser.add_argument("--translate_to", default="none", help="Langue cible de traduction Whisper ('en') ou 'none'.")
     args = parser.parse_args()
 

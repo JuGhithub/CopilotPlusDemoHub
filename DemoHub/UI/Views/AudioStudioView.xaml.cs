@@ -100,7 +100,7 @@ public partial class AudioStudioView : UserControl, IDisposable
 
         // Default sample meeting audio
         string defaultAudio = FindRootFile(System.IO.Path.Combine("Data", "Audio", "reunion_codir.wav"));
-        LoadAudioFile(defaultAudio, "reunion_codir.wav (22s • Whisper Small NPU)");
+        LoadAudioFile(defaultAudio, "reunion_codir.wav (22s • Whisper Large v3 Turbo NPU)");
 
         // Playback timer (100ms)
         _playbackTimer = new DispatcherTimer
@@ -925,15 +925,22 @@ public partial class AudioStudioView : UserControl, IDisposable
                         if (type == "model_loaded")
                         {
                             int loadMs = root.GetProperty("load_time_ms").GetInt32();
-                            string model = root.GetProperty("model").GetString() ?? "Whisper";
+                            string model = root.GetProperty("model").GetString() ?? "Whisper Large v3 Turbo";
                             string effLoad = root.TryGetProperty("effective_device", out var edl) ? (edl.GetString() ?? deviceStr) : deviceStr;
                             bool fbLoad = root.TryGetProperty("fallback", out var fbl) && fbl.ValueKind == JsonValueKind.True;
                             string loadDevDisplay = fbLoad ? $"{effLoad} (repli)" : effLoad;
                             Dispatcher.Invoke(() =>
                             {
+                                string friendlyModel = model.Contains("large-v3-turbo", StringComparison.OrdinalIgnoreCase)
+                                    ? "Whisper Large v3 Turbo INT8"
+                                    : model;
+                                if (LblModelLoadedValue != null)
+                                {
+                                    LblModelLoadedValue.Text = $"{friendlyModel} ({loadDevDisplay})";
+                                }
                                 LblTranscriptionStatus.Text = (_localizer.CurrentLanguage == "en")
-                                    ? $"Model {model} loaded on {loadDevDisplay} in {loadMs} ms. Decoding speech..."
-                                    : $"Modèle {model} chargé sur {loadDevDisplay} en {loadMs} ms. Décodage et reconnaissance vocale en cours...";
+                                    ? $"Model {friendlyModel} loaded on {loadDevDisplay} in {loadMs} ms. Decoding speech..."
+                                    : $"Modèle {friendlyModel} chargé sur {loadDevDisplay} en {loadMs} ms. Décodage et reconnaissance vocale en cours...";
                             });
                         }
                         else if (type == "chunk")
@@ -2334,13 +2341,13 @@ public partial class AudioStudioView : UserControl, IDisposable
         if (TxtModelBadge != null)
         {
             TxtModelBadge.Text = isEn
-                ? "Model: OpenAI Whisper (Tiny/Base FP16 OpenVINO)"
-                : "Modèle : OpenAI Whisper (Tiny/Base FP16 OpenVINO)";
+                ? "Model: OpenAI Whisper Large v3 Turbo (INT8 NPU)"
+                : "Modèle : OpenAI Whisper Large v3 Turbo (INT8 NPU)";
             if (BadgeModelContainer != null)
             {
                 BadgeModelContainer.ToolTip = isEn
-                    ? "OpenAI Whisper FP16 speech recognition and transcription model compiled for Copilot+ NPU/GPU."
-                    : "Modèle de reconnaissance vocale et transcription automatique OpenAI Whisper FP16 compilé pour NPU/GPU Copilot+ PC.";
+                    ? "OpenAI Whisper Large v3 Turbo INT8 speech recognition & transcription model (809M params) compiled for Copilot+ NPU/GPU."
+                    : "Modèle de reconnaissance vocale et transcription automatique OpenAI Whisper Large v3 Turbo INT8 (809M paramètres) compilé pour NPU/GPU Copilot+ PC.";
             }
         }
         if (LblTpmBadge != null)
@@ -2435,7 +2442,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         if (LblDsiCol2 != null) LblDsiCol2.Text = isEn ? $"{SiliconDetector.GpuName} (Shared)" : $"{SiliconDetector.GpuName} (Partagé)";
         if (LblDsiCol3 != null) LblDsiCol3.Text = isEn ? $"{SiliconDetector.NpuName} (Dedicated)" : $"{SiliconDetector.NpuName} (Dédié)";
 
-        if (LblDsiRow1Crit != null) LblDsiRow1Crit.Text = isEn ? "Transcription speed (Whisper Small)" : "Vitesse de transcription (Whisper Small)";
+        if (LblDsiRow1Crit != null) LblDsiRow1Crit.Text = isEn ? "Transcription speed (Whisper Large v3 Turbo)" : "Vitesse de transcription (Whisper Large v3 Turbo)";
         if (LblDsiRow1Gpu != null) LblDsiRow1Gpu.Text = isEn ? "~ 15 - 20x real-time (~ 700 ms)" : "~ 15 - 20x temps réel (~ 700 ms)";
         if (LblDsiRow1Npu != null) LblDsiRow1Npu.Text = isEn ? "~ 25 - 30x real-time (~ 500 ms • 100% Offline)" : "~ 25 - 30x temps réel (~ 500 ms • 100% Hors-ligne)";
 
