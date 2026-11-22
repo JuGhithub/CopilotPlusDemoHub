@@ -34,6 +34,10 @@ public class FleetTelemetryRecord
     public string Status { get; set; } = "SUCCESS";
     public string MetadataJson { get; set; } = string.Empty;
 
+    /// <summary>Ligne d'exemple (injectée au premier lancement) : ne provient d'aucune mesure réelle.</summary>
+    public bool IsSample => MetadataJson.Contains("\"sample\":true", StringComparison.Ordinal);
+    public string DisplayDemoName => IsSample ? $"{DemoName} · exemple" : DemoName;
+
     public string FormattedLatency => $"{ExecutionTimeMs} ms";
     public string FormattedPower => $"~{EstimatedPowerWatts:F1} W";
     public string FormattedEnergy => $"{EnergyJoules:F3} J";
@@ -72,6 +76,9 @@ public class FleetAnalyticsSummary
     public double AverageLatencyGpuMs { get; set; }
     public double AverageLatencyCpuMs { get; set; }
     public double MaxPerformanceDriftPercent { get; set; }
+
+    /// <summary>Vrai tant qu'aucune mesure réelle n'existe : les KPI reposent alors sur les lignes d'exemple.</summary>
+    public bool IncludesSampleData { get; set; }
 }
 
 public sealed class EnterpriseTelemetryService
@@ -218,12 +225,48 @@ public sealed class EnterpriseTelemetryService
                 using var cmd = new SqliteCommand(ddl, connection);
                 cmd.ExecuteNonQuery();
 
+                TagLegacySampleRows(connection);
                 SeedInitialDataIfEmpty(connection);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Telemetry Init DB Error: {ex.Message}]");
             }
+        }
+    }
+
+    // Signatures des 7 lignes d'exemple injectées par les versions précédentes (MetadataJson = '{}').
+    private static readonly (string Demo, int Ms, double Joules)[] LegacySeedSignatures =
+    {
+        ("Gomme Magique - Détection", 13, 0.029),
+        ("Gomme Magique - Effacement", 45, 0.099),
+        ("Avatar Studio 3D", 4680, 71.136),
+        ("Audio Studio - Diarisation", 850, 2.125),
+        ("Audio Studio - Diarisation", 3450, 89.700),
+        ("Opérations Industrielles", 420, 0.924),
+        ("Ingénierie & RAG Technique", 910, 2.002)
+    };
+
+    private void TagLegacySampleRows(SqliteConnection connection)
+    {
+        try
+        {
+            foreach (var s in LegacySeedSignatures)
+            {
+                using var cmd = new SqliteCommand(
+                    "UPDATE AiFleetAuditLog SET MetadataJson = '{\"sample\":true}' " +
+                    "WHERE (MetadataJson IS NULL OR MetadataJson = '{}') AND DemoName = $d " +
+                    "AND ExecutionTimeMs = $ms AND ABS(EnergyJoules - $j) < 0.0005",
+                    connection);
+                cmd.Parameters.AddWithValue("$d", s.Demo);
+                cmd.Parameters.AddWithValue("$ms", s.Ms);
+                cmd.Parameters.AddWithValue("$j", s.Joules);
+                cmd.ExecuteNonQuery();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Telemetry Tag Legacy Samples Error: {ex.Message}]");
         }
     }
 
@@ -286,7 +329,7 @@ public sealed class EnterpriseTelemetryService
                 insertCmd.Parameters.AddWithValue("$fb", s.Fallback);
                 insertCmd.Parameters.AddWithValue("$drift", s.Drift);
                 insertCmd.Parameters.AddWithValue("$st", s.Fallback == 1 ? "ANOMALY_FALLBACK" : (s.Drift > 25 ? "ANOMALY_DRIFT" : "SUCCESS"));
-                insertCmd.Parameters.AddWithValue("$meta", "{}");
+                insertCmd.Parameters.AddWithValue("$meta", "{\"sample\":true}");
 
                 insertCmd.ExecuteNonQuery();
             }
@@ -543,6 +586,18 @@ public sealed class EnterpriseTelemetryService
                     using var connection = new SqliteConnection(_connectionString);
                     connection.Open();
 
+                    // Les lignes d'exemple ne comptent dans les KPI que tant qu'aucune mesure réelle n'existe.
+                    long realCount;
+                    using (var realCmd = new SqliteCommand(
+                        "SELECT COUNT(*) FROM AiFleetAuditLog WHERE COALESCE(MetadataJson,'') NOT LIKE '%\"sample\":true%'",
+                        connection))
+                    {
+                        realCount = (long)(realCmd.ExecuteScalar() ?? 0L);
+                    }
+                    string sampleFilter = realCount > 0
+                        ? " WHERE COALESCE(MetadataJson,'') NOT LIKE '%\"sample\":true%' "
+                        : string.Empty;
+
                     string sql = @"
                         SELECT
                             COUNT(*) as Total,
@@ -556,7 +611,7 @@ public sealed class EnterpriseTelemetryService
                             AVG(CASE WHEN EffectiveSilicon = 'GPU' THEN ExecutionTimeMs ELSE NULL END) as AvgGpuMs,
                             AVG(CASE WHEN EffectiveSilicon = 'CPU' THEN ExecutionTimeMs ELSE NULL END) as AvgCpuMs,
                             MAX(PerformanceDriftPercent) as MaxDrift
-                        FROM AiFleetAuditLog;
+                        FROM AiFleetAuditLog" + sampleFilter + @";
                     ";
 
                     using var cmd = new SqliteCommand(sql, connection);
@@ -564,6 +619,7 @@ public sealed class EnterpriseTelemetryService
                     if (reader.Read())
                     {
                         summary.TotalInferences = reader.GetInt32(0);
+                        summary.IncludesSampleData = realCount == 0 && summary.TotalInferences > 0;
                         summary.NpuInferences = reader.IsDBNull(1) ? 0 : reader.GetInt32(1);
                         summary.GpuInferences = reader.IsDBNull(2) ? 0 : reader.GetInt32(2);
                         summary.CpuInferences = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);

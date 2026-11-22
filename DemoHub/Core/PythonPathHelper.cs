@@ -110,19 +110,13 @@ public static class PythonPathHelper
     {
         try
         {
-            using var proc = Process.Start(new ProcessStartInfo
-            {
-                FileName = "py.exe",
-                Arguments = "-3 -c \"import sys;print(sys.executable)\"",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            });
-            if (proc == null) return null;
-            string output = proc.StandardOutput.ReadToEnd().Trim();
-            proc.WaitForExit(4000);
-            if (proc.ExitCode == 0 && IsRealPython(output))
+            var psi = new ProcessStartInfo { FileName = "py.exe" };
+            psi.ArgumentList.Add("-3");
+            psi.ArgumentList.Add("-c");
+            psi.ArgumentList.Add("import sys;print(sys.executable)");
+            var result = ProcessRunner.Run(psi, TimeSpan.FromSeconds(4));
+            string output = result.StdOut.Trim();
+            if (result.Success && IsRealPython(output))
             {
                 return output;
             }

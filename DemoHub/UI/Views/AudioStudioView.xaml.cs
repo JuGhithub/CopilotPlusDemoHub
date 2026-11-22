@@ -34,6 +34,9 @@ public partial class AudioStudioView : UserControl, IDisposable
     private string _whisperDaemonDevice = string.Empty;
     private readonly object _whisperDaemonLock = new();
 
+    // Dernières vitesses réellement mesurées par silicium (clé : "NPU" / "GPU" / "CPU").
+    private readonly Dictionary<string, (double Speed, int Ms)> _measuredSpeeds = new();
+
     private Process? _liveProcess;
     private bool _isLiveActive = false;
     private DispatcherTimer? _liveTimer;
@@ -1008,14 +1011,20 @@ public partial class AudioStudioView : UserControl, IDisposable
                                 LblSpeedFactor.Text = speedText;
                                 BadgeSpeedFactor.Visibility = Visibility.Visible;
                                 LblTranscriptionStatus.Text = string.Format(_localizer.Get("Audio_StatusComplete"), devDisplay);
+
+                                if (speedFactorRaw > 0)
+                                {
+                                    _measuredSpeeds[effectiveDevice.ToUpperInvariant()] = (speedFactorRaw, inferTimeMs);
+                                    RefreshMeasuredScorecard();
+                                }
                             });
 
                             var snap = _telemetryService.GetCurrentSnapshot();
                             string hwName = effectiveDevice.ToUpperInvariant().Contains("NPU")
-                                ? $"{SiliconDetector.NpuName} (Whisper Small)"
+                                ? $"{SiliconDetector.NpuName} (Whisper Large v3 Turbo)"
                                 : (effectiveDevice.ToUpperInvariant().Contains("GPU")
-                                    ? $"{SiliconDetector.GpuName} (Whisper Small)"
-                                    : $"{SiliconDetector.CpuName} (Whisper Small)");
+                                    ? $"{SiliconDetector.GpuName} (Whisper Large v3 Turbo)"
+                                    : $"{SiliconDetector.CpuName} (Whisper Large v3 Turbo)");
 
                             _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
                                 demoName: "Audio Studio - Transcription Diarisation",
@@ -1365,44 +1374,23 @@ public partial class AudioStudioView : UserControl, IDisposable
                     string json = JsonSerializer.Serialize(embedding);
                     File.WriteAllText(tempEmbFile, json);
 
-                    psi = new ProcessStartInfo
-                    {
-                        FileName = PythonPathHelper.GetPythonExe(),
-                        Arguments = $"\"{scriptPath}\" --action save_embedding --name \"{newName}\" --embedding_file \"{tempEmbFile}\"",
-                        WorkingDirectory = workingDir,
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true,
-                        StandardOutputEncoding = System.Text.Encoding.UTF8
-                    };
+                    psi = ProcessRunner.CreatePythonStartInfo(scriptPath, workingDir,
+                        "--action", "save_embedding", "--name", newName, "--embedding_file", tempEmbFile);
                 }
                 else
                 {
-                    psi = new ProcessStartInfo
-                    {
-                        FileName = PythonPathHelper.GetPythonExe(),
-                        Arguments = $"\"{scriptPath}\" --action save_from_audio --file \"{audioFile}\" --start {startSec.ToString(System.Globalization.CultureInfo.InvariantCulture)} --end {endSec.ToString(System.Globalization.CultureInfo.InvariantCulture)} --name \"{newName}\"",
-                        WorkingDirectory = workingDir,
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true,
-                        StandardOutputEncoding = System.Text.Encoding.UTF8
-                    };
+                    psi = ProcessRunner.CreatePythonStartInfo(scriptPath, workingDir,
+                        "--action", "save_from_audio", "--file", audioFile,
+                        "--start", startSec.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        "--end", endSec.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        "--name", newName);
                 }
 
-                using var proc = Process.Start(psi);
-                if (proc != null)
+                var procResult = ProcessRunner.Run(psi, TimeSpan.FromSeconds(120));
+                success = procResult.Success;
+                if (!success)
                 {
-                    string stdout = proc.StandardOutput.ReadToEnd();
-                    string stderr = proc.StandardError.ReadToEnd();
-                    proc.WaitForExit();
-                    success = (proc.ExitCode == 0);
-                    if (!success)
-                    {
-                        errorDetails = !string.IsNullOrWhiteSpace(stderr) ? stderr : stdout;
-                    }
+                    errorDetails = procResult.TimedOut ? "Délai dépassé (120 s)." : procResult.ErrorText;
                 }
             }
             catch (Exception ex)
@@ -1476,26 +1464,11 @@ public partial class AudioStudioView : UserControl, IDisposable
         {
             try
             {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = PythonPathHelper.GetPythonExe(),
-                    Arguments = $"\"{scriptPath}\" --action enroll_mic --name \"{name}\" --duration 5.0",
-                    WorkingDirectory = workingDir,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    StandardOutputEncoding = System.Text.Encoding.UTF8
-                };
-                using var proc = Process.Start(psi);
-                if (proc != null)
-                {
-                    string stdout = proc.StandardOutput.ReadToEnd();
-                    string stderr = proc.StandardError.ReadToEnd();
-                    proc.WaitForExit();
-                    success = (proc.ExitCode == 0);
-                    if (!success) err = !string.IsNullOrWhiteSpace(stderr) ? stderr : stdout;
-                }
+                var psi = ProcessRunner.CreatePythonStartInfo(scriptPath, workingDir,
+                    "--action", "enroll_mic", "--name", name, "--duration", "5.0");
+                var procResult = ProcessRunner.Run(psi, TimeSpan.FromSeconds(120));
+                success = procResult.Success;
+                if (!success) err = procResult.TimedOut ? "Délai dépassé (120 s)." : procResult.ErrorText;
             }
             catch (Exception ex)
             {
@@ -1564,26 +1537,11 @@ public partial class AudioStudioView : UserControl, IDisposable
         {
             try
             {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = PythonPathHelper.GetPythonExe(),
-                    Arguments = $"\"{scriptPath}\" --action save_from_audio --file \"{ofd.FileName}\" --name \"{name}\"",
-                    WorkingDirectory = workingDir,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    StandardOutputEncoding = System.Text.Encoding.UTF8
-                };
-                using var proc = Process.Start(psi);
-                if (proc != null)
-                {
-                    string stdout = proc.StandardOutput.ReadToEnd();
-                    string stderr = proc.StandardError.ReadToEnd();
-                    proc.WaitForExit();
-                    success = (proc.ExitCode == 0);
-                    if (!success) err = !string.IsNullOrWhiteSpace(stderr) ? stderr : stdout;
-                }
+                var psi = ProcessRunner.CreatePythonStartInfo(scriptPath, workingDir,
+                    "--action", "save_from_audio", "--file", ofd.FileName, "--name", name);
+                var procResult = ProcessRunner.Run(psi, TimeSpan.FromSeconds(120));
+                success = procResult.Success;
+                if (!success) err = procResult.TimedOut ? "Délai dépassé (120 s)." : procResult.ErrorText;
             }
             catch (Exception ex)
             {
@@ -1636,22 +1594,10 @@ public partial class AudioStudioView : UserControl, IDisposable
         {
             try
             {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = PythonPathHelper.GetPythonExe(),
-                    Arguments = $"\"{scriptPath}\" --action list",
-                    WorkingDirectory = workingDir,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    StandardOutputEncoding = System.Text.Encoding.UTF8
-                };
-
-                using var proc = Process.Start(psi);
-                if (proc == null) return;
-                string jsonOutput = proc.StandardOutput.ReadToEnd();
-                proc.WaitForExit();
+                var psi = ProcessRunner.CreatePythonStartInfo(scriptPath, workingDir, "--action", "list");
+                var listResult = ProcessRunner.Run(psi, TimeSpan.FromSeconds(60));
+                if (!listResult.Success) return;
+                string jsonOutput = listResult.StdOut;
 
                 using var doc = JsonDocument.Parse(jsonOutput);
                 var root = doc.RootElement;
@@ -1841,16 +1787,9 @@ public partial class AudioStudioView : UserControl, IDisposable
         {
             try
             {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = PythonPathHelper.GetPythonExe(),
-                    Arguments = $"\"{scriptPath}\" --action delete --name \"{profileName}\"",
-                    WorkingDirectory = workingDir,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-                using var proc = Process.Start(psi);
-                proc?.WaitForExit();
+                var psi = ProcessRunner.CreatePythonStartInfo(scriptPath, workingDir,
+                    "--action", "delete", "--name", profileName);
+                ProcessRunner.Run(psi, TimeSpan.FromSeconds(60));
             }
             catch { }
         });
@@ -2165,6 +2104,42 @@ public partial class AudioStudioView : UserControl, IDisposable
         return head.TrimEnd() + notice + tail.TrimStart();
     }
 
+    /// <summary>
+    /// Alimente la ligne « vitesse » et la synthèse DSI avec les mesures réelles du poste.
+    /// Tant qu'un silicium n'a pas été mesuré, on l'indique au lieu d'afficher un chiffre figé.
+    /// </summary>
+    private void RefreshMeasuredScorecard()
+    {
+        bool isEn = _localizer.CurrentLanguage == "en";
+
+        string Measured(string device)
+        {
+            if (_measuredSpeeds.TryGetValue(device, out var m) && m.Speed > 0)
+            {
+                return isEn
+                    ? $"{m.Speed:F1}x real-time ({m.Ms:N0} ms) • measured on this PC"
+                    : $"{m.Speed:F1}x temps réel ({m.Ms:N0} ms) • mesuré sur ce poste";
+            }
+            return isEn
+                ? $"Not measured yet: run a transcription on {device}"
+                : $"Non mesuré : lancez une transcription sur {device}";
+        }
+
+        if (LblDsiRow1Gpu != null) LblDsiRow1Gpu.Text = Measured("GPU");
+        if (LblDsiRow1Npu != null) LblDsiRow1Npu.Text = Measured("NPU");
+
+        if (LblDsiTakeaway != null)
+        {
+            string npuSpeed = _measuredSpeeds.TryGetValue("NPU", out var n) && n.Speed > 0
+                ? (isEn ? $" at {n.Speed:F1}x real-time speed (measured on this PC)" : $" à {n.Speed:F1}x la vitesse réelle (mesuré sur ce poste)")
+                : string.Empty;
+
+            LblDsiTakeaway.Text = isEn
+                ? $"DSI EXECUTIVE SUMMARY: Meeting and client call transcription is enterprise AI use case #1. With the dedicated NPU ({SiliconDetector.NpuName}) and the hardware TPM 2.0 security chip of Copilot+ PCs, transcription runs locally{npuSpeed} with no audio leaving the device. Biometric voiceprints are hardware-sealed, supporting GDPR (Art. 9) compliance with zero cloud exfiltration. Power figures shown above are internal estimates, not measurements."
+                : $"SYNTHÈSE DSI : La transcription de réunions et d'appels clients est le cas d'usage n°1 de l'IA vocale en entreprise. Avec le NPU dédié ({SiliconDetector.NpuName}) et la puce de sécurité matérielle TPM 2.0 du Copilot+ PC, la transcription s'exécute localement{npuSpeed}, sans qu'aucun audio ne quitte le poste. Les empreintes vocales biométriques sont scellées au matériel, ce qui soutient la conformité RGPD (Art. 9) sans fuite cloud. Les puissances affichées ci-dessus sont des estimations internes, pas des mesures.";
+        }
+    }
+
     private void BtnCopyText_Click(object sender, RoutedEventArgs e)
     {
         bool isEn = _localizer.CurrentLanguage == "en";
@@ -2225,7 +2200,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         StopAudio();
         string samplePath = FindRootFile(System.IO.Path.Combine("Data", "Audio", "reunion_codir.wav"));
 
-        LoadAudioFile(samplePath, (_localizer.CurrentLanguage == "en") ? "reunion_codir.wav (22s • Whisper Small NPU)" : "reunion_codir.wav (22s • Whisper Small NPU)");
+        LoadAudioFile(samplePath, (_localizer.CurrentLanguage == "en") ? "reunion_codir.wav (22s • Whisper Large v3 Turbo NPU)" : "reunion_codir.wav (22s • Whisper Large v3 Turbo NPU)");
         StackTranscriptSegments.Children.Clear();
         _transcriptSegments.Clear();
         TxtTranscriptPlaceholder.Visibility = Visibility.Visible;
@@ -2382,7 +2357,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         if (LblLoadedTrackInfo != null && !string.IsNullOrEmpty(_currentAudioPath))
         {
             string fileName = System.IO.Path.GetFileName(_currentAudioPath);
-            LblLoadedTrackInfo.Text = string.Format(_localizer.Get("Audio_ActiveFileLabel"), $"{fileName} • Whisper Small ({(_selectedSilicon == SiliconMode.NPU ? "NPU" : "GPU")})");
+            LblLoadedTrackInfo.Text = string.Format(_localizer.Get("Audio_ActiveFileLabel"), $"{fileName} • Whisper Large v3 Turbo ({(_selectedSilicon == SiliconMode.NPU ? "NPU" : "GPU")})");
         }
 
         // Playback controls
@@ -2448,12 +2423,12 @@ public partial class AudioStudioView : UserControl, IDisposable
         if (LblDsiCol3 != null) LblDsiCol3.Text = isEn ? $"{SiliconDetector.NpuName} (Dedicated)" : $"{SiliconDetector.NpuName} (Dédié)";
 
         if (LblDsiRow1Crit != null) LblDsiRow1Crit.Text = isEn ? "Transcription speed (Whisper Large v3 Turbo)" : "Vitesse de transcription (Whisper Large v3 Turbo)";
-        if (LblDsiRow1Gpu != null) LblDsiRow1Gpu.Text = isEn ? "~ 15 - 20x real-time (~ 700 ms)" : "~ 15 - 20x temps réel (~ 700 ms)";
-        if (LblDsiRow1Npu != null) LblDsiRow1Npu.Text = isEn ? "~ 25 - 30x real-time (~ 500 ms • 100% Offline)" : "~ 25 - 30x temps réel (~ 500 ms • 100% Hors-ligne)";
+        RefreshMeasuredScorecard();
 
         if (LblDsiRow2Crit != null) LblDsiRow2Crit.Text = isEn ? "Average absorbed power" : "Puissance moyenne absorbée";
-        if (LblDsiRow2Gpu != null) LblDsiRow2Gpu.Text = isEn ? "28 - 35 Watts (GPU heat & fan noise)" : "28 - 35 Watts (Surchauffe GPU & ventilation)";
-        if (LblDsiRow2Npu != null) LblDsiRow2Npu.Text = isEn ? "5 - 6 Watts (Ultra-low power • Cool chassis)" : "5 - 6 Watts (Régime ultra-sobre • Châssis froid)";
+        // Puissances : modèle d'estimation interne (mêmes constantes que la télémétrie de flotte), pas une mesure.
+        if (LblDsiRow2Gpu != null) LblDsiRow2Gpu.Text = isEn ? "≈ 16.5 W (internal estimate, not measured)" : "≈ 16,5 W (estimation interne, non mesurée)";
+        if (LblDsiRow2Npu != null) LblDsiRow2Npu.Text = isEn ? "≈ 2.2 W (internal estimate, not measured)" : "≈ 2,2 W (estimation interne, non mesurée)";
 
         if (LblDsiRow3Crit != null) LblDsiRow3Crit.Text = isEn ? "Availability for other apps" : "Disponibilité pour les autres apps";
         if (LblDsiRow3Gpu != null) LblDsiRow3Gpu.Text = isEn ? "GPU monopolized by audio (Screen lag risk)" : "GPU monopolisé par l'audio (Risque de saccades écran)";
@@ -2463,9 +2438,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         if (LblDsiRow4Gpu != null) LblDsiRow4Gpu.Text = isEn ? "Cloud / Unencrypted files (Exfiltration & theft risk)" : "Cloud / Fichiers non-chiffrés (Risque d'exfiltration & vol)";
         if (LblDsiRow4Npu != null) LblDsiRow4Npu.Text = isEn ? "100% Sealed into PC TPM 2.0 • Hardware master key" : "100% Scellé au TPM 2.0 du PC • Clé matérielle inviolable";
 
-        if (LblDsiTakeaway != null) LblDsiTakeaway.Text = isEn
-            ? $"DSI EXECUTIVE SUMMARY: Meeting and client call transcription is enterprise AI use case #1. With dedicated NPU ({SiliconDetector.NpuName}) and hardware TPM 2.0 (Microsoft Pluton) security chip on Copilot+ PCs, transcription executes locally at over 25x real-time speed consuming just 5.5W. Biometric voiceprints are hardware-sealed, ensuring native GDPR (Art. 9) compliance with zero cloud exfiltration."
-            : $"SYNTHÈSE DSI : La transcription de réunions et d'appels clients est le cas d'usage n°1 de l'IA vocale en entreprise. Avec le NPU dédié ({SiliconDetector.NpuName}) et la puce de sécurité matérielle TPM 2.0 (Microsoft Pluton) du Copilot+ PC, la transcription s'exécute localement à plus de 25x la vitesse réelle en consommant seulement 5.5W. Les empreintes vocales biométriques sont scellées au matériel, garantissant une conformité native RGPD (Art. 9) sans aucune fuite cloud.";
+        // LblDsiTakeaway : géré par RefreshMeasuredScorecard() (valeurs mesurées uniquement)
 
         // Modals
         if (LblModalRenameTitle != null) LblModalRenameTitle.Text = _localizer.Get("Audio_RenameTitle");

@@ -67,7 +67,9 @@ public partial class FleetTelemetryView : UserControl, IDisposable
             TxtKpiEsgSub.Text = string.Format(_localizer.Get("Fleet_KpiEsgSub"), summary.Co2AvoidedGrams);
 
             TxtKpiTotalVal.Text = summary.TotalInferences.ToString();
-            TxtKpiTotalSub.Text = _localizer.Get("Fleet_KpiTotalSub");
+            TxtKpiTotalSub.Text = summary.IncludesSampleData
+                    ? _localizer.Get("Fleet_SampleDataNotice")
+                    : _localizer.Get("Fleet_KpiTotalSub");
 
             // 2. Fetch Filtered Records
             string? demoFilter = (CmbFilterDemo?.SelectedItem as ComboBoxItem)?.Tag?.ToString();

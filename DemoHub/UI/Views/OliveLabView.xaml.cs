@@ -497,13 +497,9 @@ public partial class OliveLabView : UserControl, IDisposable
                         StandardOutputEncoding = System.Text.Encoding.UTF8
                     };
 
-                    using var proc = Process.Start(psi);
-                    if (proc != null)
-                    {
-                        jsonOutput = proc.StandardOutput.ReadToEnd();
-                        errorOutput = proc.StandardError.ReadToEnd();
-                        proc.WaitForExit();
-                    }
+                    var procResult = ProcessRunner.Run(psi);
+                    jsonOutput = procResult.StdOut;
+                    errorOutput = procResult.StdErr;
                 }
                 catch (Exception ex)
                 {

@@ -577,13 +577,14 @@ public sealed class FoundryClient : IDisposable
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = FindFoundryExecutable(),
-                    Arguments = $"model load \"{modelId}\"",
                     UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    CreateNoWindow = true
+                    // Sortie non redirigée volontairement : un tampon stdout/stderr jamais lu bloque le processus.
                 }
             };
+            proc.StartInfo.ArgumentList.Add("model");
+            proc.StartInfo.ArgumentList.Add("load");
+            proc.StartInfo.ArgumentList.Add(modelId);
             if (proc.Start())
             {
                 await proc.WaitForExitAsync(cancellationToken);
@@ -634,9 +635,8 @@ public sealed class FoundryClient : IDisposable
                     FileName = FindFoundryExecutable(),
                     Arguments = "server start",
                     UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    CreateNoWindow = true
+                    // Sortie non redirigée volontairement : le démon peut hériter des tubes et bloquer la lecture.
                 }
             };
             if (proc.Start())

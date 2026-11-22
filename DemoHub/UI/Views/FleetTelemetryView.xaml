@@ -208,7 +208,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding Id}" Width="50" />
                             <DataGridTextColumn Header="Date &amp; Heure" Binding="{Binding TimestampLocal}" Width="145" />
-                            <DataGridTextColumn Header="Démo / Action" Binding="{Binding DemoName}" Width="170" />
+                            <DataGridTextColumn Header="Démo / Action" Binding="{Binding DisplayDemoName}" Width="170" />
                             <DataGridTemplateColumn Header="Silicium Exécuté" Width="170">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -221,9 +221,9 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn Header="Latence" Binding="{Binding FormattedLatency}" Width="85" />
-                            <DataGridTextColumn Header="Puissance" Binding="{Binding FormattedPower}" Width="85" />
-                            <DataGridTextColumn Header="Énergie" Binding="{Binding FormattedEnergy}" Width="85" />
-                            <DataGridTextColumn Header="Économie NPU" Binding="{Binding FormattedSavedVsGpu}" Width="110" />
+                            <DataGridTextColumn Header="Puissance (est.)" Binding="{Binding FormattedPower}" Width="85" />
+                            <DataGridTextColumn Header="Énergie (est.)" Binding="{Binding FormattedEnergy}" Width="85" />
+                            <DataGridTextColumn Header="Économie NPU (est.)" Binding="{Binding FormattedSavedVsGpu}" Width="110" />
                             <DataGridTemplateColumn Header="Alerte &amp; Statut" Width="145">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
