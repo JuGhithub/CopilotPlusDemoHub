@@ -115,7 +115,7 @@
                                 </Border>
                                 <TextBlock x:Name="LblAudioLanguageLabel" Text="Langue :" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,0,4,0" />
                                 <ComboBox x:Name="CmbLanguage" SelectedIndex="0" Width="140" Height="26" Background="#1E293B" Foreground="White" BorderBrush="{StaticResource CardBorderBrush}" SelectionChanged="CmbLanguage_SelectionChanged">
-                                    <ComboBoxItem x:Name="CmbItemAuto" Content="🌐 Auto-Détection" Tag="auto" />
+                                    <ComboBoxItem x:Name="CmbItemAuto" Content="🌐 Auto (Priorité FR)" Tag="auto" />
                                     <ComboBoxItem Content="🇫🇷 Français" Tag="&lt;|fr|&gt;" />
                                     <ComboBoxItem Content="🇬🇧 English" Tag="&lt;|en|&gt;" />
                                     <ComboBoxItem Content="🇪🇸 Español" Tag="&lt;|es|&gt;" />

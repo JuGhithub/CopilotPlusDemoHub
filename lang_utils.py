@@ -23,7 +23,9 @@ _STOPWORDS = {
         suis es sommes êtes étaient était avons avez avait faut va vais allons allez vont dit dire voir vu
         même autre autres entre après avant depuis pendant contre sous vers chez jusqu parce pourquoi comment quand
         quel quelle quels quelles chaque plusieurs quelques rien personne jamais toujours encore déjà trop peu
-        beaucoup moins tant tellement vraiment ainsi pourtant cependant toutefois donc voilà""".split()),
+        beaucoup moins tant tellement vraiment ainsi pourtant cependant toutefois donc voilà
+        projet projets travail équipe équipes client clients semaine direction ordre accord parler parlé
+        temps réel données chiffres budget réunion réunions point points salut d'accord""".split()),
     "en": set("""the a an and is are was were be been being have has had having to of in on for with without that this
         these those it its we you they he she i me my mine our ours your yours their theirs his her hers not but or so
         very also as all there here what which who whom whose where when why how will would can could should shall may
@@ -187,6 +189,14 @@ def detect_language(text, fallback="fr"):
     best = max(scores, key=lambda k: scores[k])
     if scores[best] <= 0.0:
         return fallback
+
+    # Règle anti-faux-positif anglais sur le français d'entreprise :
+    # Si le texte contient des marqueurs grammaticaux français (articles, prépositions, verbes, élisions),
+    # les anglicismes ou termes métiers ("meeting", "status", "growth", "quarterly", "reporting")
+    # ne doivent pas faire basculer la langue en anglais sauf si l'anglais domine écrasamment sans grammaire française.
+    if scores.get("fr", 0.0) >= 1.5 and scores.get("en", 0.0) <= scores.get("fr", 0.0) + 2.5:
+        return "fr"
+
     if best == "fr" and scores["en"] == scores["fr"] and fallback == "en":
         return "en"
     return best
@@ -210,17 +220,15 @@ def is_hallucinated_or_junk(text):
 
 def smart_transcribe_turn(pipe, audio_samples, forced_lang=None, expected_lang="fr"):
     """
-    Transcrit un segment audio sur le NPU avec :
-    1. Sonde acoustique sans état (`_get_lang_probe_pipe()`) en mode Auto pour éviter
-       le verrouillage de langue du cache KV d'OpenVINO GenAI sur NPU.
-    2. Protection anti-répétition matérielle (`no_repeat_ngram_size = 3`, `repetition_penalty = 1.15`,
-       et plafond dynamique `max_new_tokens` proportionnel à la durée réelle du segment audio).
-    3. Nettoyage post-décodage (`clean_repetitions`) au cas où un motif plus long tenterait de boucler.
+    Transcrit un segment audio sur le NPU :
+    1. Si forced_lang est défini (ex: choix utilisateur 'Français' ou 'English'), l'applique directement.
+    2. En mode Auto-Détection, commence par expected_lang (défaut 'fr' en contexte français) sur le modèle Whisper Large v3 Turbo NPU.
+    3. Analyse la langue du texte complet transcrit. Si et seulement si le texte est indiscutablement dans une autre langue (ex: intervenant purement anglophone sans aucun mot français), rejoue le tour dans cette langue.
+    4. Évite le décrochage vers l'anglais lors de phrases françaises contenant des termes métiers ("quarterly", "status", "growth", "reporting").
     Retourne `(text, detected_lang, was_retried)`.
     """
     audio_list = audio_samples.tolist() if hasattr(audio_samples, "tolist") else list(audio_samples)
     duration_sec = max(0.5, len(audio_list) / 16000.0)
-    # Plafond dynamique proportionnel à la durée réelle (jusqu'à 256 tokens)
     dynamic_max_tokens = max(32, min(256, int(duration_sec * 12.0) + 32))
 
     cfg = pipe.get_generation_config()
@@ -230,35 +238,35 @@ def smart_transcribe_turn(pipe, audio_samples, forced_lang=None, expected_lang="
     cfg.repetition_penalty = 1.15
     cfg.max_new_tokens = dynamic_max_tokens
 
+    # 1. Langue explicitement forcée
     if forced_lang:
         cfg.language = lang_token(forced_lang)
         res = pipe.generate(audio_list, cfg)
         text = clean_repetitions(str(res).strip())
         return text, forced_lang, False
 
-    target_lang = expected_lang or "fr"
-    probe = _get_lang_probe_pipe()
-    if probe is not None:
-        try:
-            c_pr = probe.get_generation_config()
-            c_pr.task = "transcribe"
-            c_pr.language = None
-            c_pr.return_timestamps = False
-            c_pr.max_new_tokens = 10
-            c_pr.no_repeat_ngram_size = 3
-            probe_txt = str(probe.generate(audio_list[:64000], c_pr)).strip()
-            if probe_txt and not is_hallucinated_or_junk(probe_txt):
-                target_lang = detect_language(probe_txt, fallback=expected_lang or "fr")
-        except Exception:
-            pass
-
-    cfg.language = lang_token(target_lang)
+    # 2. Mode Auto : Ancrage prioritaire sur expected_lang (défaut 'fr')
+    primary_lang = expected_lang or "fr"
+    cfg.language = lang_token(primary_lang)
     res_npu = pipe.generate(audio_list, cfg)
     text_npu = clean_repetitions(str(res_npu).strip())
-    if not text_npu:
-        return "", target_lang, False
 
-    final_lang = detect_language(text_npu, fallback=target_lang)
+    if not text_npu:
+        return "", primary_lang, False
+
+    # 3. Détection sur le texte complet
+    detected = detect_language(text_npu, fallback=primary_lang)
+    scores = score_languages(text_npu)
+
+    # 4. Bascule vers une autre langue uniquement si preuve écrasante et quasi-zéro mot de la langue primaire
+    if detected != primary_lang and scores.get(detected, 0.0) >= 3.0 and scores.get(primary_lang, 0.0) <= 0.5:
+        cfg.language = lang_token(detected)
+        res_retry = pipe.generate(audio_list, cfg)
+        text_retry = clean_repetitions(str(res_retry).strip())
+        if text_retry and not is_hallucinated_or_junk(text_retry):
+            return text_retry, detected, True
+
+    final_lang = primary_lang if (scores.get(primary_lang, 0.0) > 0 or scores.get(detected, 0.0) < 2.5) else detected
     return text_npu, final_lang, False
 
 

@@ -188,10 +188,22 @@ def transcribe_file(file_path, language_arg, translate_to_arg, pipe, spk_mgr, mo
             detected_lang = forced_lang if forced_lang else detect_language(accumulated_text, fallback=lang_votes[0] if lang_votes else "fr")
         else:
             config.return_timestamps = True
+            # En mode auto, ancrer sur le français en premier pour éviter que Whisper ne traduise le français en anglais
+            if not forced_lang:
+                config.language = "<|fr|>"
             results = pipe.generate(audio.tolist(), config)
             infer_time_ms = int((time.perf_counter() - infer_start) * 1000)
             full_text_guess = " ".join(c.text for c in results.chunks) if hasattr(results, "chunks") and results.chunks else str(results)
             detected_lang = forced_lang if forced_lang else detect_language(full_text_guess, fallback="fr")
+
+            # Si l'audio s'avère être 100% en anglais (scores anglais écrasants sans mot français), rejouer en anglais
+            if not forced_lang and detected_lang == "en":
+                scores = score_languages(full_text_guess)
+                if scores.get("en", 0) >= 3.0 and scores.get("fr", 0) <= 0.5:
+                    config.language = "<|en|>"
+                    results = pipe.generate(audio.tolist(), config)
+                    infer_time_ms = int((time.perf_counter() - infer_start) * 1000)
+                    full_text_guess = " ".join(c.text for c in results.chunks) if hasattr(results, "chunks") and results.chunks else str(results)
 
             if hasattr(results, "chunks") and results.chunks:
                 for chunk in results.chunks:
