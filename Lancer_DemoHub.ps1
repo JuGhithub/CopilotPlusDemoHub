@@ -12,6 +12,13 @@ param()
 $Host.UI.RawUI.WindowTitle = "Copilot+ PC Demo - Démarrage"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $ScriptDir
+# 0. Activation de l'environnement virtuel local (.venv) s'il existe
+$venvPython = "$ScriptDir\.venv\Scripts\python.exe"
+if (Test-Path $venvPython) {
+    $env:VIRTUAL_ENV = "$ScriptDir\.venv"
+    $env:PATH = "$ScriptDir\.venv\Scripts;$env:PATH"
+    Write-Host "[OK] Environnement virtuel local (.venv) actif." -ForegroundColor Green
+}
 
 # Configuration dynamique du PATH : Python et .NET en priorité
 $pyPaths = @(

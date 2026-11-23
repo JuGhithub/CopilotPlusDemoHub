@@ -11,11 +11,11 @@
 [![AI Engines](https://img.shields.io/badge/Engines-OpenVINO_%7C_DirectML_%7C_Olive-9cf)]()
 [![100% Offline](https://img.shields.io/badge/Privacy-100%25_Local_&_Sovereign-success)]()
 
-A comprehensive software showcase of **100% local, private, and sovereign Artificial Intelligence**, universally compatible across the entire **Copilot+ PC** hardware ecosystem:
-- 🔵 **Intel Core Ultra (Lunar Lake & Meteor Lake)** via **Intel AI Boost (48 TOPS)** & Arc iGPU.
-- 🔴 **AMD Ryzen AI 300 Series (Strix Point)** via **AMD XDNA 2 (50 TOPS)** & Radeon GPU.
-- 🟣 **Qualcomm Snapdragon X Elite / Plus** via **Qualcomm Hexagon (45 TOPS)** & Adreno GPU.
-- ⚪ **Automatic Universal Fallback** on DirectX 12 GPU (DirectML) and multi-threaded CPU (AVX-512 / ARM64).
+A comprehensive software showcase of **100% local, private, and transparent Artificial Intelligence**, designed for **Copilot+ PCs** with continuous verification of active hardware silicon:
+- 🔵 **Intel Core Ultra (Lunar Lake & Meteor Lake)** *(Primary Reference Platform)*: Native 100% NPU acceleration via **Intel AI Boost (48 TOPS)** and Arc 140V iGPU (OpenVINO / DirectML).
+- 🔴 **AMD Ryzen AI 300 Series (Strix Point)** *(Hybrid Mode)*: High-performance inference on Radeon GPU via DirectML and multi-threaded CPU (AMD XDNA NPU driver support ongoing).
+- 🟣 **Qualcomm Snapdragon X Elite / Plus (ARM64)** *(DirectML Hybrid Mode)*: On-device inference on Adreno GPU via DirectML and multi-threaded ARM64 NEON CPU (without OpenVINO dependency).
+- ⚪ **Controlled Universal Fallback**: Seamless, traceable fallback on DirectX 12 GPU (DirectML) and multi-threaded CPU with real-time UI telemetry disclosure.
 
 ---
 

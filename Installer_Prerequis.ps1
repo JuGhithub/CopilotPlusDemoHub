@@ -115,35 +115,56 @@ if ($pythonVer -and $pythonVer -match "3\.1[0-3]") {
 # 4. Installation des bibliothèques Python d'IA
 # -------------------------------------------------------------------
 Write-Host ""
-Write-Host "[4/7] Installation des bibliothèques d'IA Python [requirements.txt]..." -ForegroundColor Cyan
+Write-Host "[4/7] Configuration de l'environnement virtuel (.venv) et des bibliothèques d'IA...
 $script:InstallProblems = New-Object System.Collections.Generic.List[string]
 $isArm = ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") -or ($env:PROCESSOR_ARCHITEW6432 -eq "ARM64")
-& python -m pip install --upgrade pip
-& python -m pip install -r "$ScriptDir\requirements.txt"
+
+$venvDir = "$ScriptDir\.venv"
+$venvPy = "$venvDir\Scripts\python.exe"
+if (-not (Test-Path $venvPy)) {
+    Write-Host "  Création de l'environnement virtuel isolé (.venv)..." -ForegroundColor Yellow
+    & python -m venv "$venvDir" --system-site-packages
+}
+
+if (Test-Path $venvPy) {
+    Write-Host "  [OK] Environnement virtuel .venv prêt : $venvPy" -ForegroundColor Green
+    $pyExec = $venvPy
+} else {
+    Write-Host "  [ATTENTION] Impossible de créer .venv, utilisation du Python système." -ForegroundColor Yellow
+    $pyExec = "python"
+}
+
+Write-Host "  Mise à niveau de pip et installation des dépendances..." -ForegroundColor Cyan
+& $pyExec -m pip install --upgrade pip
+if (Test-Path "$ScriptDir\requirements.lock") {
+    & $pyExec -m pip install -r "$ScriptDir\requirements.lock"
+} else {
+    & $pyExec -m pip install -r "$ScriptDir\requirements.txt"
+}
 if ($LASTEXITCODE -ne 0) {
     Write-Host "  [!] Échec de l'installation groupée : nouvelle tentative paquet par paquet..." -ForegroundColor Yellow
     foreach ($line in (Get-Content "$ScriptDir\requirements.txt")) {
         $pkg = ($line -split '#')[0].Trim()
-        if ($pkg) { & python -m pip install $pkg 2>&1 | Out-Null }
+        if ($pkg) { & $pyExec -m pip install $pkg 2>&1 | Out-Null }
     }
 }
 
 # rapidocr-onnxruntime installe 'onnxruntime' (CPU) qui écrase 'onnxruntime-directml' : on force DirectML sur x64
 if (-not $isArm) {
-    & python -m pip uninstall -y onnxruntime 2>&1 | Out-Null
-    & python -m pip install --force-reinstall --no-deps onnxruntime-directml 2>&1 | Out-Null
+    & $pyExec -m pip uninstall -y onnxruntime 2>&1 | Out-Null
+    & $pyExec -m pip install --force-reinstall --no-deps onnxruntime-directml 2>&1 | Out-Null
 }
 
-# Vérification réelle des modules indispensables (au lieu de se fier au code retour de pip)
+# Vérification réelle des modules indispensables
 $mods = @("cv2","numpy","onnxruntime","fitz","rapidocr_onnxruntime","sounddevice","soundfile","huggingface_hub","ultralytics","psutil")
 if (-not $isArm) { $mods += @("openvino","openvino_genai") }
 $missing = @()
 foreach ($m in $mods) {
-    & python -c "import $m" 2>$null
+    & $pyExec -c "import $m" 2>$null
     if ($LASTEXITCODE -ne 0) { $missing += $m }
 }
 if ($missing.Count -eq 0) {
-    Write-Host "  [OK] Dépendances Python installées et vérifiées." -ForegroundColor Green
+    Write-Host "  [OK] Dépendances Python isolées dans .venv et validées." -ForegroundColor Green
 } else {
     Write-Host "  [!] Modules Python manquants : $($missing -join ', ')" -ForegroundColor Red
     $script:InstallProblems.Add("Modules Python manquants : $($missing -join ', ')")
@@ -151,7 +172,7 @@ if ($missing.Count -eq 0) {
 if ($isArm) {
     Write-Host "  [INFO] Windows ARM64 : OpenVINO n'est pas disponible. Les démos vision/audio/OCR utiliseront ONNX Runtime (CPU/DirectML)." -ForegroundColor Yellow
     $script:InstallProblems.Add("Windows ARM64 : accélération OpenVINO indisponible (modes dégradés)")
-}
+}"
 
 # -------------------------------------------------------------------
 # 5. Microsoft Foundry Local CLI et modèles LLM Phi-4

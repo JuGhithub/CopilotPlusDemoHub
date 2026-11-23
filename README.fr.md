@@ -11,11 +11,11 @@
 [![Moteurs d'IA](https://img.shields.io/badge/Engines-OpenVINO_%7C_DirectML_%7C_Olive-9cf)]()
 [![100% Offline](https://img.shields.io/badge/Confidentialité-100%25_Local_&_Souverain-success)]()
 
-Une suite complète d'expériences logicielles d'**Intelligence Artificielle 100% locales, privées et souveraines**, universellement compatible avec l'ensemble de l'écosystème des **PC Copilot+** :
-- 🔵 **Intel Core Ultra (Lunar Lake & Meteor Lake)** via **Intel AI Boost (48 TOPS)** & iGPU Arc.
-- 🔴 **AMD Ryzen AI Série 300 (Strix Point)** via **AMD XDNA 2 (50 TOPS)** & GPU Radeon.
-- 🟣 **Qualcomm Snapdragon X Elite / Plus** via **Qualcomm Hexagon (45 TOPS)** & GPU Adreno.
-- ⚪ **Fallback Universel Automatique** sur GPU DirectX 12 (DirectML) et CPU multithread AVX-512 / ARM64.
+Une suite complète d'expériences logicielles d'**Intelligence Artificielle 100% locales, privées et transparentes**, conçue pour les **PC Copilot+** avec vérification continue du composant silicium actif :
+- 🔵 **Intel Core Ultra (Lunar Lake & Meteor Lake)** *(Plateforme de référence)* : Accélération NPU 100% native via **Intel AI Boost (48 TOPS)** et iGPU Arc 140V (OpenVINO / DirectML).
+- 🔴 **AMD Ryzen AI Série 300 (Strix Point)** *(Mode hybride)* : Inférence haute performance sur GPU Radeon via DirectML et CPU multithread AVX-512 (support NPU XDNA en cours d'intégration).
+- 🟣 **Qualcomm Snapdragon X Elite / Plus (ARM64)** *(Mode hybride DirectML)* : Inférence sur GPU Adreno via DirectML et CPU ARM64 NEON (sans dépendance OpenVINO).
+- ⚪ **Fallback Universel Automatique** : Repli transparent et contrôlé sur GPU DirectX 12 (DirectML) et CPU multithread avec signalement immédiat dans l'interface.
 
 ---
 
@@ -91,14 +91,14 @@ flowchart TD
 - **Daemon Whisper NPU Pré-chauffé (`--daemon` + Cache Blob)** : Modèles `Whisper-Tiny`, `Whisper-Base` (INT8 NPU) et `Whisper-Small` maintenus chauds en mémoire NPU dès l'ouverture de l'onglet (**`8 ms`** au clic et **`1,48 s`** au total pour transcrire et diariser 25 s d'audio).
 - **Bilingue FR / EN & Rattrapage Temps Réel (`lang_utils.py`)** : Détection automatique de la langue intervention par intervention avec **auto-correction à la volée sur NPU** (`smart_transcribe_turn`) si Whisper en mode `Auto` dérive vers l'anglais sur un segment court prononcé en français.
 - **Traduction Intégrale en 1 Clic (`🌐 → 🇫🇷 Français` / `🌐 → 🇬🇧 English`)** : Ajout d'une carte de traduction complète à la fin du transcript générée en streaming sur le **NPU (`phi-4-mini-instruct-openvino-npu`)** en conservant les étiquettes `[Intervenant] : ...`, plus traduction à la volée segment par segment.
-- **Biométrie du Locuteur & Sécurité TPM 2.0** : Réseau neuronal `VoxCeleb ECAPA-TDNN ONNX` extrayant l'empreinte vocale de chaque participant avec scellement cryptographique DPAPI / TPM et télémétrie énergétique réelle (`HardwareTelemetryService`).
+- **Biométrie Vocale & Coffre-Fort DPAPI** : Réseau neuronal `VoxCeleb ECAPA-TDNN ONNX` extrayant l'empreinte vocale de chaque participant avec chiffrement matériel local sous Windows DPAPI (clé maître de session) et télémétrie énergétique dynamique (`HardwareTelemetryService`).
 
 ---
 
 ### 5. 📄 PDF Studio, OCR Intelligent & Audit Juridique NPU
-- **Moteur Vectoriel & OCR Neuronal Hybride** : `PyMuPDF` haute performance combiné à `RapidOCR` accéléré par **NPU / GPU DirectML** pour les scans et documents numérisés.
+- **Moteur Vectoriel & OCR Neuronal Hybride** : `PyMuPDF` haute performance combiné à `RapidOCR` doté d'une détection neuronale sur **NPU Intel AI Boost & GPU DirectML Arc 140V**, avec indication transparente du silicium actif.
 - **Audit Sémantique, Juridique & RGPD sur NPU (`Phi-4-mini`)** : Analyse locale en streaming (`phi-4-mini-instruct-openvino-npu`) produisant une synthèse exécutive, l'identification des clauses sensibles et l'extraction contextuelle des entités personnelles et confidentielles (noms, sociétés, adresses, identifiants) invisibles aux simples Regex.
-- **Caviardage Hybride IA + RGPD en 1 Clic (`--mode ai_audit`)** : Combinaison des entités détectées par le LLM sur NPU et des expressions régulières RGPD (IBAN, NIR, emails, téléphones, montants) pour générer un PDF définitivement anonymisé, accompagnée de la télémétrie batterie réelle en Watts et Joules.
+- **Assistance Locale au Caviardage Hybride (`--mode ai_audit`)** : Détection conjointe par LLM local et expressions régulières des données personnelles sensibles (IBAN, NIR, emails, montants) pour assister l'anonymisation du document (validation humaine requise), accompagnée de la télémétrie énergétique estimée.
 
 ---
 
