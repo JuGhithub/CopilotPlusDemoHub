@@ -16,6 +16,7 @@ import sys
 import os
 import subprocess
 import platform
+import time
 
 # Ensure UTF-8 output
 if sys.platform == "win32":
@@ -332,6 +333,101 @@ def check_app_binaries():
     if not found_any:
         log_warn("Application non compilee", "Lancez Compiler_DemoHub.bat ou 'dotnet build DemoHub\\DemoHub.csproj -c Release'")
 
+
+def check_hardware_smoke_inferences():
+    section("8. Smoke Tests d'Inference Materielle en Direct (CPU, GPU, NPU, Vault DPAPI)")
+
+    # 1. Test DPAPI Biometric Vault
+    try:
+        import ctypes
+        from ctypes import wintypes
+        class DATA_BLOB(ctypes.Structure):
+            _fields_ = [('cbData', wintypes.DWORD), ('pbData', ctypes.POINTER(ctypes.c_byte))]
+        crypt32 = getattr(ctypes.windll, 'crypt32', None)
+        kernel32 = getattr(ctypes.windll, 'kernel32', None)
+        if crypt32 and kernel32:
+            test_raw = b"CopilotPlus_DPAPI_Preflight_Check"
+            blob_in = DATA_BLOB(len(test_raw), ctypes.cast(ctypes.create_string_buffer(test_raw, len(test_raw)), ctypes.POINTER(ctypes.c_byte)))
+            blob_out = DATA_BLOB()
+            if crypt32.CryptProtectData(ctypes.byref(blob_in), "Preflight", None, None, None, 0, ctypes.byref(blob_out)):
+                enc = ctypes.string_at(blob_out.pbData, blob_out.cbData)
+                kernel32.LocalFree(blob_out.pbData)
+                blob_dec_in = DATA_BLOB(len(enc), ctypes.cast(ctypes.create_string_buffer(enc, len(enc)), ctypes.POINTER(ctypes.c_byte)))
+                blob_dec_out = DATA_BLOB()
+                if crypt32.CryptUnprotectData(ctypes.byref(blob_dec_in), None, None, None, None, 0, ctypes.byref(blob_dec_out)):
+                    dec = ctypes.string_at(blob_dec_out.pbData, blob_dec_out.cbData)
+                    kernel32.LocalFree(blob_dec_out.pbData)
+                    if dec == test_raw:
+                        log_ok("Vault DPAPI Materiel", "Scellement et dechiffrement valides avec succes (CryptProtectData/CryptUnprotectData)")
+                    else:
+                        log_fail("Vault DPAPI Materiel", "Incoherence des donnees dechiffrees")
+                else:
+                    log_fail("Vault DPAPI Materiel", "Echec CryptUnprotectData")
+            else:
+                log_fail("Vault DPAPI Materiel", "Echec CryptProtectData")
+        else:
+            log_warn("Vault DPAPI Materiel", "crypt32/kernel32 non accessibles sous cet environnement")
+    except Exception as e:
+        log_fail("Vault DPAPI Materiel", f"Erreur cryptographique : {e}")
+
+    # 2. Test Inference DirectML GPU (ONNX Runtime)
+    try:
+        import onnxruntime as ort
+        providers = ort.get_available_providers()
+        if "DmlExecutionProvider" in providers:
+            import numpy as np
+            root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+            rec_onnx = os.path.join(root_dir, "models", "ocr", "ch_PP-OCRv4_rec_infer.onnx")
+            if os.path.exists(rec_onnx):
+                t0 = time.time()
+                sess_opts = ort.SessionOptions()
+                sess_opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_BASIC
+                sess = ort.InferenceSession(rec_onnx, sess_opts, providers=["DmlExecutionProvider", "CPUExecutionProvider"])
+                active_prov = sess.get_providers()
+                t_init = (time.time() - t0) * 1000
+                if "DmlExecutionProvider" in active_prov:
+                    dummy_in = np.zeros((1, 3, 48, 320), dtype=np.float32)
+                    t1 = time.time()
+                    _ = sess.run(None, {sess.get_inputs()[0].name: dummy_in})
+                    t_inf = (time.time() - t1) * 1000
+                    log_ok("Smoke Test DirectML (GPU)", f"Actif ({active_prov[0]}) - Init: {t_init:.1f}ms | Inference dummy: {t_inf:.1f}ms")
+                else:
+                    log_warn("Smoke Test DirectML (GPU)", f"Fallback vers {active_prov} au lieu de DmlExecutionProvider")
+            else:
+                log_ok("DirectML Provider", "DmlExecutionProvider present (modele OCR non present pour inference live)")
+        else:
+            log_warn("Smoke Test DirectML", "DmlExecutionProvider non liste parmi les providers ONNX Runtime")
+    except Exception as e:
+        log_warn("Smoke Test DirectML (GPU)", f"Erreur lors du test DirectML : {e}")
+
+    # 3. Test Inference OpenVINO NPU
+    try:
+        import openvino as ov
+        core = ov.Core()
+        devices = core.available_devices
+        if any("NPU" in d for d in devices):
+            root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+            det_onnx = os.path.join(root_dir, "models", "ocr", "ch_PP-OCRv4_det_infer.onnx")
+            if os.path.exists(det_onnx):
+                t0 = time.time()
+                model = core.read_model(det_onnx)
+                model.reshape([1, 3, 960, 960])
+                compiled = core.compile_model(model, "NPU")
+                t_compile = (time.time() - t0) * 1000
+                import numpy as np
+                dummy_in = np.zeros((1, 3, 960, 960), dtype=np.float32)
+                t1 = time.time()
+                _ = compiled([dummy_in])
+                t_inf = (time.time() - t1) * 1000
+                log_ok("Smoke Test Intel AI Boost (NPU)", f"Compilation: {t_compile:.1f}ms | Inference directe: {t_inf:.1f}ms (100% NPU)")
+            else:
+                log_ok("Smoke Test NPU", f"NPU detecte ({', '.join(d for d in devices if 'NPU' in d)})")
+        else:
+            log_warn("Smoke Test NPU", "Aucun accelerateur NPU detecte sous OpenVINO (plateforme CPU/GPU)")
+    except Exception as e:
+        log_warn("Smoke Test Intel AI Boost (NPU)", f"Test NPU contourne ou non disponible : {e}")
+
+
 def main():
     print(f"\n{BOLD}======================================================================{RESET}")
     print(f"{BOLD}       Copilot+ PC Demo - Diagnostic Complet de l'Installation{RESET}")
@@ -344,6 +440,7 @@ def main():
     check_models()
     check_peripherals()
     check_app_binaries()
+    check_hardware_smoke_inferences()
 
     print(f"\n{BOLD}======================================================================{RESET}")
     print(f"Bilan du diagnostic : {GREEN}{passed_checks} Reussis{RESET} | {YELLOW}{warning_checks} Avertissements{RESET} | {RED}{failed_checks} Erreurs{RESET}")

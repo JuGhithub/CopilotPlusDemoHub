@@ -1,0 +1,42 @@
+name: CI - Build & Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8 SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Restore dependencies
+      run: dotnet restore CopilotPlusDemoHub.sln
+
+    - name: Build Solution (.NET 8 WPF & Tests)
+      run: dotnet build CopilotPlusDemoHub.sln -c Release --no-restore
+
+    - name: Run .NET Unit Tests (xUnit)
+      run: dotnet test DemoHub.Tests/DemoHub.Tests.csproj -c Release --no-build --verbosity normal
+
+    - name: Install Python Test Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install pytest numpy pymupdf pillow
+
+    - name: Run Python Service Tests (pytest)
+      run: pytest tests/ -v
