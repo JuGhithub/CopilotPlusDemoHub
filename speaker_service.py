@@ -61,7 +61,7 @@ kernel32 = getattr(ctypes.windll, 'kernel32', None)
 def tpm_seal_data(data: bytes, desc: str = "CopilotPlus_TPM_Voiceprint_Vault") -> bytes:
     """Seal data using Windows DPAPI tied to machine TPM 2.0 / current user hardware master key."""
     if crypt32 is None or kernel32 is None:
-        return VAULT_HEADER + data
+        raise RuntimeError("Windows DPAPI crypt32/kernel32 non disponible. Le scellement biométrique en clair est strictement interdit.")
 
     blob_in = DATA_BLOB(len(data), ctypes.cast(ctypes.create_string_buffer(data, len(data)), ctypes.POINTER(ctypes.c_byte)))
     blob_out = DATA_BLOB()
@@ -91,13 +91,7 @@ def tpm_unseal_data(data: bytes) -> bytes:
     blob_out = DATA_BLOB()
 
     if not crypt32.CryptUnprotectData(ctypes.byref(blob_in), None, None, None, None, 0, ctypes.byref(blob_out)):
-        try:
-            test = json.loads(data.decode("utf-8"))
-            if "profiles" in test:
-                return data
-        except Exception:
-            pass
-        raise ctypes.WinError()
+        raise RuntimeError("Échec de déchiffrement DPAPI du coffre-fort biométrique. Accès refusé.")
 
     decrypted = ctypes.string_at(blob_out.pbData, blob_out.cbData)
     kernel32.LocalFree(blob_out.pbData)

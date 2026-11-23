@@ -5,8 +5,12 @@ import sys
 import time
 import numpy as np
 from PIL import Image
-import openvino as ov
-import openvino_genai as ovg
+try:
+    import openvino as ov
+    import openvino_genai as ovg
+except ImportError:
+    ov = None
+    ovg = None
 
 GENDER_STYLE_PROMPTS = {
     "male": {
@@ -196,6 +200,11 @@ def main():
         "model": os.path.basename(model_path)
     }), flush=True)
 
+    if ovg is None:
+        is_arm = (os.environ.get("PROCESSOR_ARCHITECTURE") == "ARM64" or "ARM" in os.environ.get("PROCESSOR_IDENTIFIER", ""))
+        err_msg = "OpenVINO GenAI n'est pas disponible sous Windows ARM64 (Snapdragon X). Le studio Avatar requiert OpenVINO x64 ou DirectML." if is_arm else "OpenVINO GenAI non installé."
+        print(json.dumps({"type": "error", "message": err_msg, "device": "ARM64-Unavailable"}), flush=True)
+        sys.exit(1)
     t_load_start = time.perf_counter()
     try:
         if args.device == "NPU" and cache_dir:

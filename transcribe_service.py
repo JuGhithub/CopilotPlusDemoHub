@@ -10,7 +10,10 @@ try:
     import scipy.signal
 except Exception:
     scipy = None
-import openvino_genai as ovg
+try:
+    import openvino_genai as ovg
+except ImportError:
+    ovg = None
 for _lvl in range(1, 6):
     _cand_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), *(['..'] * _lvl)))
     if os.path.exists(os.path.join(_cand_root, "lang_utils.py")) and _cand_root not in sys.path:
@@ -22,6 +25,11 @@ from lang_utils import detect_language, lang_code, whisper_translate_to_english,
 
 def load_whisper_and_speaker(model_dir_arg, requested_device):
     load_start = time.perf_counter()
+    if ovg is None:
+        is_arm = (os.environ.get("PROCESSOR_ARCHITECTURE") == "ARM64" or "ARM" in os.environ.get("PROCESSOR_IDENTIFIER", ""))
+        err_msg = "OpenVINO GenAI n'est pas disponible sous ARM64 (Qualcomm Snapdragon). Utilisez le mode DirectML/ONNX ou exécutez sur x64." if is_arm else "OpenVINO GenAI introuvable."
+        print(json.dumps({"type": "error", "message": err_msg, "effective_device": "ARM64-Unavailable"}), flush=True)
+        sys.exit(1)
     script_dir = os.path.dirname(os.path.abspath(__file__))
     model_path = model_dir_arg
     if not os.path.isabs(model_path) or not os.path.exists(os.path.join(model_path, "openvino_encoder_model.xml")):

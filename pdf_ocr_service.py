@@ -68,31 +68,100 @@ def patch_rapidocr_fp16():
         pass
 
 
-def get_ocr_engine(engine_choice="olive"):
+class OpenVinoNpuDetSession:
+    """Wrapper pour inférence TextDetector PP-OCRv4 sur NPU Intel AI Boost."""
+    def __init__(self, compiled_model, target_h=960, target_w=960):
+        self.compiled = compiled_model
+        self.target_h = target_h
+        self.target_w = target_w
+
+    def __call__(self, input_content):
+        _, _, h, w = input_content.shape
+        padded = np.zeros((1, 3, self.target_h, self.target_w), dtype=np.float32)
+        cur_h = min(h, self.target_h)
+        cur_w = min(w, self.target_w)
+        padded[:, :, :cur_h, :cur_w] = input_content[:, :, :cur_h, :cur_w]
+        out = self.compiled([padded])[0]
+        return [out[:, :, :h, :w]]
+
+
+def get_ocr_engine(engine_choice="olive", requested_device="NPU"):
     from rapidocr_onnxruntime import RapidOCR
+    import onnxruntime as ort
+
     raw_det = find_file(os.path.join("models", "ocr", "ch_PP-OCRv4_det_infer.onnx"))
     raw_rec = find_file(os.path.join("models", "ocr", "ch_PP-OCRv4_rec_infer.onnx"))
     olive_det = find_file(os.path.join("models", "ocr", "ch_PP-OCRv4_det_infer_olive.onnx"))
     olive_rec = find_file(os.path.join("models", "ocr", "ch_PP-OCRv4_rec_infer_olive.onnx"))
 
+    det_path = raw_det if os.path.exists(raw_det) else None
+    rec_path = olive_rec if (engine_choice == "olive" and os.path.exists(olive_rec)) else (raw_rec if os.path.exists(raw_rec) else None)
+
     if engine_choice == "olive" and os.path.exists(olive_rec):
         patch_rapidocr_fp16()
-        det_path = raw_det if os.path.exists(raw_det) else None
-        engine = RapidOCR(det_model_path=det_path, rec_model_path=olive_rec)
-        det_size = os.path.getsize(det_path) if det_path and os.path.exists(det_path) else 4.74 * 1024 * 1024
-        rec_size = os.path.getsize(olive_rec)
-        model_size_mb = round((det_size + rec_size) / (1024 * 1024), 2)
-        engine_label = "RapidOCR v4 (Optimisé Microsoft Olive FP16)"
+        base_label = "RapidOCR v4 (Optimisé Microsoft Olive FP16)"
     elif os.path.exists(raw_det) and os.path.exists(raw_rec):
-        engine = RapidOCR(det_model_path=raw_det, rec_model_path=raw_rec)
-        model_size_mb = round((os.path.getsize(raw_det) + os.path.getsize(raw_rec)) / (1024 * 1024), 2)
-        engine_label = "RapidOCR v4 (Modèle Brut FP32)"
+        base_label = "RapidOCR v4 (Modèle Brut FP32)"
     else:
-        engine = RapidOCR()
-        model_size_mb = 15.59
-        engine_label = "RapidOCR v4 Standard"
+        base_label = "RapidOCR v4 Standard"
 
-    return engine, model_size_mb, engine_label
+    det_size = os.path.getsize(det_path) if det_path and os.path.exists(det_path) else 4.74 * 1024 * 1024
+    rec_size = os.path.getsize(rec_path) if rec_path and os.path.exists(rec_path) else 10.8 * 1024 * 1024
+    model_size_mb = round((det_size + rec_size) / (1024 * 1024), 2)
+
+    req_upper = (requested_device or "NPU").upper()
+    effective_device = "CPU (ONNX Runtime)"
+    is_fallback = False
+    has_dml = "DmlExecutionProvider" in ort.get_available_providers()
+
+    engine = None
+
+    # Option A : Accélération NPU demandée
+    if "NPU" in req_upper:
+        try:
+            import openvino as ov
+            core = ov.Core()
+            if "NPU" in [d.upper() for d in core.available_devices] and det_path:
+                model_det = core.read_model(det_path)
+                model_det.reshape([1, 3, 960, 960])
+                compiled_det = core.compile_model(model_det, "NPU")
+                engine = RapidOCR(det_model_path=det_path, rec_model_path=rec_path)
+                engine.text_det.infer = OpenVinoNpuDetSession(compiled_det, 960, 960)
+                effective_device = "NPU (Intel AI Boost)"
+                is_fallback = False
+        except Exception:
+            engine = None
+
+        if engine is None:
+            # Repli sur GPU DirectML si disponible
+            if has_dml:
+                engine = RapidOCR(det_model_path=det_path, rec_model_path=rec_path, det_use_dml=True, rec_use_dml=True)
+                effective_device = "GPU (DirectML Arc 140V)"
+                is_fallback = True
+            else:
+                engine = RapidOCR(det_model_path=det_path, rec_model_path=rec_path)
+                effective_device = "CPU (ONNX Runtime)"
+                is_fallback = True
+
+    # Option B : Accélération GPU demandée
+    elif "GPU" in req_upper:
+        if has_dml:
+            engine = RapidOCR(det_model_path=det_path, rec_model_path=rec_path, det_use_dml=True, rec_use_dml=True)
+            effective_device = "GPU (DirectML Arc 140V)"
+            is_fallback = False
+        else:
+            engine = RapidOCR(det_model_path=det_path, rec_model_path=rec_path)
+            effective_device = "CPU (ONNX Runtime)"
+            is_fallback = True
+
+    # Option C : CPU demandé
+    else:
+        engine = RapidOCR(det_model_path=det_path, rec_model_path=rec_path)
+        effective_device = "CPU (ONNX Runtime)"
+        is_fallback = False
+
+    engine_label = f"{base_label} • {effective_device}"
+    return engine, model_size_mb, engine_label, effective_device, is_fallback
 
 
 def emit(obj: dict):
@@ -211,7 +280,7 @@ def action_ocr(args):
         ram_before = proc.memory_info().rss / (1024 * 1024)
 
         engine_choice = getattr(args, "engine", "olive") or "olive"
-        engine, model_size_mb, engine_label = get_ocr_engine(engine_choice)
+        engine, model_size_mb, engine_label, effective_device, is_fallback = get_ocr_engine(engine_choice, getattr(args, "device", "NPU"))
         ocr_res, elapse = engine(temp_img_path)
         infer_ms = int((time.perf_counter() - t0) * 1000)
 
@@ -265,7 +334,10 @@ def action_ocr(args):
             "line_count": len(lines),
             "word_count": word_count,
             "infer_time_ms": infer_ms,
-            "device": args.device or "NPU",
+            "device": effective_device,
+            "requested_device": getattr(args, "device", "NPU"),
+            "effective_device": effective_device,
+            "is_fallback": is_fallback,
             "overlay_path": overlay_out_path,
             "engine": engine_choice,
             "engine_label": engine_label,
@@ -305,7 +377,7 @@ def action_make_searchable(args):
     t0 = time.perf_counter()
     try:
         engine_choice = getattr(args, "engine", "olive") or "olive"
-        engine, model_size_mb, engine_label = get_ocr_engine(engine_choice)
+        engine, model_size_mb, engine_label, effective_device, is_fallback = get_ocr_engine(engine_choice, getattr(args, "device", "NPU"))
 
         total_words = 0
         total_lines = 0

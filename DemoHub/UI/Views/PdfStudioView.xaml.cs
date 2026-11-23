@@ -430,6 +430,7 @@ public partial class PdfStudioView : UserControl, IDisposable
         string engineLabel = string.Empty;
         string resultOverlay = string.Empty;
         string lastErr = string.Empty;
+        string effectiveSilicon = device;
 
         await Task.Run(() =>
         {
@@ -472,6 +473,7 @@ public partial class PdfStudioView : UserControl, IDisposable
                                     modelSizeMb = root.TryGetProperty("model_size_mb", out var msz) ? msz.GetDouble() : (engine == "olive" ? 9.8 : 14.9);
                                     ramMb = root.TryGetProperty("ram_mb", out var rmb) ? rmb.GetDouble() : 0.0;
                                     engineLabel = root.TryGetProperty("engine_label", out var elbl) ? (elbl.GetString() ?? "") : "";
+                                    effectiveSilicon = root.TryGetProperty("effective_device", out var edev) ? (edev.GetString() ?? device) : device;
 
                                     if (root.TryGetProperty("lines", out var linesElem) && linesElem.ValueKind == JsonValueKind.Array)
                                     {
@@ -549,7 +551,7 @@ public partial class PdfStudioView : UserControl, IDisposable
             double watts = device.ToUpperInvariant().Contains("GPU") ? 16.5 : (engine == "olive" ? 2.2 : 4.5);
             double joules = watts * (inferMs / 1000.0);
 
-            TxtInferSpeed.Text = $"⚡ {inferMs} ms • {device} ({engine.ToUpper()})";
+            TxtInferSpeed.Text = $"⚡ {inferMs} ms • {effectiveSilicon} ({engine.ToUpper()})";
             BadgeSpeed.Visibility = Visibility.Visible;
             TxtPower.Text = $"🔋 ~{watts:F1} W • 🌱 {joules:F3} J ({(engine == "olive" ? "Sobriété Olive" : "Standard")})";
             BadgePower.Visibility = Visibility.Visible;
@@ -558,7 +560,7 @@ public partial class PdfStudioView : UserControl, IDisposable
             _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
                 demoName: "Studio PDF - Reconnaissance OCR",
                 requestedSilicon: device,
-                effectiveSilicon: device,
+                effectiveSilicon: effectiveSilicon,
                 siliconDeviceName: $"RapidOCR ({engine.ToUpper()} on {device})",
                 latencyMs: inferMs,
                 customPowerWatts: watts
@@ -636,6 +638,7 @@ public partial class PdfStudioView : UserControl, IDisposable
         string finalPdf = string.Empty;
         string finalPreview = string.Empty;
         string lastErr = string.Empty;
+        string effectiveSilicon = device;
 
         await Task.Run(() =>
         {
@@ -1028,6 +1031,7 @@ public partial class PdfStudioView : UserControl, IDisposable
         string finalPdf = string.Empty;
         string finalPreview = string.Empty;
         string lastErr = string.Empty;
+        string effectiveSilicon = device;
 
         await Task.Run(() =>
         {
@@ -1187,20 +1191,9 @@ public partial class PdfStudioView : UserControl, IDisposable
                 };
                 Process.Start(psi);
             }
-            catch
+            catch (Exception ex)
             {
-                try
-                {
-                    Process.Start(new ProcessStartInfo("cmd.exe", $"/c start \"\" \"{fileToOpen}\"")
-                    {
-                        CreateNoWindow = true,
-                        UseShellExecute = false
-                    });
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Impossible d'ouvrir le fichier ({fileToOpen}) :\n{ex.Message}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                MessageBox.Show($"Impossible d'ouvrir le fichier ({fileToOpen}) :\n{ex.Message}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         else
