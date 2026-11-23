@@ -1,10 +1,12 @@
 <#
 .SYNOPSIS
     Génère un package autonome (archive ZIP) du Copilot+ Demo Hub prêt pour GitHub Releases ou partage collègues.
+    Supporte les architectures win-x64 (Intel Core Ultra / AMD Ryzen AI) et win-arm64 (Qualcomm Snapdragon X).
 #>
 
 param(
     [switch]$IncludeModels = $false,
+    [ValidateSet("win-x64", "win-arm64")][string]$Runtime = "win-x64",
     [string]$OutputDir = "Releases"
 )
 
@@ -12,6 +14,7 @@ $ErrorActionPreference = "Stop"
 
 Write-Host "======================================================================" -ForegroundColor Cyan
 Write-Host "         Copilot+ Demo Hub - Génération du Package de Release          " -ForegroundColor Cyan
+Write-Host "         Architecture cible : $Runtime                                 " -ForegroundColor Cyan
 Write-Host "======================================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -30,11 +33,12 @@ if (Test-Path $TempStaging) {
 New-Item -ItemType Directory -Path $TempStaging | Out-Null
 
 # 1. Compilation & Publication .NET
-Write-Host "[1/4] Publication de l'application WPF (.NET 8 Release)..." -ForegroundColor Yellow
-$PublishOut = Join-Path $TempStaging "bin\Publish\x64"
-dotnet publish "$RootPath\DemoHub\DemoHub.csproj" -c Release -r win-x64 --no-self-contained -o "$PublishOut"
+Write-Host "[1/4] Publication de l'application WPF (.NET 8 Release pour $Runtime)..." -ForegroundColor Yellow
+$ArchFolder = if ($Runtime -eq "win-arm64") { "arm64" } else { "x64" }
+$PublishOut = Join-Path $TempStaging "bin\Publish\$ArchFolder"
+dotnet publish "$RootPath\DemoHub\DemoHub.csproj" -c Release -r $Runtime --no-self-contained -o "$PublishOut"
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "[ERREUR] Échec de la compilation/publication .NET." -ForegroundColor Red
+    Write-Host "[ERREUR] Échec de la compilation/publication .NET pour $Runtime." -ForegroundColor Red
     exit 1
 }
 
@@ -48,6 +52,7 @@ $ItemsToCopy = @(
     "scripts",
     "avatar_service.py",
     "eraser_service.py",
+    "lang_utils.py",
     "live_transcribe_service.py",
     "olive_lab_service.py",
     "olive_mcp_service.py",
@@ -58,8 +63,11 @@ $ItemsToCopy = @(
     "speaker_service.py",
     "transcribe_service.py",
     "requirements.txt",
+    "requirements.lock",
     "GUIDE_INSTALLATION.md",
+    "INSTALLATION_GUIDE.md",
     "README.md",
+    "README.fr.md",
     "Installer_Prerequis.ps1",
     "Installer_Prerequis.bat",
     "Lancer_DemoHub.ps1",
@@ -103,7 +111,8 @@ if ($IncludeModels) {
 }
 
 # 4. Compression ZIP
-$ZipName = if ($IncludeModels) { "CopilotPlusDemoHub_Full_v1.0.zip" } else { "CopilotPlusDemoHub_App_v1.0.zip" }
+$ZipSuffix = if ($Runtime -eq "win-arm64") { "ARM64" } else { "x64" }
+$ZipName = if ($IncludeModels) { "CopilotPlusDemoHub_Full_${ZipSuffix}_v1.0.zip" } else { "CopilotPlusDemoHub_App_${ZipSuffix}_v1.0.zip" }
 $ZipPath = Join-Path $TargetDir $ZipName
 
 Write-Host "[4/4] Création de l'archive ZIP : $ZipName..." -ForegroundColor Yellow

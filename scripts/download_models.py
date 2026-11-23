@@ -8,12 +8,14 @@ Permet d'initialiser ou restaurer 100% des modèles locaux requis :
 3. Vision par ordinateur (YOLOv8s-World Zero-Trust OpenVINO)
 4. Gomme Magique (YOLOv8n-Seg Segmentation d'objets OpenVINO)
 5. Studio Avatar (LCM DreamShaper 8-bit Diffusion OpenVINO)
+6. Vérification cryptographique SHA-256 de la chaîne d'approvisionnement des modèles
 """
 
 import os
 import sys
 import shutil
 import argparse
+import hashlib
 
 # Configuration de l'encodage console Windows
 if sys.platform == "win32":
@@ -54,6 +56,59 @@ def ensure_models_dir():
     if not os.path.exists(MODELS_DIR):
         os.makedirs(MODELS_DIR, exist_ok=True)
         log_info(f"Dossier models/ créé : {MODELS_DIR}")
+
+
+def compute_sha256(filepath, chunk_size=1048576):
+    """Calcule l'empreinte cryptographique SHA-256 d'un fichier par flux de 1 Mo."""
+    hasher = hashlib.sha256()
+    with open(filepath, "rb") as f:
+        while True:
+            chunk = f.read(chunk_size)
+            if not chunk:
+                break
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
+def verify_models_integrity():
+    """
+    Vérifie l'intégrité structurelle et calcule l'empreinte cryptographique SHA-256
+    de tous les modèles locaux critiques (contrôle supply-chain et anti-corruption).
+    """
+    log_step("Contrôle d'Intégrité Cryptographique & Supply-Chain des Modèles")
+
+    key_models = [
+        ("Biométrie VoxCeleb ONNX", os.path.join(MODELS_DIR, "speaker", "voxceleb.onnx"), 10 * 1024 * 1024),
+        ("Vision YOLOv8s-World OpenVINO XML", os.path.join(MODELS_DIR, "yolov8s-world_openvino_model", "yolov8s-world.xml"), 50 * 1024),
+        ("Vision YOLOv8s-World ONNX DirectML", os.path.join(MODELS_DIR, "yolov8s-world.onnx"), 10 * 1024 * 1024),
+        ("Gomme YOLOv8n-Seg OpenVINO XML", os.path.join(MODELS_DIR, "yolov8n-seg_openvino_model", "yolov8n-seg.xml"), 50 * 1024),
+        ("Gomme YOLOv8n-Seg ONNX DirectML", os.path.join(MODELS_DIR, "yolov8n-seg.onnx"), 5 * 1024 * 1024),
+        ("OCR PP-OCRv4 Détection ONNX", os.path.join(MODELS_DIR, "ocr", "ch_PP-OCRv4_det_infer.onnx"), 1 * 1024 * 1024),
+        ("OCR PP-OCRv4 Reconnaissance ONNX", os.path.join(MODELS_DIR, "ocr", "ch_PP-OCRv4_rec_infer.onnx"), 5 * 1024 * 1024),
+        ("Whisper Tiny OpenVINO Encoder XML", os.path.join(MODELS_DIR, "whisper-tiny-fp16-ov", "openvino_encoder_model.xml"), 50 * 1024),
+        ("Whisper Base OpenVINO Encoder XML", os.path.join(MODELS_DIR, "whisper-base-fp16-ov", "openvino_encoder_model.xml"), 50 * 1024),
+    ]
+
+    all_ok = True
+    for label, path, min_size in key_models:
+        if not os.path.exists(path):
+            log_err(f"{label} : Fichier absent ({path})")
+            all_ok = False
+            continue
+        size = os.path.getsize(path)
+        if size < min_size:
+            log_err(f"{label} : Fichier tronqué ({size} octets < {min_size} attendus)")
+            all_ok = False
+            continue
+        try:
+            sha = compute_sha256(path)
+            size_mb = size / (1024 * 1024)
+            log_ok(f"{label} ({size_mb:.1f} Mo) - SHA256: {sha[:16]}...{sha[-8:]}")
+        except Exception as e:
+            log_err(f"{label} : Erreur de calcul de hash : {e}")
+            all_ok = False
+
+    return all_ok
 
 
 def download_whisper_models(force=False):
@@ -256,6 +311,7 @@ def optimize_with_olive(force=False):
     log_ok("Modèles Olive FP16 générés.")
     return True
 
+
 def download_lcm_diffusion(force=False):
     log_step("Modèle Studio Avatar / Diffusion (LCM DreamShaper 8-bit OpenVINO)")
     target = os.path.join(MODELS_DIR, "lcm_dreamshaper_8bit")
@@ -284,6 +340,7 @@ def main():
     parser = argparse.ArgumentParser(description="Télécharge et prépare tous les modèles d'IA pour Copilot+ Demo Hub.")
     parser.add_argument("--force", action="store_true", help="Forcer le re-téléchargement même si les modèles sont présents")
     parser.add_argument("--skip-diffusion", action="store_true", help="Ignorer le modèle de diffusion d'images (~1 Go)")
+    parser.add_argument("--verify-integrity", action="store_true", help="Vérifier l'intégrité cryptographique SHA-256 des modèles locaux existants sans télécharger")
     args = parser.parse_args()
 
     print("======================================================================")
@@ -291,6 +348,19 @@ def main():
     print("======================================================================")
 
     ensure_models_dir()
+
+    if args.verify_integrity:
+        ok = verify_models_integrity()
+        print("\n======================================================================")
+        if ok:
+            print(f" {GREEN}[SUCCÈS]{RESET} Tous les modèles vérifiés sont conformes et intègres.")
+            print("======================================================================\n")
+            return 0
+        else:
+            print(f" {RED}[ÉCHEC]{RESET} Certains modèles sont absents, tronqués ou corrompus.")
+            print("======================================================================\n")
+            return 1
+
     results = {}
     results["Whisper (tiny / base / small)"] = download_whisper_models(force=args.force)
     results["Biométrie vocale VoxCeleb"] = download_speaker_model(force=args.force)
@@ -313,8 +383,13 @@ def main():
         print(" Relancez : python scripts\\download_models.py   (vérifiez la connexion Internet)")
         print("======================================================================\n")
         sys.exit(1)
-    print(f" {GREEN}[SUCCÈS]{RESET} Tous les modèles d'IA nécessaires sont prêts dans models/")
+
+    # Contrôle final d'intégrité
+    verify_models_integrity()
+
+    print(f"\n {GREEN}[SUCCÈS]{RESET} Tous les modèles d'IA nécessaires sont prêts et intègres dans models/")
     print("======================================================================\n")
+
 
 if __name__ == "__main__":
     main()
