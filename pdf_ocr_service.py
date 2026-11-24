@@ -529,6 +529,10 @@ def action_redact(args):
                 (r'[12]\s?\d{2}\s?(?:0[1-9]|1[0-2])\s?\d{2}\s?\d{3}\s?\d{3}(?:\s?\d{2})?', "Numéro Sécurité Sociale (NIR)"),
                 (r'\b\d{1,3}(?:\s\d{3})*,\d{2}\s?EUR\b', "Montant Financier Confidentiel")
             ])
+        failed_pages = []
+        effective_device = getattr(args, "device", "NPU") or "NPU"
+        ocr_engine = None
+
         if getattr(args, 'rect', None) and args.rect:
             try:
                 coords = [float(c.strip()) for c in args.rect.split(",")]
@@ -539,19 +543,28 @@ def action_redact(args):
                     page0.apply_redactions()
                     total_redacted += 1
                     redacted_details.append("Zone rectangulaire sélectionnée")
-            except Exception:
-                pass
+            except Exception as ex:
+                failed_pages.append({"page": 1, "error": f"Erreur sélection rectangulaire: {str(ex)}"})
         elif patterns:
+            # Pré-chargement unique du moteur OCR si requis
+            try:
+                ocr_engine, eff_dev, _, _, _ = get_ocr_engine("olive", effective_device)
+                if eff_dev:
+                    effective_device = eff_dev
+            except Exception as ex:
+                log_debug(f"Impossible d'initialiser le moteur OCR pour caviardage: {ex}")
+
+            import uuid
             for page_idx, page in enumerate(doc):
                 page_text = page.get_text("text")
+                # Traitement OCR pour documents scannés ou pages sans texte natif
                 if not page_text.strip():
-                    # Traitement explicite des documents scannés sans couche texte via OCR
+                    temp_scan = os.path.join(os.path.dirname(out_pdf), f"scan_tmp_{uuid.uuid4().hex[:8]}_{page_idx}.png")
                     try:
                         dpi = getattr(args, 'dpi', 150) or 150
                         pix = page.get_pixmap(dpi=dpi)
-                        temp_scan = os.path.join(os.path.dirname(out_pdf), f"scan_tmp_{page_idx}.png")
                         pix.save(temp_scan)
-                        ocr_engine, _, _, _, _ = get_ocr_engine("olive", getattr(args, "device", "NPU"))
+
                         if ocr_engine:
                             ocr_res, _ = ocr_engine(temp_scan)
                             if ocr_res:
@@ -564,10 +577,16 @@ def action_redact(args):
                                             page.add_redact_annot(rect, fill=(0, 0, 0))
                                             total_redacted += 1
                                             redacted_details.append(f"{label} (OCR)")
+                        else:
+                            failed_pages.append({"page": page_idx + 1, "error": "Moteur OCR indisponible pour la page numérisée"})
+                    except Exception as page_ex:
+                        failed_pages.append({"page": page_idx + 1, "error": f"Échec OCR sur page numérisée: {str(page_ex)}"})
+                    finally:
                         if os.path.exists(temp_scan):
-                            os.remove(temp_scan)
-                    except Exception:
-                        pass
+                            try:
+                                os.remove(temp_scan)
+                            except Exception:
+                                pass
                 else:
                     for pattern, label in patterns:
                         matches = []
@@ -581,7 +600,10 @@ def action_redact(args):
                             total_redacted += 1
                             redacted_details.append(label)
 
-                page.apply_redactions()
+                try:
+                    page.apply_redactions()
+                except Exception as red_ex:
+                    failed_pages.append({"page": page_idx + 1, "error": f"Erreur application caviardage: {str(red_ex)}"})
 
         doc.save(out_pdf)
 
@@ -596,13 +618,16 @@ def action_redact(args):
 
         emit({
             "type": "redact_complete",
+            "status": "success" if not failed_pages else "partial",
+            "failed_pages": failed_pages,
+            "total_pages": len(doc),
             "output_pdf": out_pdf,
             "preview_path": out_preview,
             "redacted_count": total_redacted,
             "redacted_items": list(set(redacted_details)),
             "words": words,
             "infer_time_ms": infer_ms,
-            "device": args.device or "NPU"
+            "device": effective_device
         })
     except Exception as ex:
         emit_error(f"Erreur lors du caviardage : {str(ex)}")

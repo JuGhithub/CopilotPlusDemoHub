@@ -361,19 +361,12 @@ public sealed class EnterpriseTelemetryService
                 string effUpper = (effectiveSilicon ?? "NPU").ToUpperInvariant();
                 string reqUpper = (requestedSilicon ?? "AUTO").ToUpperInvariant();
 
-                // 1. Calculate active power & energy
-                double watts = customPowerWatts ?? effUpper switch
-                {
-                    "GPU" => 16.5,
-                    "CPU" => 26.0,
-                    _ => 2.2 // NPU
-                };
-
-                double joules = watts * (executionTimeMs / 1000.0);
-
-                // Energy comparison vs GPU baseline (~16.5W for equivalent workload duration)
-                double gpuEquivJoules = 16.5 * (executionTimeMs / 1000.0);
-                double energySavedVsGpu = effUpper == "NPU" ? Math.Max(0, gpuEquivJoules - joules) : 0.0;
+                // 1. Calculate active power & energy only when genuinely measured (no fabricated constants)
+                double watts = customPowerWatts ?? 0.0;
+                double joules = customPowerWatts.HasValue ? watts * (executionTimeMs / 1000.0) : 0.0;
+                double energySavedVsGpu = (customPowerWatts.HasValue && effUpper == "NPU")
+                    ? Math.Max(0, (16.5 * (executionTimeMs / 1000.0)) - joules)
+                    : 0.0;
 
                 // 2. Anomaly detection: Did we run on CPU/GPU while NPU was requested or available?
                 // Anomaly triggers if NPU was expected/Auto and system has NPU, but it executed on CPU or GPU.

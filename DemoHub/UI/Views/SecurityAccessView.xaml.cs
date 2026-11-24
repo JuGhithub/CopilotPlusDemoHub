@@ -1374,18 +1374,18 @@ public partial class SecurityAccessView : UserControl, IDisposable
         bool isEn = _localizer?.CurrentLanguage == "en";
 
         LblAccessTitle.Text = isEn
-            ? "🛡️ ZERO-TRUST ACCESS GATE & SOVEREIGN MINESWEEPER"
-            : "🛡️ CONTRÔLE D'ACCÈS ZERO-TRUST & DÉMINEUR SOUVERAIN";
+            ? "🛡️ VISUAL COMPLIANCE CHECK & PERIPHERAL DETECTION"
+            : "🛡️ CONTRÔLE DE CONFORMITÉ VISUELLE & PRÉREQUIS MATÉRIELS";
 
         LblAccessSub.Text = isEn
-            ? "Multimodal NPU/GPU Authentication: Mandatory joint detection of Coffee Cup ☕ + Eyeglasses 👓 + Headset 🎧"
-            : "Authentification multimodale NPU/GPU : Détection conjointe obligatoire Tasse ☕ + Lunettes 👓 + Casque Audio 🎧";
+            ? "Educational Computer Vision Scenario: Joint detection of Coffee Cup ☕ + Eyeglasses 👓 + Headset 🎧 (Does not gate operational assets)"
+            : "Démonstrateur Pédagogique Vision : Détection conjointe Tasse ☕ + Lunettes 👓 + Casque Audio 🎧 (Ne protège pas de ressource opérationnelle)";
 
         if (TxtModelBadge != null)
         {
             TxtModelBadge.Text = isEn
-                ? "Model: YOLOv8s-World (Zero-Trust Vision 27 classes)"
-                : "Modèle : YOLOv8s-World (Vision Zéro-Trust 27 classes)";
+                ? "Model: YOLOv8s-World (Pedagogical Vision 27 classes)"
+                : "Modèle : YOLOv8s-World (Vision pédagogique 27 classes)";
             if (BadgeModelContainer != null)
             {
                 BadgeModelContainer.ToolTip = isEn

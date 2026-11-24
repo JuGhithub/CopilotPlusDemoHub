@@ -13,8 +13,8 @@ public record DamagePhotoInfo
     public required string Description { get; init; }
     public required string InspectionReportFr { get; init; }
     public required string InspectionReportEn { get; init; }
-    public int SeverityScore { get; init; } = 3;
-    public bool AdasAffected { get; init; } = true;
+    public int? SeverityScore { get; init; } = 3;
+    public bool? AdasAffected { get; init; } = true;
     public bool IsCustomUpload { get; init; } = false;
     public int Width { get; init; }
     public int Height { get; init; }
@@ -103,8 +103,8 @@ public static class DamagePhotoAnalyzer
             Width = w,
             Height = h,
             FileSizeBytes = sz,
-            SeverityScore = 0,
-            AdasAffected = false,
+            SeverityScore = null,
+            AdasAffected = null,
             IsCustomUpload = true,
             InspectionReportFr =
                 $"- Métadonnées techniques : Fichier image importé ({w}x{h} px, {sz / 1024} Ko).\n" +
@@ -123,14 +123,22 @@ public static class DamagePhotoAnalyzer
 
         bool isEn = language.Equals("en", StringComparison.OrdinalIgnoreCase);
 
+        string severityText = photo.SeverityScore.HasValue
+            ? $"{photo.SeverityScore.Value}/5"
+            : (isEn ? "Not assessed (External photograph)" : "Non évalué (Photographie externe)");
+
+        string adasText = photo.AdasAffected.HasValue
+            ? (photo.AdasAffected.Value ? (isEn ? "Yes (Sensors & Radar impacted)" : "Oui (Capteurs & Radar concernés)") : (isEn ? "None" : "Non"))
+            : (isEn ? "Not assessed (Requires physical technical inspection)" : "Non évalué (Examen contradictoire requis)");
+
         if (isEn)
         {
             return $@"
 PHOTOGRAPHIC DAMAGE EVIDENCE (INSPECTED LOCALLY)
 ==================================================
 Photo: {photo.Title} ({photo.FileName})
-Resolution: {photo.Width}x{photo.Height} px | Size: {photo.FileSizeBytes / 1024} KB | Severity Indicator: {photo.SeverityScore}/5
-ADAS Impact: {(photo.AdasAffected ? "Yes (Sensors & Radar impacted)" : "None")}
+Resolution: {photo.Width}x{photo.Height} px | Size: {photo.FileSizeBytes / 1024} KB | Severity Indicator: {severityText}
+ADAS Impact: {adasText}
 
 Visual Inspection Findings:
 {photo.InspectionReportEn}
@@ -141,8 +149,8 @@ Visual Inspection Findings:
 PREUVES PHOTOGRAPHIQUES DES DOMMAGES (EXPERTISE LOCALE)
 ==================================================
 Photo : {photo.Title} ({photo.FileName})
-Résolution : {photo.Width}x{photo.Height} px | Taille : {photo.FileSizeBytes / 1024} Ko | Indice de gravité : {photo.SeverityScore}/5
-Impact ADAS : {(photo.AdasAffected ? "Oui (Capteurs & Radar concernés)" : "Non")}
+Résolution : {photo.Width}x{photo.Height} px | Taille : {photo.FileSizeBytes / 1024} Ko | Indice de gravité : {severityText}
+Impact ADAS : {adasText}
 
 Rapport de constat visuel :
 {photo.InspectionReportFr}

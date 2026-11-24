@@ -259,31 +259,59 @@ class SpeakerManager:
             pass
 
     def _save_profiles(self):
-        """Seal profiles using Windows TPM 2.0 DPAPI and persist to disk."""
+        """Encrypt profiles using Windows DPAPI with atomic write & verification."""
         payload = {
             "version": "2.0",
-            "security": "TPM_2_0_SEALED",
-            "hardware_provider": "Microsoft Platform Crypto Provider / DPAPI",
+            "security": "WINDOWS_DPAPI_ENCRYPTED",
+            "provider": "Windows DPAPI (CryptProtectData - CurrentUser)",
             "last_saved": datetime.datetime.now().isoformat(),
             "profiles": self.profiles
         }
         json_bytes = json.dumps(payload, indent=2, ensure_ascii=False).encode("utf-8")
         sealed_bytes = tpm_seal_data(json_bytes)
 
+        # Vérification préventive : tester le déchiffrement avant écriture sur disque
+        try:
+            test_unseal = tpm_unseal_data(sealed_bytes)
+            if not test_unseal:
+                raise ValueError("Contrôle d'intégrité DPAPI échoué en mémoire avant écriture.")
+        except Exception as verif_err:
+            print(f"[SpeakerManager] ALERTE : Échec de validation du chiffrement DPAPI : {verif_err}", file=sys.stderr)
+            return
+
         for p in self._get_tpm_paths_to_sync():
+            tmp_path = p + f".tmp_{os.getpid()}"
             try:
                 os.makedirs(os.path.dirname(p), exist_ok=True)
-                with open(p, "wb") as f:
+                # Écriture atomique : d'abord le fichier temporaire
+                with open(tmp_path, "wb") as f:
                     f.write(sealed_bytes)
+                    f.flush()
+                    os.fsync(f.fileno())
+
+                # Vérification de lecture sur disque
+                with open(tmp_path, "rb") as f:
+                    disk_bytes = f.read()
+                disk_unseal = tpm_unseal_data(disk_bytes)
+                if not disk_unseal:
+                    raise IOError(f"Vérification du coffre temporaire échouée pour {tmp_path}")
+
+                # Remplacement atomique de l'ancien fichier
+                os.replace(tmp_path, p)
                 if p == self.profiles_tpm_path:
                     self._profiles_mtime = os.path.getmtime(p)
             except Exception as e:
-                print(f"[SpeakerManager] Error saving TPM vault to {p}: {e}", file=sys.stderr)
+                print(f"[SpeakerManager] Error saving DPAPI vault to {p}: {e}", file=sys.stderr)
+                if os.path.exists(tmp_path):
+                    try:
+                        os.remove(tmp_path)
+                    except Exception:
+                        pass
 
         tombstone = {
-            "security": "TPM_2_0_SEALED",
-            "gdpr_compliance": "RGPD Article 9 - Biometric Data Protected by Hardware TPM",
-            "notice": "Plaintext storage disabled. Biometric voice vectors are encrypted in voice_profiles.tpm via Windows TPM 2.0 Hardware DPAPI.",
+            "security": "WINDOWS_DPAPI_ENCRYPTED",
+            "gdpr_compliance": "RGPD Article 9 - Données biométriques chiffrées localement via Windows DPAPI",
+            "notice": "Plaintext storage disabled. Biometric voice vectors are encrypted in voice_profiles.tpm via Windows DPAPI tied to active user session.",
             "last_updated": datetime.datetime.now().isoformat()
         }
         for jp in self._get_legacy_json_paths():

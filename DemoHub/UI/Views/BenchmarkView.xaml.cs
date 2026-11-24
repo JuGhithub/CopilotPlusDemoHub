@@ -698,13 +698,22 @@ public partial class BenchmarkView : UserControl, IDisposable
                     : $"{ov.GetProperty("fps").GetDouble():F1} vs {onnx.GetProperty("fps").GetDouble():F1} FPS";
             });
 
+            double fps = ov.GetProperty("fps").GetDouble();
+            string actualDevice = ov.TryGetProperty("device", out var devProp) ? devProp.GetString() ?? "NPU" : "NPU";
+
             _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
-                demoName: "Duel NPU : IR vs Brut vs Olive",
+                demoName: "Benchmark Silicium : IR vs Brut vs Olive",
                 requestedSilicon: "NPU",
-                effectiveSilicon: SiliconDetector.NpuName,
-                siliconDeviceName: "YOLOv8n-Seg (OpenVINO IR vs Raw ONNX vs Olive NPU)",
+                effectiveSilicon: actualDevice,
+                siliconDeviceName: $"YOLOv8n-Seg ({actualDevice} - {SiliconDetector.NpuName})",
                 latencyMs: (int)ov.GetProperty("mean_ms").GetDouble(),
-                tokensPerSecond: ov.GetProperty("fps").GetDouble()
+                tokensPerSecond: 0, // Inférence vision : zéro tokens/s
+                customPowerWatts: null,
+                metadata: new Dictionary<string, object>
+                {
+                    ["fps"] = fps,
+                    ["workload"] = "computer_vision_frames"
+                }
             );
         }
         catch (Exception ex)

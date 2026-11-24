@@ -69,12 +69,17 @@ def build_runtime_evidence(
         runtime_reported_device = active_device
 
     if not evidence_level:
-        if "NPU" in active_device.upper() or "GPU" in active_device.upper():
+        if compiled_model is not None and runtime_reported_device:
             evidence_level = "Verified"
-            sources.append("Runtime API confirmation")
-        else:
+        elif active_device and available_devices and any(active_device.upper() in d.upper() or d.upper() in active_device.upper() for d in available_devices if "NPU" in d.upper() or "GPU" in d.upper()):
+            evidence_level = "Verified"
+            sources.append("Device enumerated in available hardware accelerators")
+        elif active_device:
             evidence_level = "Inferred"
-            sources.append("Device string inspection")
+            sources.append("Host string inspection")
+        else:
+            evidence_level = "Unknown"
+            sources.append("No runtime verification available")
 
     req_upper = requested_device.upper()
     act_upper = active_device.upper()

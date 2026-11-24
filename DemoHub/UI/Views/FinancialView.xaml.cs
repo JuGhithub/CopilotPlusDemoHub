@@ -245,7 +245,8 @@ public partial class FinancialView : UserControl
                 ? $"⚡ Silicon prefill active on {effective} (compiling ~450 tokens context)..."
                 : $"⚡ Silicium local actif ({effective}) : Pré-calcul du contexte (450 tokens)...");
 
-            string systemPrompt = isEn
+            string customPrompt = AppConfig.LoadPrompt("financial-system.txt");
+            string defaultPrompt = isEn
                 ? "You are a senior financial analyst and credit committee secretary. Provide an objective executive flash credit note in 4 parts:\n" +
                   "1. Solvency diagnosis (Autonomy, net leverage)\n" +
                   "2. Ratios & WCR strain (Working capital requirement, cash position)\n" +
@@ -260,6 +261,10 @@ public partial class FinancialView : UserControl
                   "4. Recommandation motivée du comité (Avis objectif, points de vigilance critiques, covenants requis)\n\n" +
                   "Directives : Puces ultra-concises, chiffres exacts, style exécutif direct. Aucun verbiage d'introduction.\n\n" +
                   _localizer.Get("Language_ResponseInstruction");
+
+            string systemPrompt = !string.IsNullOrWhiteSpace(customPrompt)
+                ? customPrompt + "\n\n" + _localizer.Get("Language_ResponseInstruction")
+                : defaultPrompt;
 
             string candidate = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Documents", "Dossier_Credit_Entreprise_849201932.txt");
             if (!File.Exists(candidate))

@@ -8,11 +8,11 @@
 [![Python 3.12](https://img.shields.io/badge/Backend-Python_3.12_(.venv)-3776AB?logo=python)](https://python.org)
 [![Silicium](https://img.shields.io/badge/Hardware-Intel_%7C_AMD_%7C_Qualcomm-blue)]()
 [![CI Build](https://img.shields.io/badge/CI-passing-brightgreen)](.github/workflows/ci.yml)
-[![Tests .NET](https://img.shields.io/badge/Tests_.NET-18_passed-success)](DemoHub.Tests/)
-[![Tests Python](https://img.shields.io/badge/Tests_Python-19_passed-success)](tests/)
+[![Tests .NET](https://img.shields.io/badge/Tests_.NET-24_passed-success)](DemoHub.Tests/)
+[![Tests Python](https://img.shields.io/badge/Tests_Python-23_passed-success)](tests/)
 [![CodeQL](https://img.shields.io/badge/CodeQL-passing-brightgreen)](.github/workflows/codeql.yml)
 [![Audit Sécurité](https://img.shields.io/badge/pip--audit-passing-brightgreen)](requirements.lock)
-[![Intégrité Modèles](https://img.shields.io/badge/Modèles_SHA--256-9%2F9_validés-success)](MODEL_MANIFEST.json)
+[![Intégrité Modèles](https://img.shields.io/badge/Modèles_SHA--256-13%2F13_validés-success)](MODEL_MANIFEST.json)
 [![SBOM](https://img.shields.io/badge/SBOM-SPDX_2.3-blue)](SBOM.spdx.json)
 
 **Copilot+ Demo Hub** est un démonstrateur technique avancé et structuré conçu pour **l'exécution d'IA locale à 100% sur PC Copilot+ sous Windows 11** (après téléchargement initial des modèles et dépendances). Il offre une observabilité complète de l'accélération matérielle, des latences et de l'efficacité énergétique à travers les processeurs neuronaux hétérogènes (NPU, GPU et CPU).

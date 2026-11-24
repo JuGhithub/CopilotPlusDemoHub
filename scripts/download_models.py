@@ -103,24 +103,30 @@ def verify_models_integrity():
     log_step("Contrôle d'Intégrité Cryptographique & Supply-Chain des Modèles")
 
     manifest_hashes = load_manifest_hashes()
+    all_ok = True
+
     if manifest_hashes:
         log_ok(f"Manifeste cryptographique chargé ({len(manifest_hashes)} modèles référencés)")
     else:
-        log_err("AVERTISSEMENT : Aucun MODEL_MANIFEST.json trouvé pour validation croisée")
+        log_err("ERREUR CRITIQUE : Aucun MODEL_MANIFEST.json valide trouvé pour la validation d'intégrité")
+        all_ok = False
 
     key_models = [
         ("Biométrie VoxCeleb ONNX", os.path.join(MODELS_DIR, "speaker", "voxceleb.onnx"), 10 * 1024 * 1024),
         ("Vision YOLOv8s-World OpenVINO XML", os.path.join(MODELS_DIR, "yolov8s-world_openvino_model", "yolov8s-world.xml"), 50 * 1024),
+        ("Vision YOLOv8s-World Poids BIN", os.path.join(MODELS_DIR, "yolov8s-world_openvino_model", "yolov8s-world.bin"), 20 * 1024 * 1024),
         ("Vision YOLOv8s-World ONNX DirectML", os.path.join(MODELS_DIR, "yolov8s-world.onnx"), 10 * 1024 * 1024),
         ("Gomme YOLOv8n-Seg OpenVINO XML", os.path.join(MODELS_DIR, "yolov8n-seg_openvino_model", "yolov8n-seg.xml"), 50 * 1024),
+        ("Gomme YOLOv8n-Seg Poids BIN", os.path.join(MODELS_DIR, "yolov8n-seg_openvino_model", "yolov8n-seg.bin"), 5 * 1024 * 1024),
         ("Gomme YOLOv8n-Seg ONNX DirectML", os.path.join(MODELS_DIR, "yolov8n-seg.onnx"), 5 * 1024 * 1024),
         ("OCR PP-OCRv4 Détection ONNX", os.path.join(MODELS_DIR, "ocr", "ch_PP-OCRv4_det_infer.onnx"), 1 * 1024 * 1024),
         ("OCR PP-OCRv4 Reconnaissance ONNX", os.path.join(MODELS_DIR, "ocr", "ch_PP-OCRv4_rec_infer.onnx"), 5 * 1024 * 1024),
         ("Whisper Tiny OpenVINO Encoder XML", os.path.join(MODELS_DIR, "whisper-tiny-fp16-ov", "openvino_encoder_model.xml"), 50 * 1024),
+        ("Whisper Tiny Poids BIN", os.path.join(MODELS_DIR, "whisper-tiny-fp16-ov", "openvino_encoder_model.bin"), 10 * 1024 * 1024),
         ("Whisper Base OpenVINO Encoder XML", os.path.join(MODELS_DIR, "whisper-base-fp16-ov", "openvino_encoder_model.xml"), 50 * 1024),
+        ("Whisper Base Poids BIN", os.path.join(MODELS_DIR, "whisper-base-fp16-ov", "openvino_encoder_model.bin"), 30 * 1024 * 1024),
     ]
 
-    all_ok = True
     for label, path, min_size in key_models:
         if not os.path.exists(path):
             log_err(f"{label} : Fichier absent ({path})")
@@ -141,14 +147,15 @@ def verify_models_integrity():
 
             if expected_sha:
                 if sha.lower() == expected_sha.lower():
-                    log_ok(f"{label} ({size_mb:.1f} Mo) - SHA-256 CONFORME AU MANIFESTE: {sha[:16]}...{sha[-8:]}")
+                    log_ok(f"{label} ({size_mb:.1f} Mo) - SHA-256 CONFORME: {sha[:16]}...{sha[-8:]}")
                 else:
                     log_err(f"{label} ({size_mb:.1f} Mo) - ALERTE SUPPLY-CHAIN / HASH DISCORDANT !\n"
                             f"      Attendu : {expected_sha}\n"
                             f"      Calculé : {sha}")
                     all_ok = False
             else:
-                log_ok(f"{label} ({size_mb:.1f} Mo) - SHA-256 calculé: {sha[:16]}...{sha[-8:]} (non référencé)")
+                log_err(f"{label} ({size_mb:.1f} Mo) - ALERTE : Modèle non référencé dans MODEL_MANIFEST.json ({norm_rel})")
+                all_ok = False
         except Exception as e:
             log_err(f"{label} : Erreur de calcul de hash : {e}")
             all_ok = False
@@ -429,8 +436,12 @@ def main():
         print("======================================================================\n")
         sys.exit(1)
 
-    # Contrôle final d'intégrité
-    verify_models_integrity()
+    # Contrôle final d'intégrité strict
+    if not verify_models_integrity():
+        print(f"\n {RED}[ÉCHEC INTÉGRITÉ]{RESET} Un ou plusieurs modèles sont manquants, tronqués ou corrompus.")
+        print(" L'intégrité cryptographique n'étant pas certifiée, l'installation s'arrête.")
+        print("======================================================================\n")
+        sys.exit(1)
 
     print(f"\n {GREEN}[SUCCÈS]{RESET} Tous les modèles d'IA nécessaires sont prêts et intègres dans models/")
     print("======================================================================\n")

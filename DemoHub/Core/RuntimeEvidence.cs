@@ -46,7 +46,7 @@ public record RuntimeEvidence
     /// Configured (uniquement demandé), Inferred (déduit), Unknown.
     /// </summary>
     [JsonPropertyName("evidence_level")]
-    public string EvidenceLevel { get; init; } = "Verified";
+    public string EvidenceLevel { get; init; } = "Unknown";
 
     [JsonPropertyName("evidence_sources")]
     public string[] EvidenceSources { get; init; } = [];

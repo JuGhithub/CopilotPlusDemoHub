@@ -328,6 +328,7 @@ def run_benchmark(iterations=30, device="NPU"):
             precision="FP16",
             requested_device=device,
             active_device=chosen_dev,
+            compiled_model=compiled_ir,
             compile_time_ms=t_comp_ir * 1000.0,
             warmup_time_ms=0.0,
             inference_ms=ir_mean,

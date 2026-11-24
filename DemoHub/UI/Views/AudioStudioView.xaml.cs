@@ -1137,7 +1137,7 @@ public partial class AudioStudioView : UserControl, IDisposable
             Padding = new Thickness(8, 2, 8, 2)
         };
         string starPrefix = isKnown ? "⭐ " : "👤 ";
-        string tpmTag = isKnown ? " [🔒 TPM]" : "";
+        string tpmTag = isKnown ? " [🔒 DPAPI]" : "";
         var spkTxt = new TextBlock
         {
             Text = $"{starPrefix}{speakerName}{tpmTag}",
@@ -1153,8 +1153,8 @@ public partial class AudioStudioView : UserControl, IDisposable
         {
             Content = isKnown ? _localizer.Get("Audio_BtnStoredTpm") : _localizer.Get("Audio_BtnNameTpm"),
             ToolTip = isKnown 
-                ? (_localizer.CurrentLanguage == "en" ? "Voiceprint certified in TPM 2.0. Click to rename speaker." : "Empreinte certifiée dans le TPM 2.0. Cliquez pour renommer la voix.") 
-                : (_localizer.CurrentLanguage == "en" ? "Associate a name and seal biometric voiceprint into TPM 2.0" : "Associer un nom et sceller l'empreinte biométrique dans le TPM 2.0"),
+                ? (_localizer.CurrentLanguage == "en" ? "Voiceprint certified in Windows DPAPI. Click to rename speaker." : "Empreinte certifiée dans le Windows DPAPI. Cliquez pour renommer la voix.") 
+                : (_localizer.CurrentLanguage == "en" ? "Associate a name and seal biometric voiceprint into Windows DPAPI" : "Associer un nom et sceller l'empreinte biométrique dans le Windows DPAPI"),
             Style = (Style)FindResource("ModernButtonStyle"),
             Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x29, 0x3B)),
             Foreground = (Brush)FindResource("TextSecondaryBrush"),
@@ -1347,13 +1347,13 @@ public partial class AudioStudioView : UserControl, IDisposable
                 seg.IsKnown = true;
                 if (seg.NameTextBlock != null)
                 {
-                    seg.NameTextBlock.Text = $"⭐ {newName} [🔒 TPM]";
+                    seg.NameTextBlock.Text = $"⭐ {newName} [🔒 DPAPI]";
                 }
             }
         }
 
         OverlayRenameSpeaker.Visibility = Visibility.Collapsed;
-        LblTranscriptionStatus.Text = $"💾 Chiffrement matériel et scellement TPM 2.0 de la voix de '{newName}' en cours...";
+        LblTranscriptionStatus.Text = $"💾 Chiffrement matériel et scellement Windows DPAPI de la voix de '{newName}' en cours...";
 
         // Run speaker_service.py to register profile
         string scriptPath = FindRootFile("speaker_service.py");
@@ -1409,7 +1409,7 @@ public partial class AudioStudioView : UserControl, IDisposable
 
         if (success)
         {
-            LblTranscriptionStatus.Text = $"✅ Empreinte vocale de '{newName}' scellée au TPM 2.0 ! Reconnue automatiquement sur toutes les prochaines réunions.";
+            LblTranscriptionStatus.Text = $"✅ Empreinte vocale de '{newName}' scellée au Windows DPAPI ! Reconnue automatiquement sur toutes les prochaines réunions.";
         }
         else
         {
@@ -1485,8 +1485,8 @@ public partial class AudioStudioView : UserControl, IDisposable
         {
             TxtEnrollName.Text = "";
             LblTranscriptionStatus.Text = (_localizer.CurrentLanguage == "en")
-                ? $"✅ Voiceprint for '{name}' successfully sealed in TPM 2.0! Automatically recognized."
-                : $"✅ Empreinte vocale de '{name}' scellée avec succès dans le TPM 2.0 ! Reconnue automatiquement.";
+                ? $"✅ Voiceprint for '{name}' successfully sealed in Windows DPAPI! Automatically recognized."
+                : $"✅ Empreinte vocale de '{name}' scellée avec succès dans le Windows DPAPI ! Reconnue automatiquement.";
             await RefreshProfilesListAsync();
         }
         else
@@ -1555,7 +1555,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         if (success)
         {
             TxtEnrollName.Text = "";
-            LblTranscriptionStatus.Text = $"✅ Empreinte vocale de '{name}' scellée avec succès dans le TPM 2.0 ! Reconnue automatiquement.";
+            LblTranscriptionStatus.Text = $"✅ Empreinte vocale de '{name}' scellée avec succès dans le Windows DPAPI ! Reconnue automatiquement.";
             await RefreshProfilesListAsync();
         }
         else
@@ -1580,7 +1580,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         StackProfilesList.Children.Clear();
         var loadingTxt = new TextBlock
         {
-            Text = (_localizer.CurrentLanguage == "en") ? "Securely decrypting TPM 2.0 biometric vault..." : "Déchiffrement sécurisé du coffre-fort TPM 2.0...",
+            Text = (_localizer.CurrentLanguage == "en") ? "Securely decrypting Windows DPAPI biometric vault..." : "Déchiffrement sécurisé du coffre-fort Windows DPAPI...",
             FontSize = 11,
             Foreground = (Brush)FindResource("TextMutedBrush"),
             Margin = new Thickness(8)
@@ -1703,7 +1703,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         };
         Grid.SetColumn(avatar, 0);
 
-        // Info with TPM 2.0 Badge
+        // Info with Windows DPAPI Badge
         var infoStack = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
         var nameRow = new StackPanel { Orientation = Orientation.Horizontal };
         nameRow.Children.Add(new TextBlock
@@ -1727,7 +1727,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         };
         tpmBadge.Child = new TextBlock
         {
-            Text = (_localizer.CurrentLanguage == "en") ? "🔒 Sealed TPM 2.0" : "🔒 Scellé TPM 2.0",
+            Text = (_localizer.CurrentLanguage == "en") ? "🔒 Sealed Windows DPAPI" : "🔒 Scellé Windows DPAPI",
             FontSize = 9.5,
             FontWeight = FontWeights.Bold,
             Foreground = (Brush)FindResource("NpuGreenBrush")
@@ -1752,7 +1752,7 @@ public partial class AudioStudioView : UserControl, IDisposable
             Content = (_localizer.CurrentLanguage == "en") ? "🗑️ Delete" : "🗑️ Supprimer",
             ToolTip = (_localizer.CurrentLanguage == "en")
                 ? "Right to erasure (GDPR Art. 17): Permanently delete biometric voiceprint from TPM"
-                : "Droit à l'effacement (RGPD Art. 17) : Supprimer définitivement l'empreinte biométrique du coffre TPM",
+                : "Droit à l'effacement (RGPD Art. 17) : Supprimer définitivement l'empreinte biométrique du coffre DPAPI",
             Style = (Style)FindResource("ModernButtonStyle"),
             Background = new SolidColorBrush(Color.FromRgb(0x33, 0x1E, 0x24)),
             Foreground = (Brush)FindResource("DangerRedBrush"),
@@ -1763,7 +1763,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         };
         delBtn.Click += async (s, e) =>
         {
-            if (MessageBox.Show($"Supprimer définitivement l'empreinte vocale de '{name}' du TPM 2.0 (Droit à l'oubli) ?", "Confirmation de suppression", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            if (MessageBox.Show($"Supprimer définitivement l'empreinte vocale de '{name}' du Windows DPAPI (Droit à l'oubli) ?", "Confirmation de suppression", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 await DeleteProfileAsync(name);
             }
@@ -2135,8 +2135,8 @@ public partial class AudioStudioView : UserControl, IDisposable
                 : string.Empty;
 
             LblDsiTakeaway.Text = isEn
-                ? $"DSI EXECUTIVE SUMMARY: Meeting and client call transcription is enterprise AI use case #1. With the dedicated NPU ({SiliconDetector.NpuName}) and the hardware TPM 2.0 security chip of Copilot+ PCs, transcription runs locally{npuSpeed} with no audio leaving the device. Biometric voiceprints are hardware-sealed, supporting GDPR (Art. 9) compliance with zero cloud exfiltration. Power figures shown above are internal estimates, not measurements."
-                : $"SYNTHÈSE DSI : La transcription de réunions et d'appels clients est le cas d'usage n°1 de l'IA vocale en entreprise. Avec le NPU dédié ({SiliconDetector.NpuName}) et la puce de sécurité matérielle TPM 2.0 du Copilot+ PC, la transcription s'exécute localement{npuSpeed}, sans qu'aucun audio ne quitte le poste. Les empreintes vocales biométriques sont scellées au matériel, ce qui soutient la conformité RGPD (Art. 9) sans fuite cloud. Les puissances affichées ci-dessus sont des estimations internes, pas des mesures.";
+                ? $"DSI EXECUTIVE SUMMARY: Meeting and client call transcription is enterprise AI use case #1. With the dedicated NPU ({SiliconDetector.NpuName}) and the hardware Windows DPAPI security chip of Copilot+ PCs, transcription runs locally{npuSpeed} with no audio leaving the device. Biometric voiceprints are locally encrypted, supporting GDPR (Art. 9) compliance with zero cloud exfiltration. Power figures shown above are internal estimates, not measurements."
+                : $"SYNTHÈSE DSI : La transcription de réunions et d'appels clients est le cas d'usage n°1 de l'IA vocale en entreprise. Avec le NPU dédié ({SiliconDetector.NpuName}) et la puce de sécurité matérielle Windows DPAPI du Copilot+ PC, la transcription s'exécute localement{npuSpeed}, sans qu'aucun audio ne quitte le poste. Les empreintes vocales biométriques sont scellées au matériel, ce qui soutient la conformité RGPD (Art. 9) sans fuite cloud. Les puissances affichées ci-dessus sont des estimations internes, pas des mesures.";
         }
     }
 
@@ -2436,7 +2436,7 @@ public partial class AudioStudioView : UserControl, IDisposable
 
         if (LblDsiRow4Crit != null) LblDsiRow4Crit.Text = isEn ? "Biometric security & GDPR (Art. 9)" : "Sécurité biométrique & RGPD (Art. 9)";
         if (LblDsiRow4Gpu != null) LblDsiRow4Gpu.Text = isEn ? "Cloud / Unencrypted files (Exfiltration & theft risk)" : "Cloud / Fichiers non-chiffrés (Risque d'exfiltration & vol)";
-        if (LblDsiRow4Npu != null) LblDsiRow4Npu.Text = isEn ? "100% Sealed into PC TPM 2.0 • Hardware master key" : "100% Scellé au TPM 2.0 du PC • Clé matérielle inviolable";
+        if (LblDsiRow4Npu != null) LblDsiRow4Npu.Text = isEn ? "100% Sealed into PC Windows DPAPI • Hardware master key" : "100% Scellé au Windows DPAPI du PC • Clé matérielle inviolable";
 
         // LblDsiTakeaway : géré par RefreshMeasuredScorecard() (valeurs mesurées uniquement)
 
@@ -2446,7 +2446,7 @@ public partial class AudioStudioView : UserControl, IDisposable
         if (LblModalRenameInputLabel != null) LblModalRenameInputLabel.Text = _localizer.Get("Audio_RenameInputLabel");
         if (LblModalRenameRgpdTitle != null) LblModalRenameRgpdTitle.Text = isEn ? "⚖️ GDPR COMPLIANCE (ARTICLE 9 - BIOMETRIC DATA):" : "⚖️ CONFORMITÉ RGPD (ARTICLE 9 - DONNÉES BIOMÉTRIQUES) :";
         if (LblModalRenameRgpdDesc != null) LblModalRenameRgpdDesc.Text = isEn
-            ? "A voiceprint is sensitive biometric data. Prior consent must be obtained. Data remains hardware-sealed in this PC's TPM and can be deleted at any time."
+            ? "A voiceprint is sensitive biometric data. Prior consent must be obtained. Data remains locally encrypted via Windows DPAPI and can be deleted at any time."
             : "L'empreinte vocale est une donnée biométrique. Le consentement préalable de la personne doit être recueilli. Les données restent scellées au TPM de ce PC et sont supprimables à tout moment.";
         if (ChkConsentRename != null) ChkConsentRename.Content = _localizer.Get("Audio_RenameConsent");
         if (BtnCancelRename != null) BtnCancelRename.Content = _localizer.Get("Audio_RenameBtnCancel");
@@ -2455,10 +2455,10 @@ public partial class AudioStudioView : UserControl, IDisposable
         if (LblModalProfilesTitle != null) LblModalProfilesTitle.Text = _localizer.Get("Audio_ProfilesTitle");
         if (LblModalProfilesBadge != null) LblModalProfilesBadge.Text = isEn ? "● HARDWARE SEALED" : "● MATÉRIEL SCELLÉ";
         if (LblModalProfilesDesc != null) LblModalProfilesDesc.Text = isEn
-            ? "Biometric database hardware-encrypted by this PC's unique TPM 2.0 / Pluton key. Zero data leaves the machine."
+            ? "Biometric database hardware-encrypted by this PC's unique Windows DPAPI / Pluton key. Zero data leaves the machine."
             : "Base biométrique chiffrée par la clé matérielle unique de ce PC (Microsoft Pluton / PTT). Aucune donnée ne quitte la machine.";
         if (LblModalProfilesEnrollTitle != null) LblModalProfilesEnrollTitle.Text = isEn ? "➕ ENROLL A NEW VOICE (GDPR CONSENT)" : "➕ ENRÔLER UNE NOUVELLE VOIX (ACCORD RGPD)";
-        if (LblModalProfilesEnrollBadge != null) LblModalProfilesEnrollBadge.Text = isEn ? "🔒 Sealed TPM 2.0" : "🔒 Scellé TPM 2.0";
+        if (LblModalProfilesEnrollBadge != null) LblModalProfilesEnrollBadge.Text = isEn ? "🔒 Sealed Windows DPAPI" : "🔒 Scellé Windows DPAPI";
         if (BtnEnrollMic != null) BtnEnrollMic.Content = _localizer.Get("Audio_ProfilesBtnMic");
         if (BtnEnrollFile != null) BtnEnrollFile.Content = _localizer.Get("Audio_ProfilesBtnFile");
         if (ChkConsentEnroll != null) ChkConsentEnroll.Content = isEn

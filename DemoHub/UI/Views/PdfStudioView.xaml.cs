@@ -1072,6 +1072,14 @@ public partial class PdfStudioView : UserControl, IDisposable
                                     finalPdf = root.GetProperty("output_pdf").GetString() ?? outPdf;
                                     finalPreview = root.GetProperty("preview_path").GetString() ?? outPreview;
                                     inferMs = root.GetProperty("infer_time_ms").GetInt32();
+                                    if (root.TryGetProperty("device", out var dProp) && !string.IsNullOrWhiteSpace(dProp.GetString()))
+                                    {
+                                        effectiveSilicon = dProp.GetString()!;
+                                    }
+                                    if (root.TryGetProperty("status", out var stProp) && stProp.GetString() == "partial")
+                                    {
+                                        lastErr = "Avertissement : Certaines pages n'ont pas pu être traitées intégralement.";
+                                    }
 
                                     // Update word bounding boxes for subsequent mouse clicks/selection
                                     if (root.TryGetProperty("words", out var wordsElem) && wordsElem.ValueKind == JsonValueKind.Array)
@@ -1128,26 +1136,30 @@ public partial class PdfStudioView : UserControl, IDisposable
                 DisplayImage(finalPreview);
             }
 
-            // Power Metrics
-            double watts = device.ToUpperInvariant().Contains("GPU") ? 16.5 : 2.2;
-            double joules = watts * (inferMs / 1000.0);
-
-            TxtInferSpeed.Text = $"⚡ {inferMs} ms • {device}";
+            TxtInferSpeed.Text = $"⚡ {inferMs} ms • {effectiveSilicon}";
             BadgeSpeed.Visibility = Visibility.Visible;
-            TxtPower.Text = $"🔋 ~{watts:F1} W • 🌱 {joules:F3} J";
-            BadgePower.Visibility = Visibility.Visible;
+            TxtPower.Text = "🔋 Non mesuré (N/A)";
+            BadgePower.Visibility = Visibility.Collapsed;
 
-            LblStatus.Text = $"✅ Opération '{auditName}' réalisée avec succès en {inferMs} ms sur {device} !";
+            if (string.IsNullOrEmpty(lastErr))
+            {
+                LblStatus.Text = $"✅ Opération '{auditName}' réalisée avec succès en {inferMs} ms sur {effectiveSilicon} !";
+            }
+            else
+            {
+                LblStatus.Text = $"⚠️ Opération '{auditName}' partielle en {inferMs} ms sur {effectiveSilicon} : {lastErr}";
+            }
 
             // Telemetry
             _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
                 demoName: auditName,
                 requestedSilicon: device,
-                effectiveSilicon: device,
-                siliconDeviceName: $"PyMuPDF Vector Engine ({device})",
+                effectiveSilicon: effectiveSilicon,
+                siliconDeviceName: $"PyMuPDF + RapidOCR ({effectiveSilicon})",
                 latencyMs: inferMs,
-                customPowerWatts: watts
-            );
+                status: string.IsNullOrEmpty(lastErr) ? "Success" : "Partial",
+                tokensPerSecond: 0,
+                customPowerWatts: null);
         }
         else
         {

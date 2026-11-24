@@ -29,7 +29,18 @@ public sealed class FoundryClient : IDisposable
         _configuredBaseUrl = baseUrl;
         _currentBaseUrl = ResolveBaseUrl(baseUrl);
 
-        _httpClient = new HttpClient
+        if (!AppConfig.Current.ValidateEndpoint(_currentBaseUrl, out var error))
+        {
+            throw new InvalidOperationException($"Endpoint d'inférence non conforme à la politique de sécurité locale : {error}");
+        }
+
+        var handler = new SocketsHttpHandler
+        {
+            AllowAutoRedirect = false,
+            ConnectTimeout = TimeSpan.FromSeconds(5)
+        };
+
+        _httpClient = new HttpClient(handler)
         {
             Timeout = TimeSpan.FromMinutes(10)
         };
@@ -67,20 +78,27 @@ public sealed class FoundryClient : IDisposable
 
     public bool RefreshBaseUrl()
     {
+        string? candidate = null;
         string? activeUrl = GetActiveServerUrl();
         if (!string.IsNullOrWhiteSpace(activeUrl))
         {
-            _currentBaseUrl = activeUrl;
-            return true;
+            candidate = activeUrl;
+        }
+        else
+        {
+            string? envUrl =
+                Environment.GetEnvironmentVariable("FOUNDRY_BASE_URL")
+                ?? Environment.GetEnvironmentVariable("FOUNDRY_URL");
+
+            if (!string.IsNullOrWhiteSpace(envUrl))
+            {
+                candidate = envUrl;
+            }
         }
 
-        string? envUrl =
-            Environment.GetEnvironmentVariable("FOUNDRY_BASE_URL")
-            ?? Environment.GetEnvironmentVariable("FOUNDRY_URL");
-
-        if (!string.IsNullOrWhiteSpace(envUrl))
+        if (candidate != null && AppConfig.Current.ValidateEndpoint(candidate, out _))
         {
-            _currentBaseUrl = envUrl;
+            _currentBaseUrl = candidate;
             return true;
         }
 
@@ -141,6 +159,7 @@ public sealed class FoundryClient : IDisposable
             if (process.Start())
             {
                 var stdoutTask = process.StandardOutput.ReadToEndAsync();
+                var stderrTask = process.StandardError.ReadToEndAsync();
                 if (process.WaitForExit(2000))
                 {
                     string json = stdoutTask.GetAwaiter().GetResult();
@@ -157,12 +176,16 @@ public sealed class FoundryClient : IDisposable
                             urls.GetArrayLength() > 0)
                         {
                             string? firstUrl = urls[0].GetString();
-                            if (!string.IsNullOrWhiteSpace(firstUrl))
+                            if (!string.IsNullOrWhiteSpace(firstUrl) && AppConfig.Current.ValidateEndpoint(firstUrl, out _))
                             {
                                 return firstUrl;
                             }
                         }
                     }
+                }
+                else
+                {
+                    try { process.Kill(entireProcessTree: true); } catch { }
                 }
             }
         }
@@ -1288,10 +1311,12 @@ public sealed class FoundryClient : IDisposable
             double elapsedSeconds =
                 stopwatch.Elapsed.TotalSeconds;
 
+            bool tokensEstimated = false;
             if (completionTokens == 0 && accumulatedContent.Length > 0)
             {
                 completionTokens = Math.Max(1, accumulatedContent.Length / 4);
                 totalTokens = promptTokens + completionTokens;
+                tokensEstimated = true;
             }
 
             double tokensPerSecond =
@@ -1317,8 +1342,8 @@ public sealed class FoundryClient : IDisposable
                     DetectTargetDevice(returnedModelId),
                 ExecutionProvider =
                     DetectExecutionProvider(returnedModelId),
-                InferenceLocation = "Local device",
-                EndpointType = "Loopback",
+                InferenceLocation = IsLocalEndpoint ? "Local device" : "Remote endpoint",
+                EndpointType = IsLocalEndpoint ? "Loopback" : "Network",
                 StartedUtc = startedUtc,
                 CompletedUtc = DateTime.UtcNow,
                 LatencyMilliseconds =
@@ -1326,6 +1351,7 @@ public sealed class FoundryClient : IDisposable
                 PromptTokens = promptTokens,
                 CompletionTokens = completionTokens,
                 TotalTokens = totalTokens,
+                IsTokensEstimated = tokensEstimated,
                 TokensPerSecond =
                     Math.Round(tokensPerSecond, 1),
                 RawResponseJson = rawResponseBuilder.ToString()
@@ -1748,6 +1774,8 @@ public sealed class FoundryInferenceResult
 
     public int TotalTokens { get; set; }
 
+    public bool IsTokensEstimated { get; set; }
+
     public double TokensPerSecond { get; set; }
 
     public string RawResponseJson { get; set; } =
@@ -1920,6 +1948,8 @@ internal sealed class FoundryTelemetryRecord
     public int CompletionTokens { get; set; }
 
     public int TotalTokens { get; set; }
+
+    public bool IsTokensEstimated { get; set; }
 
     public double TokensPerSecond { get; set; }
 

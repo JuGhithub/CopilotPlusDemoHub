@@ -12,9 +12,15 @@
       "format": "ONNX",
       "precision": "FP32",
       "license": "Apache-2.0",
-      "architecture": ["win-x64", "win-arm64"],
+      "architecture": [
+        "win-x64",
+        "win-arm64"
+      ],
       "runtime": "ONNXRuntime",
-      "validatedDevices": ["DirectML GPU", "Host CPU"],
+      "validatedDevices": [
+        "DirectML GPU",
+        "Host CPU"
+      ],
       "path": "models/speaker/voxceleb.onnx",
       "source_repository": "https://huggingface.co/MelissaJ/spkrec-ecapa-voxceleb-onnx",
       "sha256": "2ef890f0212dbeb5684622c42c03b4df80ef4cc171da004d2ec754247a3cf3f9"
@@ -26,9 +32,15 @@
       "format": "OpenVINO IR (XML+BIN)",
       "precision": "FP16",
       "license": "AGPL-3.0",
-      "architecture": ["win-x64"],
+      "architecture": [
+        "win-x64"
+      ],
       "runtime": "OpenVINO",
-      "validatedDevices": ["Intel NPU", "Arc GPU", "Host CPU"],
+      "validatedDevices": [
+        "Intel NPU",
+        "Arc GPU",
+        "Host CPU"
+      ],
       "path": "models/yolov8s-world_openvino_model/yolov8s-world.xml",
       "source_repository": "https://github.com/ultralytics/ultralytics",
       "sha256": "5e4049554b3cc8d66115933262b6ef37ede1fa2bc1b62c5919c9e674ae4e2758"
@@ -40,9 +52,15 @@
       "format": "ONNX",
       "precision": "FP32",
       "license": "AGPL-3.0",
-      "architecture": ["win-x64", "win-arm64"],
+      "architecture": [
+        "win-x64",
+        "win-arm64"
+      ],
       "runtime": "ONNXRuntime DirectML",
-      "validatedDevices": ["DirectML GPU", "Host CPU"],
+      "validatedDevices": [
+        "DirectML GPU",
+        "Host CPU"
+      ],
       "path": "models/yolov8s-world.onnx",
       "source_repository": "https://github.com/ultralytics/ultralytics",
       "sha256": "241acee094b2066fdfc2d62a3e14f7e6e2488b43a68d0fa31bf3973de89a0384"
@@ -54,9 +72,15 @@
       "format": "OpenVINO IR (XML+BIN)",
       "precision": "FP16",
       "license": "AGPL-3.0",
-      "architecture": ["win-x64"],
+      "architecture": [
+        "win-x64"
+      ],
       "runtime": "OpenVINO",
-      "validatedDevices": ["Intel NPU", "Arc GPU", "Host CPU"],
+      "validatedDevices": [
+        "Intel NPU",
+        "Arc GPU",
+        "Host CPU"
+      ],
       "path": "models/yolov8n-seg_openvino_model/yolov8n-seg.xml",
       "source_repository": "https://github.com/ultralytics/ultralytics",
       "sha256": "dde51002ac946197abee48c5707ce870ab966b59a9a2aba5c22a22fc3246a4da"
@@ -68,9 +92,15 @@
       "format": "ONNX",
       "precision": "FP32",
       "license": "AGPL-3.0",
-      "architecture": ["win-x64", "win-arm64"],
+      "architecture": [
+        "win-x64",
+        "win-arm64"
+      ],
       "runtime": "ONNXRuntime DirectML",
-      "validatedDevices": ["DirectML GPU", "Host CPU"],
+      "validatedDevices": [
+        "DirectML GPU",
+        "Host CPU"
+      ],
       "path": "models/yolov8n-seg.onnx",
       "source_repository": "https://github.com/ultralytics/ultralytics",
       "sha256": "8d5f20410503e19877cbdb2dab3d848328159cce86e94948305571053cfa08ee"
@@ -82,9 +112,16 @@
       "format": "ONNX",
       "precision": "FP32",
       "license": "Apache-2.0",
-      "architecture": ["win-x64", "win-arm64"],
+      "architecture": [
+        "win-x64",
+        "win-arm64"
+      ],
       "runtime": "ONNXRuntime DirectML / OpenVINO",
-      "validatedDevices": ["Intel NPU", "DirectML GPU", "Host CPU"],
+      "validatedDevices": [
+        "Intel NPU",
+        "DirectML GPU",
+        "Host CPU"
+      ],
       "path": "models/ocr/ch_PP-OCRv4_det_infer.onnx",
       "source_repository": "https://github.com/PaddlePaddle/PaddleOCR",
       "sha256": "d2a7720d45a54257208b1e13e36a8479894cb74155a5efe29462512d42f49da9"
@@ -96,9 +133,15 @@
       "format": "ONNX",
       "precision": "FP32",
       "license": "Apache-2.0",
-      "architecture": ["win-x64", "win-arm64"],
+      "architecture": [
+        "win-x64",
+        "win-arm64"
+      ],
       "runtime": "ONNXRuntime DirectML",
-      "validatedDevices": ["DirectML GPU", "Host CPU"],
+      "validatedDevices": [
+        "DirectML GPU",
+        "Host CPU"
+      ],
       "path": "models/ocr/ch_PP-OCRv4_rec_infer.onnx",
       "source_repository": "https://github.com/PaddlePaddle/PaddleOCR",
       "sha256": "48fc40f24f6d2a207a2b1091d3437eb3cc3eb6b676dc3ef9c37384005483683b"
@@ -110,9 +153,15 @@
       "format": "OpenVINO IR (XML+BIN)",
       "precision": "FP16",
       "license": "MIT",
-      "architecture": ["win-x64"],
+      "architecture": [
+        "win-x64"
+      ],
       "runtime": "OpenVINO",
-      "validatedDevices": ["Intel NPU", "Arc GPU", "Host CPU"],
+      "validatedDevices": [
+        "Intel NPU",
+        "Arc GPU",
+        "Host CPU"
+      ],
       "path": "models/whisper-tiny-fp16-ov/openvino_encoder_model.xml",
       "source_repository": "https://huggingface.co/OpenVINO/whisper-tiny-fp16-ov",
       "sha256": "8fd7714cbf8d87edd826eb058ae5cd2a82e0c568008155d78d428ef0a366d0e9"
@@ -124,12 +173,98 @@
       "format": "OpenVINO IR (XML+BIN)",
       "precision": "FP16",
       "license": "MIT",
-      "architecture": ["win-x64"],
+      "architecture": [
+        "win-x64"
+      ],
       "runtime": "OpenVINO",
-      "validatedDevices": ["Intel NPU", "Arc GPU", "Host CPU"],
+      "validatedDevices": [
+        "Intel NPU",
+        "Arc GPU",
+        "Host CPU"
+      ],
       "path": "models/whisper-base-fp16-ov/openvino_encoder_model.xml",
       "source_repository": "https://huggingface.co/OpenVINO/whisper-base-fp16-ov",
       "sha256": "5920849e30a3af25bcb674c539862d418e1b7ba4fe666105fb66cfd97e4d450d"
+    },
+    {
+      "id": "yolov8s-world-openvino-bin",
+      "name": "YOLOv8s-World Poids (OpenVINO BIN)",
+      "purpose": "Poids neuronaux FP16 Vision Zero-Trust",
+      "format": "OpenVINO BIN",
+      "precision": "FP16",
+      "license": "AGPL-3.0",
+      "architecture": [
+        "win-x64"
+      ],
+      "runtime": "OpenVINO",
+      "validatedDevices": [
+        "Intel NPU",
+        "Arc GPU",
+        "Host CPU"
+      ],
+      "path": "models/yolov8s-world_openvino_model/yolov8s-world.bin",
+      "source_repository": "https://github.com/ultralytics/ultralytics",
+      "sha256": "36b0cddca86f78c9a25dba32256d65a61ea8fe7b4d5d99e9271c33d5dc252779"
+    },
+    {
+      "id": "yolov8n-seg-openvino-bin",
+      "name": "YOLOv8n-Seg Poids (OpenVINO BIN)",
+      "purpose": "Poids neuronaux FP16 Segmentation Gomme",
+      "format": "OpenVINO BIN",
+      "precision": "FP16",
+      "license": "AGPL-3.0",
+      "architecture": [
+        "win-x64"
+      ],
+      "runtime": "OpenVINO",
+      "validatedDevices": [
+        "Intel NPU",
+        "Arc GPU",
+        "Host CPU"
+      ],
+      "path": "models/yolov8n-seg_openvino_model/yolov8n-seg.bin",
+      "source_repository": "https://github.com/ultralytics/ultralytics",
+      "sha256": "623374898add8841f31fb986bea7a7e958ab7a2619a97d565c46ddc2b4554b61"
+    },
+    {
+      "id": "whisper-tiny-openvino-bin",
+      "name": "Whisper Tiny Poids (OpenVINO BIN)",
+      "purpose": "Poids neuronaux FP16 Encodeur Whisper Tiny",
+      "format": "OpenVINO BIN",
+      "precision": "FP16",
+      "license": "MIT",
+      "architecture": [
+        "win-x64"
+      ],
+      "runtime": "OpenVINO",
+      "validatedDevices": [
+        "Intel NPU",
+        "Arc GPU",
+        "Host CPU"
+      ],
+      "path": "models/whisper-tiny-fp16-ov/openvino_encoder_model.bin",
+      "source_repository": "https://huggingface.co/OpenVINO/whisper-tiny-fp16-ov",
+      "sha256": "3a5370a29ae8c03c1ec604414c2fafed0469ad7ff85a62c88e368ab7e1be6eb6"
+    },
+    {
+      "id": "whisper-base-openvino-bin",
+      "name": "Whisper Base Poids (OpenVINO BIN)",
+      "purpose": "Poids neuronaux FP16 Encodeur Whisper Base",
+      "format": "OpenVINO BIN",
+      "precision": "FP16",
+      "license": "MIT",
+      "architecture": [
+        "win-x64"
+      ],
+      "runtime": "OpenVINO",
+      "validatedDevices": [
+        "Intel NPU",
+        "Arc GPU",
+        "Host CPU"
+      ],
+      "path": "models/whisper-base-fp16-ov/openvino_encoder_model.bin",
+      "source_repository": "https://huggingface.co/OpenVINO/whisper-base-fp16-ov",
+      "sha256": "9ee2fa771d004d1af47ffc7da0909f2025d43b7df05e5c92532d959b9c2db234"
     }
   ]
 }
