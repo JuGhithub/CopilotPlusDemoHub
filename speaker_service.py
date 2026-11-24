@@ -6,8 +6,15 @@ import json
 import os
 import sys
 import numpy as np
-import openvino as ov
-import soundfile as sf
+try:
+    import openvino as ov
+except ImportError:
+    ov = None
+
+try:
+    import soundfile as sf
+except ImportError:
+    sf = None
 
 COLORS = [
     "#3B82F6",  # Vibrant Blue
