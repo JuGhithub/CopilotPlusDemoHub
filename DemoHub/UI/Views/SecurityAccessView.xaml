@@ -19,11 +19,11 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0">
-                        <TextBlock x:Name="LblAccessTitle" Text="🛡️ CONTRÔLE D'ACCÈS ZERO-TRUST &amp; DÉMINEUR SOUVERAIN"
-                                   FontSize="20" FontWeight="Bold"
+                        <TextBlock x:Name="LblAccessTitle" Text="🛡️ CONTRÔLE DE CONFORMITÉ VISUELLE (PRÉREQUIS MATÉRIELS)"
+                                   FontSize="18" FontWeight="Bold"
                                    Foreground="{StaticResource TextPrimaryBrush}" />
-                        <TextBlock x:Name="LblAccessSub" Text="Authentification multimodale NPU/GPU : Détection conjointe obligatoire Tasse ☕ + Lunettes 👓 + Casque Audio 🎧"
-                                   FontSize="13" Margin="0,4,0,0"
+                        <TextBlock x:Name="LblAccessSub" Text="Illustration pédagogique de vision par ordinateur : Détection conjointe (Tasse ☕ + Lunettes 👓 + Casque 🎧). Démonstrateur indicatif."
+                                   FontSize="12" Margin="0,4,0,0"
                                    Foreground="{StaticResource TextSecondaryBrush}" />
                     </StackPanel>
 

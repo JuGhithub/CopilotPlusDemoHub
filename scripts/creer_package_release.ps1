@@ -103,6 +103,12 @@ foreach ($item in $ItemsToCopy) {
     }
 }
 
+# Nettoyage des fichiers temporaires ou résiduels d'exécution
+$StagingOutputs = Join-Path $TempStaging "Data\Documents\outputs"
+if (Test-Path $StagingOutputs) {
+    Remove-Item -Recurse -Force $StagingOutputs -ErrorAction SilentlyContinue
+}
+
 # 3. Inclusion optionnelle des modèles
 if ($IncludeModels) {
     Write-Host "[3/4] Inclusion des modèles locaux (models/)..." -ForegroundColor Yellow

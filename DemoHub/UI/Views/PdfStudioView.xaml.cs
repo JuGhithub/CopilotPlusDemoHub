@@ -862,19 +862,7 @@ public partial class PdfStudioView : UserControl, IDisposable
                 }
             }
 
-            // Ensure named entities actually present in the document are captured
-            string[] candidateNamedEntities =
-            {
-                "Alexandre MOREAU", "Claire DUPONT", "489 123 456", "798 654 321", "CT-2026-8942", "BNDEFRPP"
-            };
-            foreach (var candidate in candidateNamedEntities)
-            {
-                if (docText.Contains(candidate, StringComparison.OrdinalIgnoreCase) &&
-                    !entities.Any(x => x.Equals(candidate, StringComparison.OrdinalIgnoreCase)))
-                {
-                    entities.Add(candidate);
-                }
-            }
+            // Entités détectées dynamiquement par le modèle ou regex (aucun nom hardcodé)
 
             _lastAuditEntities = string.Join("|", entities.Distinct(StringComparer.OrdinalIgnoreCase));
             if (!string.IsNullOrEmpty(_lastAuditEntities))

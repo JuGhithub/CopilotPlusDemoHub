@@ -133,30 +133,34 @@ public sealed class FoundryClient : IDisposable
                 FileName = FindFoundryExecutable(),
                 Arguments = "server status -o json",
                 RedirectStandardOutput = true,
+                RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
 
             if (process.Start())
             {
-                string json = process.StandardOutput.ReadToEnd();
-                process.WaitForExit(1500);
-
-                if (!string.IsNullOrWhiteSpace(json))
+                var stdoutTask = process.StandardOutput.ReadToEndAsync();
+                if (process.WaitForExit(2000))
                 {
-                    using var doc = JsonDocument.Parse(json);
-                    if (doc.RootElement.TryGetProperty("running", out var runningProp) && !runningProp.GetBoolean())
-                    {
-                        return null;
-                    }
+                    string json = stdoutTask.GetAwaiter().GetResult();
 
-                    if (doc.RootElement.TryGetProperty("webUrls", out var urls) &&
-                        urls.GetArrayLength() > 0)
+                    if (!string.IsNullOrWhiteSpace(json))
                     {
-                        string? firstUrl = urls[0].GetString();
-                        if (!string.IsNullOrWhiteSpace(firstUrl))
+                        using var doc = JsonDocument.Parse(json);
+                        if (doc.RootElement.TryGetProperty("running", out var runningProp) && !runningProp.GetBoolean())
                         {
-                            return firstUrl;
+                            return null;
+                        }
+
+                        if (doc.RootElement.TryGetProperty("webUrls", out var urls) &&
+                            urls.GetArrayLength() > 0)
+                        {
+                            string? firstUrl = urls[0].GetString();
+                            if (!string.IsNullOrWhiteSpace(firstUrl))
+                            {
+                                return firstUrl;
+                            }
                         }
                     }
                 }
@@ -1149,6 +1153,8 @@ public sealed class FoundryClient : IDisposable
             int promptTokens = 0;
             int completionTokens = 0;
             int totalTokens = 0;
+            bool isPartial = false;
+            string? interruptionReason = null;
 
             while (!reader.EndOfStream && !cancellationToken.IsCancellationRequested)
             {
@@ -1161,7 +1167,10 @@ public sealed class FoundryClient : IDisposable
                 {
                     if (accumulatedContent.Length > 0)
                     {
-                        // Some content was already streamed to the UI; finish gracefully
+                        // Some content was already streamed to the UI; finish gracefully with partial notice
+                        isPartial = true;
+                        interruptionReason = "Flux interrompu avant complétion intégrale";
+                        onChunkReceived("\n\n[⚠️ Note : Flux interrompu avant complétion intégrale]");
                         break;
                     }
 
@@ -1290,9 +1299,17 @@ public sealed class FoundryClient : IDisposable
                     ? completionTokens / elapsedSeconds
                     : 0;
 
+            if (cancellationToken.IsCancellationRequested && accumulatedContent.Length > 0)
+            {
+                isPartial = true;
+                interruptionReason = "Génération interrompue par l'utilisateur ou timeout";
+            }
+
             return new FoundryInferenceResult
             {
-                Successful = true,
+                Successful = !isPartial,
+                IsPartial = isPartial,
+                InterruptionReason = interruptionReason,
                 Content = accumulatedContent.ToString(),
                 ModelId = returnedModelId,
                 ParentModel = model.Parent,
@@ -1693,6 +1710,10 @@ public sealed class FoundryModel
 public sealed class FoundryInferenceResult
 {
     public bool Successful { get; set; }
+
+    public bool IsPartial { get; set; }
+
+    public string? InterruptionReason { get; set; }
 
     public string Content { get; set; } =
         string.Empty;

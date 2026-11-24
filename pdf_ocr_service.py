@@ -542,19 +542,44 @@ def action_redact(args):
             except Exception:
                 pass
         elif patterns:
-            for page in doc:
+            for page_idx, page in enumerate(doc):
                 page_text = page.get_text("text")
-                for pattern, label in patterns:
-                    matches = []
-                    for m in re.finditer(pattern, page_text, re.IGNORECASE):
-                        found_str = m.group(0)
-                        sub_matches = page.search_for(found_str)
-                        matches.extend(sub_matches)
+                if not page_text.strip():
+                    # Traitement explicite des documents scannés sans couche texte via OCR
+                    try:
+                        dpi = getattr(args, 'dpi', 150) or 150
+                        pix = page.get_pixmap(dpi=dpi)
+                        temp_scan = os.path.join(os.path.dirname(out_pdf), f"scan_tmp_{page_idx}.png")
+                        pix.save(temp_scan)
+                        ocr_engine, _, _, _, _ = get_ocr_engine("olive", getattr(args, "device", "NPU"))
+                        if ocr_engine:
+                            ocr_res, _ = ocr_engine(temp_scan)
+                            if ocr_res:
+                                scale = 72.0 / float(dpi)
+                                for item in ocr_res:
+                                    box, text, _ = item
+                                    for pattern, label in patterns:
+                                        if re.search(pattern, text, re.IGNORECASE):
+                                            rect = pymupdf.Rect(box[0][0]*scale, box[0][1]*scale, box[2][0]*scale, box[2][1]*scale)
+                                            page.add_redact_annot(rect, fill=(0, 0, 0))
+                                            total_redacted += 1
+                                            redacted_details.append(f"{label} (OCR)")
+                        if os.path.exists(temp_scan):
+                            os.remove(temp_scan)
+                    except Exception:
+                        pass
+                else:
+                    for pattern, label in patterns:
+                        matches = []
+                        for m in re.finditer(pattern, page_text, re.IGNORECASE):
+                            found_str = m.group(0)
+                            sub_matches = page.search_for(found_str)
+                            matches.extend(sub_matches)
 
-                    for rect in matches:
-                        page.add_redact_annot(rect, fill=(0, 0, 0))
-                        total_redacted += 1
-                        redacted_details.append(label)
+                        for rect in matches:
+                            page.add_redact_annot(rect, fill=(0, 0, 0))
+                            total_redacted += 1
+                            redacted_details.append(label)
 
                 page.apply_redactions()
 
