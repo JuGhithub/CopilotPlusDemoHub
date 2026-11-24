@@ -555,6 +555,7 @@
                             </Grid>
 
                             <CheckBox x:Name="ChkConsentEnroll" Content="Accord explicite recueilli : la personne consent à la conservation locale de son empreinte (RGPD Art. 9)" IsChecked="True" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" />
+                            <TextBlock Text="⚠️ Démonstrateur technologique local — Ne constitue pas un mécanisme d'authentification certifié. Empreinte chiffrée via DPAPI, révocable et supprimable localement à tout moment." FontSize="9.5" Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
                         </StackPanel>
                     </Border>
 
