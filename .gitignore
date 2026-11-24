@@ -83,3 +83,6 @@ Data/Audio/voice_profiles.tpm
 # Profils vocaux scellés TPM/DPAPI (liés à la machine et à l'utilisateur) : jamais versionnés
 **/Data/Audio/voice_profiles.json
 **/Data/Audio/voice_profiles.tpm
+
+# Preflight Reports
+reports/

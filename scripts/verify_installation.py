@@ -17,6 +17,9 @@ import os
 import subprocess
 import platform
 import time
+import json
+import argparse
+from datetime import datetime
 
 # Ensure UTF-8 output
 if sys.platform == "win32":
@@ -37,26 +40,34 @@ RESET = "\033[0m"
 passed_checks = 0
 warning_checks = 0
 failed_checks = 0
+current_section_name = ""
+check_records = []
+evidence_records = []
 
 def log_ok(title, detail=""):
+    check_records.append({"status": "passed", "section": current_section_name, "title": title, "detail": str(detail)})
     global passed_checks
     passed_checks += 1
     det = f" - {detail}" if detail else ""
     print(f"  {GREEN}[OK]{RESET} {BOLD}{title}{RESET}{det}")
 
 def log_warn(title, detail=""):
+    check_records.append({"status": "warning", "section": current_section_name, "title": title, "detail": str(detail)})
     global warning_checks
     warning_checks += 1
     det = f" - {detail}" if detail else ""
     print(f"  {YELLOW}[ATTENTION]{RESET} {BOLD}{title}{RESET}{det}")
 
 def log_fail(title, detail=""):
+    check_records.append({"status": "failed", "section": current_section_name, "title": title, "detail": str(detail)})
     global failed_checks
     failed_checks += 1
     det = f" - {detail}" if detail else ""
     print(f"  {RED}[ERREUR]{RESET} {BOLD}{title}{RESET}{det}")
 
 def section(title):
+    global current_section_name
+    current_section_name = title
     print(f"\n{CYAN}{BOLD}--- {title} ---{RESET}")
 
 def check_system():
@@ -429,6 +440,11 @@ def check_hardware_smoke_inferences():
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Diagnostic Complet Copilot+ PC Demo Hub")
+    parser.add_argument("--json", action="store_true", help="Generer un rapport machine-readable au format JSON")
+    parser.add_argument("--output", type=str, default="", help="Chemin de destination du rapport JSON")
+    args, _ = parser.parse_known_args()
+
     print(f"\n{BOLD}======================================================================{RESET}")
     print(f"{BOLD}       Copilot+ PC Demo - Diagnostic Complet de l'Installation{RESET}")
     print(f"{BOLD}======================================================================{RESET}")
@@ -445,6 +461,35 @@ def main():
     print(f"\n{BOLD}======================================================================{RESET}")
     print(f"Bilan du diagnostic : {GREEN}{passed_checks} Reussis{RESET} | {YELLOW}{warning_checks} Avertissements{RESET} | {RED}{failed_checks} Erreurs{RESET}")
     print(f"{BOLD}======================================================================{RESET}")
+
+    # Export JSON si demande
+    if args.json or args.output:
+        report = {
+            "timestamp": datetime.now().isoformat(),
+            "system": {
+                "platform": platform.system(),
+                "release": platform.release(),
+                "version": platform.version(),
+                "machine": platform.machine(),
+                "processor": platform.processor()
+            },
+            "summary": {
+                "total": len(check_records),
+                "passed": passed_checks,
+                "warning": warning_checks,
+                "failed": failed_checks,
+                "status": "READY" if failed_checks == 0 else "FAILED"
+            },
+            "checks": check_records,
+            "evidence": evidence_records
+        }
+        out_path = args.output if args.output else os.path.join(os.path.dirname(__file__), "..", "reports", "preflight.json")
+        out_dir = os.path.dirname(os.path.abspath(out_path))
+        if out_dir and not os.path.exists(out_dir):
+            os.makedirs(out_dir, exist_ok=True)
+        with open(out_path, "w", encoding="utf-8") as f_out:
+            json.dump(report, f_out, indent=2, ensure_ascii=False)
+        print(f"  {GREEN}[OK]{RESET} Rapport preflight JSON genere avec succes : {out_path}")
 
     if failed_checks == 0:
         if warning_checks == 0:

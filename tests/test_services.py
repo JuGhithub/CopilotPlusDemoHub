@@ -98,3 +98,55 @@ class TestPdfOcrServiceContract:
         # Le fichier README.md ou GUIDE_INSTALLATION.md doit être localisé via l'arborescence
         readme_path = find_file("README.md")
         assert os.path.exists(readme_path)
+
+
+class TestPdfRedactionSecurity:
+    """Vérifie que le caviardage PDF est destructif et irréversible (pas de données résiduelles)."""
+
+    def test_irreversible_pdf_redaction(self, tmp_path):
+        import fitz  # PyMuPDF
+
+        # 1. Créer un document contenant des identifiants sensibles
+        doc = fitz.open()
+        page = doc.new_page(width=595, height=842)
+        sensitive_iban = "FR7630006000011234567890189"
+        sensitive_name = "Jean DUPONT"
+        page.insert_text((50, 100), f"Titulaire : {sensitive_name} - IBAN : {sensitive_iban}", fontsize=12)
+
+        test_pdf = tmp_path / "sensitive.pdf"
+        doc.save(str(test_pdf))
+        doc.close()
+
+        # 2. Caviardage destructif
+        doc_to_redact = fitz.open(str(test_pdf))
+        p = doc_to_redact[0]
+        for term in (sensitive_iban, sensitive_name):
+            for rect in p.search_for(term):
+                p.add_redact_annot(rect, fill=(0, 0, 0))
+        p.apply_redactions()
+
+        redacted_pdf = tmp_path / "redacted.pdf"
+        doc_to_redact.save(str(redacted_pdf))
+        doc_to_redact.close()
+
+        # 3. Réouverture et contrôle de non-rémanence
+        doc_audited = fitz.open(str(redacted_pdf))
+        text = doc_audited[0].get_text()
+
+        # A. Absent du texte extrait
+        assert sensitive_iban not in text
+        assert sensitive_name not in text
+        assert "Titulaire" in text
+
+        # B. Absent des métadonnées et annotations
+        for annot in (doc_audited[0].annots() or []):
+            assert sensitive_iban not in annot.info.get("content", "")
+
+        # C. Absent du flux binaire brut du fichier
+        with open(str(redacted_pdf), "rb") as f:
+            raw = f.read()
+            assert sensitive_iban.encode("utf-8") not in raw
+            assert sensitive_name.encode("utf-8") not in raw
+
+        doc_audited.close()
+
