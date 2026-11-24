@@ -10,7 +10,7 @@ openvino-tokenizers>=2024.4.0; platform_machine != "ARM64"
 torch>=2.2.0
 torchvision>=0.17.0
 ultralytics>=8.3.0
-opencv-python>=4.9.0
+opencv-python>=5.1.0.95
 pillow>=10.2.0
 numpy>=1.26.0
 scipy>=1.12.0
