@@ -48,11 +48,15 @@ def test_dpapi_vault_payload_security_header(tmp_path):
     """Vérifie que le coffre DPAPI utilise l'en-tête WINDOWS_DPAPI_ENCRYPTED et une écriture atomique."""
     from speaker_service import SpeakerManager, tpm_seal_data, tpm_unseal_data
 
-    # Création d'un manager avec chemin temporaire
-    mgr = SpeakerManager()
+    # Instanciation légère sans chargement du modèle neural onnx (évite la dépendance fichier en CI)
+    mgr = SpeakerManager.__new__(SpeakerManager)
     test_vault = str(tmp_path / "voice_profiles.tpm")
     mgr.profiles_tpm_path = test_vault
+    mgr.canonical_tpm_path = test_vault
+    mgr.canonical_json_path = str(tmp_path / "voice_profiles.json")
     mgr.profiles = {"speaker_test": [0.1, 0.2, 0.3]}
+    mgr._get_tpm_paths_to_sync = lambda: [test_vault]
+    mgr._get_legacy_json_paths = lambda: []
 
     mgr._save_profiles()
 
