@@ -1,4 +1,4 @@
-name: CI - Build & Tests
+name: CI - Build, Tests & Security Audit
 
 on:
   push:
@@ -27,6 +27,10 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore CopilotPlusDemoHub.sln
 
+    - name: Audit NuGet Vulnerabilities
+      run: dotnet list package --vulnerable --include-transitive
+      continue-on-error: true
+
     - name: Build Solution (.NET 8 WPF & Tests)
       run: dotnet build CopilotPlusDemoHub.sln -c Release --no-restore
 
@@ -46,3 +50,17 @@ jobs:
         python -m pip install pip-audit
         python -m pip_audit -r requirements.lock --desc on
       continue-on-error: true
+
+    - name: Run PowerShell Script Analysis (PSScriptAnalyzer)
+      shell: pwsh
+      run: |
+        Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+        Invoke-ScriptAnalyzer -Path ./ -Recurse -Severity Error,Warning
+      continue-on-error: true
+
+    - name: Upload SBOM SPDX Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: spdx-sbom
+        path: SBOM.spdx.json
+        if-no-files-found: warn

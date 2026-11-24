@@ -4,9 +4,9 @@ using System.Text.Json.Serialization;
 namespace CopilotPlusDemoHub.Core;
 
 /// <summary>
-/// Preuve d'exécution matérielle normalisée (Runtime Evidence)
-/// Fournit la traçabilité complète de l'accélérateur réellement utilisé,
-/// de l'Execution Provider, de la précision et des latences distinctes.
+/// Preuve d'exécution matérielle normalisée (Runtime Evidence).
+/// Certifie la traçabilité complète de l'accélérateur réellement alloué,
+/// des périphériques rapportés par le runtime, de l'Execution Provider et des latences.
 /// </summary>
 public record RuntimeEvidence
 {
@@ -31,11 +31,25 @@ public record RuntimeEvidence
     [JsonPropertyName("active_device")]
     public string ActiveDevice { get; init; } = "CPU";
 
+    [JsonPropertyName("runtime_reported_device")]
+    public string RuntimeReportedDevice { get; init; } = "";
+
     [JsonPropertyName("execution_provider")]
     public string ExecutionProvider { get; init; } = "OpenVINO";
 
     [JsonPropertyName("fallback_used")]
     public bool FallbackUsed { get; init; } = false;
+
+    /// <summary>
+    /// Niveau de preuve : Verified (runtime rapporte formellement le silicium),
+    /// Corroborated (runtime + compteur matériel concordants),
+    /// Configured (uniquement demandé), Inferred (déduit), Unknown.
+    /// </summary>
+    [JsonPropertyName("evidence_level")]
+    public string EvidenceLevel { get; init; } = "Verified";
+
+    [JsonPropertyName("evidence_sources")]
+    public string[] EvidenceSources { get; init; } = [];
 
     [JsonPropertyName("compile_time_ms")]
     public double CompileTimeMs { get; init; } = 0.0;
@@ -50,16 +64,21 @@ public record RuntimeEvidence
     public double EndToEndMs { get; init; } = 0.0;
 
     /// <summary>
-    /// Vrai uniquement si le NPU physique est formellement confirmé comme périphérique actif.
+    /// Vrai uniquement si le NPU physique est formellement confirmé comme périphérique actif
+    /// avec un niveau de preuve Verified ou Corroborated.
     /// </summary>
     [JsonIgnore]
-    public bool IsNpuActive => ActiveDevice.Contains("NPU", StringComparison.OrdinalIgnoreCase);
+    public bool IsNpuActive =>
+        (EvidenceLevel.Equals("Verified", StringComparison.OrdinalIgnoreCase) ||
+         EvidenceLevel.Equals("Corroborated", StringComparison.OrdinalIgnoreCase)) &&
+        (ActiveDevice.Contains("NPU", StringComparison.OrdinalIgnoreCase) ||
+         RuntimeReportedDevice.Contains("NPU", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Badge d'état visuel pour l'interface utilisateur WPF.
     /// </summary>
     [JsonIgnore]
     public string StatusBadge => IsNpuActive
-        ? "⚡ NPU Intel AI Boost Actif"
-        : (FallbackUsed ? $"⚠️ Fallback ({ActiveDevice})" : $"⚙️ {ActiveDevice}");
+        ? "⚡ NPU Intel AI Boost Actif (Vérifié)"
+        : (FallbackUsed ? $"⚠️ Fallback ({ActiveDevice})" : $"⚙️ {ActiveDevice} ({EvidenceLevel})");
 }

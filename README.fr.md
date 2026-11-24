@@ -22,8 +22,9 @@ Une suite modulaire de démonstrations techniques d'**Intelligence Artificielle 
 
 | Plateforme | Statut de Validation | Accélérateur Principal | Runtime Recommandé |
 | :--- | :--- | :--- | :--- |
-| **Intel Core Ultra Série 2** (Lunar Lake 258V/268V/288V) | **Validée & Optimisée** | NPU Intel AI Boost (48 TOPS) + GPU Arc 140V | OpenVINO IR natif (100% NPU) + DirectML |
-| **Intel Core Ultra Série 1** (Meteor Lake / Arrow Lake) | **Compatible** (sous réserve de pilotes) | NPU Intel AI Boost (11 TOPS) + GPU Arc | OpenVINO IR + DirectML |
+| **Intel Core Ultra Série 2** (Lunar Lake 258V/268V/288V) | **Validée & Optimisée** | NPU Intel AI Boost (48 TOPS) + GPU Arc 140V | OpenVINO IR validé sur NPU Intel + DirectML |
+| **Intel Core Ultra Série 1** (Meteor Lake 155H/165H) | **Compatible** (sous réserve de pilotes) | NPU Intel AI Boost (11 TOPS) + GPU Arc | OpenVINO IR + DirectML |
+| **Intel Core Ultra 200S / Arrow Lake** | **Compatible CPU/GPU** | GPU Intel Arc / CPU hôte | DirectML + OpenVINO CPU |
 | **AMD Ryzen AI Série 300** (Strix Point) | **Expérimentale** (mode hybride) | GPU AMD Radeon 890M / 880M | ONNX DirectML + Olive FP16 / Fallback CPU |
 | **Qualcomm Snapdragon X** (ARM64) | **Expérimentale** (mode hybride) | GPU Qualcomm Adreno | ONNX DirectML + binaire natif win-arm64 |
 | **PC Windows 11 sans NPU** | **Mode dégradé** | GPU DirectX 12 / CPU hôte | Fallback CPU AVX-512 / DirectML |
@@ -71,7 +72,7 @@ flowchart TD
 
 ### 1. 🏢 Assistant Métier & Business (SLM Local Phi-4)
 - **Modèle** : `Phi-4-mini-instruct` (Microsoft Foundry Local & OpenVINO / DirectML).
-- **Accélération** : Inférence optimisée pour le NPU lorsque disponible (**Intel AI Boost**, **AMD Ryzen AI** ou **Qualcomm Hexagon**), avec fallback automatique sur GPU DirectML puis CPU.
+- **Accélération** : Inférence optimisée pour le NPU Intel AI Boost sur la plateforme de référence Intel validée. AMD Ryzen AI et Snapdragon X utilisent actuellement des voies hybrides GPU/CPU expérimentales via DirectML ou des runtimes compatibles ; l'exécution native NPU sur ces environnements est en cours de validation.
 - **Pipeline de Raisonnement en 4 étapes** : Décomposition dynamique en temps réel (`1. Analyse contextuelle`, `2. Vérification réglementaire`, `3. Synthèse opérationnelle`, `4. Recommandations`).
 - **Télémétrie en direct** : Débit d'inférence (`tok/s`), compteur de tokens générés et charge du système.
 - **4 Personas Métiers intégrés** : Services Financiers (solvabilité), Opérations Industrielles (CVC prédictif), Ingénierie & R&D (dépannage électromécanique), et Sinistres Automobile (évaluation devis/constat).

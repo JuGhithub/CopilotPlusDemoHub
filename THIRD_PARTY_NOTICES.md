@@ -13,8 +13,18 @@ Ce projet intègre ou interagit avec des composants logiciels et modèles neuron
 | **VoxCeleb ECAPA-TDNN** | Extracteur d'embeddings biométriques vocaux | Apache 2.0 | SpeechBrain / MelissaJ |
 | **Ultralytics YOLOv8** | Vision par ordinateur (YOLOv8s-World, YOLOv8n-Seg) | AGPL-3.0 / Commercial | Ultralytics Inc. |
 | **RapidOCR (PaddleOCR)** | Moteur OCR de détection et reconnaissance de texte | Apache 2.0 | RapidAI / PaddlePaddle Authors |
-| **PyMuPDF (Fitz)** | Moteur vectoriel de manipulation de documents PDF | AGPL-3.0 | Artifex Software, Inc. |
+| **PyMuPDF (Fitz)** | Moteur vectoriel de manipulation de documents PDF | AGPL-3.0 / Commercial | Artifex Software, Inc. |
 | **LCM DreamShaper** | Modèle de diffusion d'images rapide (Latent Consistency) | CreativeML Open RAIL-M | Lykon / echarlaix |
 | **SoundDevice & PortAudio** | Capture et restitution du flux microphone/haut-parleur | MIT License | Matthias Geier / PortAudio |
 
-Les licences complètes sont consultables auprès des dépôts amonts de chaque projet respectif.
+---
+
+## Précisions Juridiques sur les Composants AGPL-3.0 (Ultralytics & Artifex)
+
+1. **Usage Démonstrateur & Évaluation Technique** :  
+   Dans le cadre de ce dépôt open-source et de son utilisation à des fins de démonstration technique ou d'évaluation interne sur postes Copilot+, l'usage des composants **Ultralytics YOLOv8** et **PyMuPDF** s'effectue sous les termes de la licence publique **GNU AGPLv3**.
+
+2. **Distribution Commerciale ou Propriétaire** :  
+   Toute intégration de ce démonstrateur au sein d'un produit commercial fermé, non redistribué sous licence AGPLv3, nécessite l'acquisition préalable d'une licence commerciale d'entreprise auprès des ayants droit respectifs :
+   - Pour les modèles et bibliothèques YOLOv8 : [Ultralytics Enterprise Licensing](https://www.ultralytics.com/license).
+   - Pour le moteur de rendu et caviardage PDF : [Artifex Commercial Licensing](https://artifex.com/licensing).

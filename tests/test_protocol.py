@@ -20,7 +20,7 @@ from demohub_common.protocol import (
     log_diagnostic,
     PROTOCOL_VERSION,
 )
-from demohub_common.devices import build_runtime_evidence, detect_available_devices
+from demohub_common.devices import build_runtime_evidence, detect_available_devices, extract_compiled_execution_devices
 
 
 class TestProtocolEmitter:
@@ -104,7 +104,7 @@ class TestProtocolEmitter:
 
 
 class TestDevicesEvidence:
-    """Vérifie la normalisation du contrat RuntimeEvidence."""
+    """Vérifie la normalisation du contrat RuntimeEvidence et les preuves matérielles."""
 
     def test_build_runtime_evidence_nominal_npu(self):
         ev = build_runtime_evidence(
@@ -126,6 +126,7 @@ class TestDevicesEvidence:
         assert ev["active_device"] == "NPU.0"
         assert ev["fallback_used"] is False
         assert ev["inference_ms"] == 45.2
+        assert ev["evidence_level"] == "Verified"
 
     def test_build_runtime_evidence_fallback_detection(self):
         ev = build_runtime_evidence(
@@ -140,3 +141,26 @@ class TestDevicesEvidence:
         assert ev["requested_device"] == "NPU"
         assert ev["active_device"] == "CPU"
         assert ev["fallback_used"] is True
+        assert ev["evidence_level"] == "Inferred"
+
+    def test_extract_compiled_execution_devices_mock(self):
+        class DummyCompiledModel:
+            def get_property(self, key):
+                if key == "EXECUTION_DEVICES":
+                    return ["NPU.0"]
+                raise KeyError(key)
+
+        devices = extract_compiled_execution_devices(DummyCompiledModel())
+        assert devices == ["NPU.0"]
+
+        evidence = build_runtime_evidence(
+            runtime="OpenVINO",
+            model="test-model",
+            precision="FP16",
+            requested_device="NPU",
+            active_device="NPU",
+            compiled_model=DummyCompiledModel()
+        )
+        assert evidence["evidence_level"] == "Verified"
+        assert "NPU.0" in evidence["runtime_reported_device"]
+        assert "OpenVINO compiled_model EXECUTION_DEVICES" in evidence["evidence_sources"]

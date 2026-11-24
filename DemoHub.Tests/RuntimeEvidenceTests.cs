@@ -19,15 +19,32 @@ public class RuntimeEvidenceTests
             ActiveDevice = "NPU.0",
             ExecutionProvider = "OpenVINO VPUX",
             FallbackUsed = false,
+            EvidenceLevel = "Verified",
             CompileTimeMs = 1200.0,
             InferenceMs = 34.2,
             EndToEndMs = 52.0
         };
 
         Assert.True(evidence.IsNpuActive);
-        Assert.Contains("NPU Intel AI Boost Actif", evidence.StatusBadge);
+        Assert.Contains("NPU Intel AI Boost Actif (Vérifié)", evidence.StatusBadge);
         Assert.False(evidence.FallbackUsed);
         Assert.Equal(34.2, evidence.InferenceMs);
+    }
+
+    [Fact]
+    public void RuntimeEvidence_WhenNpuNotVerified_DoesNotShowVerifiedBadge()
+    {
+        var evidence = new RuntimeEvidence
+        {
+            Runtime = "OpenVINO",
+            Model = "yolov8n-seg",
+            RequestedDevice = "NPU",
+            ActiveDevice = "NPU",
+            EvidenceLevel = "Unknown"
+        };
+
+        Assert.False(evidence.IsNpuActive);
+        Assert.Contains("Unknown", evidence.StatusBadge);
     }
 
     [Fact]
@@ -60,6 +77,8 @@ public class RuntimeEvidenceTests
             AvailableDevices = ["CPU", "DmlExecutionProvider"],
             ActiveDevice = "DmlExecutionProvider",
             ExecutionProvider = "DirectML",
+            EvidenceLevel = "Verified",
+            EvidenceSources = ["DirectML Adapter"],
             InferenceMs = 18.5,
             EndToEndMs = 24.1
         };
@@ -70,6 +89,7 @@ public class RuntimeEvidenceTests
         Assert.NotNull(restored);
         Assert.Equal("ONNXRuntime", restored.Runtime);
         Assert.Equal("DmlExecutionProvider", restored.ActiveDevice);
+        Assert.Equal("Verified", restored.EvidenceLevel);
         Assert.Equal(18.5, restored.InferenceMs);
     }
 }

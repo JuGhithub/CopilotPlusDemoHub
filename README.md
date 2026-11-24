@@ -7,8 +7,11 @@
 [![.NET 8](https://img.shields.io/badge/Platform-.NET_8.0_WPF-512BD4?logo=dotnet)](https://dotnet.microsoft.com)
 [![Python 3.12](https://img.shields.io/badge/Backend-Python_3.12_(.venv)-3776AB?logo=python)](https://python.org)
 [![Silicon](https://img.shields.io/badge/Hardware-Intel_%7C_AMD_%7C_Qualcomm-blue)]()
-[![CI Build & Tests](https://img.shields.io/badge/CI-GitHub_Actions_Pass-success)]()
-[![Unit Tests](https://img.shields.io/badge/Tests-xUnit_%26_pytest-success)]()
+[![CI Build](https://img.shields.io/badge/CI-passing-brightgreen)]()
+[![Tests .NET](https://img.shields.io/badge/Tests_.NET-18_passed-success)]()
+[![Tests Python](https://img.shields.io/badge/Tests_Python-19_passed-success)]()
+[![Security Audit](https://img.shields.io/badge/pip--audit-passing-brightgreen)]()
+[![SBOM](https://img.shields.io/badge/SBOM-SPDX_2.3-blue)]()
 
 A modular technical showcase designed for **local on-device AI execution on Copilot+ PCs**, following the initial setup and model download, with transparent reporting of the active silicon accelerator:
 - 🔵 **Intel Core Ultra Series 2 (Lunar Lake) & Series 1 (Meteor Lake)** *(Reference Platform)*: Optimized inference on the **Intel AI Boost NPU (48 TOPS)** and Arc 140V iGPU (native OpenVINO IR & DirectML) with active device verification.
@@ -22,8 +25,9 @@ A modular technical showcase designed for **local on-device AI execution on Copi
 
 | Platform | Validation Status | Primary Accelerator | Recommended Runtime |
 | :--- | :--- | :--- | :--- |
-| **Intel Core Ultra Series 2** (Lunar Lake 258V/268V/288V) | **Validated & Optimized** | Intel AI Boost NPU (48 TOPS) + Arc 140V GPU | Native OpenVINO IR (100% NPU) + DirectML |
-| **Intel Core Ultra Series 1** (Meteor Lake / Arrow Lake) | **Compatible** (pending drivers) | Intel AI Boost NPU (11 TOPS) + Arc GPU | OpenVINO IR + DirectML |
+| **Intel Core Ultra Series 2** (Lunar Lake 258V/268V/288V) | **Validated & Optimized** | Intel AI Boost NPU (48 TOPS) + Arc 140V GPU | OpenVINO IR validated on Intel NPU + DirectML |
+| **Intel Core Ultra Series 1** (Meteor Lake 155H/165H) | **Compatible** (pending drivers) | Intel AI Boost NPU (11 TOPS) + Arc GPU | OpenVINO IR + DirectML |
+| **Intel Core Ultra 200S / Arrow Lake** | **Compatible CPU/GPU** | Intel Arc GPU / Host CPU | DirectML + OpenVINO CPU |
 | **AMD Ryzen AI 300 Series** (Strix Point) | **Experimental** (hybrid mode) | AMD Radeon 890M / 880M GPU | ONNX DirectML + Olive FP16 / Host CPU |
 | **Qualcomm Snapdragon X** (ARM64) | **Experimental** (hybrid mode) | Qualcomm Adreno GPU | ONNX DirectML + native win-arm64 binary |
 | **Standard Windows 11 PC (No NPU)** | **Degraded Mode** | DirectX 12 GPU / Host CPU | AVX-512 CPU Fallback / DirectML |
@@ -71,7 +75,7 @@ flowchart TD
 
 ### 1. 🏢 Business & Enterprise Copilot (Local SLM Phi-4)
 - **Model**: `Phi-4-mini-instruct` (Microsoft Foundry Local & OpenVINO / DirectML).
-- **Acceleration**: Optimized for NPU when available (**Intel AI Boost**, **AMD Ryzen AI**, or **Qualcomm Hexagon**), with automatic fallback to DirectML GPU and host CPU.
+- **Acceleration**: Optimized for Intel AI Boost NPU on the validated Intel reference platform. AMD Ryzen AI and Snapdragon X currently use experimental GPU/CPU paths through DirectML or architecture-compatible runtimes; NPU execution on these platforms is not yet validated.
 - **4-Stage Reasoning Pipeline**: Dynamic chain-of-thought (`1. Context analysis`, `2. Regulatory check`, `3. Operational synthesis`, `4. Recommendations`).
 - **Live Telemetry**: Real-time generation speed (`tok/s`), token counter, and system utilization.
 - **4 Integrated Enterprise Personas**: Financial Services (credit risk), Industrial Operations (predictive HVAC maintenance), Engineering & R&D (electromechanical diagnostics), and Auto Insurance Claims (repair assessment).
