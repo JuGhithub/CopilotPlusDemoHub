@@ -127,9 +127,15 @@ if ($foundryInstalled) {
 Write-Host ""
 Write-Host "[3/3] Lancement de l'application Copilot+ Demo Hub..." -ForegroundColor Cyan
 
+$isArm64 = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq [System.Runtime.InteropServices.Architecture]::Arm64
+$archFolder = if ($isArm64) { "arm64" } else { "x64" }
+
 $candidates = @(
-    @{ Path = "$ScriptDir\DemoHub\bin\Release\net8.0-windows10.0.18362\DemoHub.exe"; Label = "Version Release haute performance" },
+    @{ Path = "$ScriptDir\bin\Publish\$archFolder\DemoHub.exe"; Label = "Version autonome $archFolder" },
     @{ Path = "$ScriptDir\bin\Publish\x64\DemoHub.exe"; Label = "Version autonome x64" },
+    @{ Path = "$ScriptDir\bin\Publish\arm64\DemoHub.exe"; Label = "Version autonome arm64" },
+    @{ Path = "$ScriptDir\DemoHub\bin\Release\net8.0-windows10.0.18362\$archFolder\DemoHub.exe"; Label = "Version Release $archFolder" },
+    @{ Path = "$ScriptDir\DemoHub\bin\Release\net8.0-windows10.0.18362\DemoHub.exe"; Label = "Version Release haute performance" },
     @{ Path = "$ScriptDir\DemoHub\bin\Debug\net8.0-windows10.0.18362\DemoHub.exe"; Label = "Version Debug" }
 )
 

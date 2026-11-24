@@ -16,6 +16,7 @@ import sys
 import shutil
 import argparse
 import hashlib
+import json
 
 # Configuration de l'encodage console Windows
 if sys.platform == "win32":
@@ -70,12 +71,42 @@ def compute_sha256(filepath, chunk_size=1048576):
     return hasher.hexdigest()
 
 
+def load_manifest_hashes():
+    """Charge les empreintes SHA-256 attendues depuis MODEL_MANIFEST.json."""
+    manifest_candidates = [
+        os.path.join(ROOT_DIR, "MODEL_MANIFEST.json"),
+        os.path.join(os.path.dirname(MODELS_DIR), "MODEL_MANIFEST.json"),
+        os.path.abspath("MODEL_MANIFEST.json"),
+    ]
+    for cand in manifest_candidates:
+        if os.path.exists(cand):
+            try:
+                with open(cand, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    hashes = {}
+                    for m in data.get("models", []):
+                        rel_path = m.get("path", "").replace("\\", "/")
+                        sha = m.get("sha256", "").lower().strip()
+                        if rel_path and sha:
+                            hashes[rel_path] = sha
+                    return hashes
+            except Exception as e:
+                log_err(f"Erreur de lecture du manifeste {cand}: {e}")
+    return {}
+
+
 def verify_models_integrity():
     """
-    Vérifie l'intégrité structurelle et calcule l'empreinte cryptographique SHA-256
-    de tous les modèles locaux critiques (contrôle supply-chain et anti-corruption).
+    Vérifie l'intégrité structurelle et compare strictement l'empreinte cryptographique SHA-256
+    à la référence signée dans MODEL_MANIFEST.json (contrôle supply-chain et anti-corruption).
     """
     log_step("Contrôle d'Intégrité Cryptographique & Supply-Chain des Modèles")
+
+    manifest_hashes = load_manifest_hashes()
+    if manifest_hashes:
+        log_ok(f"Manifeste cryptographique chargé ({len(manifest_hashes)} modèles référencés)")
+    else:
+        log_err("AVERTISSEMENT : Aucun MODEL_MANIFEST.json trouvé pour validation croisée")
 
     key_models = [
         ("Biométrie VoxCeleb ONNX", os.path.join(MODELS_DIR, "speaker", "voxceleb.onnx"), 10 * 1024 * 1024),
@@ -103,7 +134,21 @@ def verify_models_integrity():
         try:
             sha = compute_sha256(path)
             size_mb = size / (1024 * 1024)
-            log_ok(f"{label} ({size_mb:.1f} Mo) - SHA256: {sha[:16]}...{sha[-8:]}")
+
+            # Recherche de l'empreinte de confiance dans le manifeste
+            norm_rel = os.path.relpath(path, ROOT_DIR).replace("\\", "/")
+            expected_sha = manifest_hashes.get(norm_rel)
+
+            if expected_sha:
+                if sha.lower() == expected_sha.lower():
+                    log_ok(f"{label} ({size_mb:.1f} Mo) - SHA-256 CONFORME AU MANIFESTE: {sha[:16]}...{sha[-8:]}")
+                else:
+                    log_err(f"{label} ({size_mb:.1f} Mo) - ALERTE SUPPLY-CHAIN / HASH DISCORDANT !\n"
+                            f"      Attendu : {expected_sha}\n"
+                            f"      Calculé : {sha}")
+                    all_ok = False
+            else:
+                log_ok(f"{label} ({size_mb:.1f} Mo) - SHA-256 calculé: {sha[:16]}...{sha[-8:]} (non référencé)")
         except Exception as e:
             log_err(f"{label} : Erreur de calcul de hash : {e}")
             all_ok = False
@@ -392,4 +437,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main() or 0)

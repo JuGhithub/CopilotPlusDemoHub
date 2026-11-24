@@ -92,8 +92,8 @@
                                     Click="BtnSampleConversation_Click" />
 
                             <!-- Enroll Voice (TPM Secured) -->
-                            <Button Grid.Column="6" x:Name="BtnEnrollVoice" Content="🎙️ Enrôler Voix (TPM)"
-                                    ToolTip="Enregistrer un échantillon vocal (5s) ou un fichier pour mémoriser définitivement une personne dans le TPM"
+                            <Button Grid.Column="6" x:Name="BtnEnrollVoice" Content="🎙️ Enrôler Voix (DPAPI)"
+                                    ToolTip="Enregistrer un échantillon vocal (5s) ou un fichier pour mémoriser localement l'empreinte chiffrée par Windows DPAPI"
                                     Style="{StaticResource ModernButtonStyle}" Background="#0284C7" Foreground="White" FontWeight="SemiBold" Height="30" Padding="10,0"
                                     Click="BtnEnrollVoice_Click" />
 
@@ -535,7 +535,7 @@
                         <StackPanel>
                             <Grid Margin="0,0,0,8">
                                 <TextBlock x:Name="LblModalProfilesEnrollTitle" Text="➕ ENRÔLER UNE NOUVELLE VOIX (ACCORD RGPD)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource CopilotCyanBrush}" VerticalAlignment="Center" />
-                                <TextBlock x:Name="LblModalProfilesEnrollBadge" Text="🔒 Scellé TPM 2.0" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                <TextBlock x:Name="LblModalProfilesEnrollBadge" Text="🔒 Chiffré DPAPI" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource NpuGreenBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                             </Grid>
 
                             <Grid Margin="0,0,0,8">

@@ -868,14 +868,14 @@ class SpeakerManager:
                 "color": prof.get("color", COLORS[0]),
                 "sample_count": prof.get("sample_count", 1),
                 "last_updated": prof.get("last_updated", ""),
-                "is_tpm_sealed": True,
-                "vault_security": "TPM 2.0 / Pluton (Hardware DPAPI)"
+                "is_dpapi_encrypted": True,
+                "vault_security": "Windows DPAPI (Chiffrement local session utilisateur)"
             })
         return result
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Voice Profile & Speaker Management CLI (TPM 2.0 Secured)")
+    parser = argparse.ArgumentParser(description="Voice Profile & Speaker Management CLI (Windows DPAPI Secured)")
     parser.add_argument("--action", required=True, choices=["list", "save_from_audio", "save_embedding", "enroll_mic", "delete"])
     parser.add_argument("--name", help="Speaker name / prénom")
     parser.add_argument("--file", help="Path to audio file (for save_from_audio)")
@@ -896,8 +896,8 @@ def main():
         print(json.dumps({
             "protocol": "demohub/1.0",
             "type": "profiles_list",
-            "is_tpm_active": True,
-            "security_provider": "Windows DPAPI (TPM 2.0 / Microsoft Pluton)",
+            "is_dpapi_active": True,
+            "security_provider": "Windows DPAPI (CryptProtectData - Compte utilisateur local)",
             "profiles": profiles
         }, ensure_ascii=False))
 

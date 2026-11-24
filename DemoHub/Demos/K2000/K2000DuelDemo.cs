@@ -477,6 +477,9 @@ public sealed class K2000DuelDemo
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine("==================================================");
         Console.WriteLine("  " + _localizer.Get("K2000_Title"));
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("  [🎬 Simulation Pédagogique - Illustration Scénarisée]");
+        Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine("==================================================");
         Console.ResetColor();
         Console.WriteLine();

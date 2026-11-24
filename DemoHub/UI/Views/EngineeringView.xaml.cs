@@ -416,9 +416,13 @@ public partial class EngineeringView : UserControl
                 LblThroughputHeader.Text = isEn ? $"SPEED ({chipTag})" : $"VITESSE ({chipTag})";
                 LblTokens.Text = $"{result.CompletionTokens} tok";
 
+                string confinementNotice = _foundryClient.IsLocalEndpoint
+                    ? (isEn ? "• Confined on local device 🛡️" : "• Données confinées sur ce PC 🛡️")
+                    : (isEn ? $"• Endpoint: {_foundryClient.BaseUrl}" : $"• Serveur : {_foundryClient.BaseUrl}");
+
                 SetPipelineStep(4, isEn
-                    ? $"✅ Engineering query completed ({result.CompletionTokens} tokens in {result.LatencyMilliseconds / 1000.0:F1}s) • Confined on local device 🛡️"
-                    : $"✅ Réponse d'ingénierie terminée ({result.CompletionTokens} jetons en {result.LatencyMilliseconds / 1000.0:F1}s) • Données confinées sur ce PC 🛡️");
+                    ? $"✅ Engineering query completed ({result.CompletionTokens} tokens in {result.LatencyMilliseconds / 1000.0:F1}s) {confinementNotice}"
+                    : $"✅ Réponse d'ingénierie terminée ({result.CompletionTokens} jetons en {result.LatencyMilliseconds / 1000.0:F1}s) {confinementNotice}");
             });
 
             _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(

@@ -336,22 +336,28 @@ def run_benchmark(iterations=30, device="NPU"):
         )
     except Exception as ex:
         pass
-    results["winner"] = f"OpenVINO IR Natif ({chosen_dev})"
+    latencies = {
+        f"OpenVINO IR Natif ({chosen_dev})": ir_mean,
+        f"Modèle Brut ONNX ({chosen_dev})": raw_mean,
+        f"Modèle Optimisé Olive ({chosen_dev})": olive_mean
+    }
+    actual_winner = min(latencies, key=latencies.get)
+    results["winner"] = actual_winner
 
     results["insight_fr"] = (
-        f"Sur le NPU Intel AI Boost (à {n_watts} W) :\n"
-        f"• OpenVINO IR Natif offre la latence la plus basse : {ir_mean} ms ({ir_fps} FPS, compilation {t_comp_ir}s) grâce à ses micro-noyaux pré-calibrés.\n"
-        f"• Le Modèle Brut ONNX atteint {raw_mean} ms ({raw_fps} FPS, compilation {t_comp_raw}s), démontrant la capacité d'OpenVINO à compiler directement l'ONNX standard sur NPU.\n"
-        f"• Le Modèle Optimisé Microsoft Olive réduit la taille mémoire de -{mem_saved_pct}% ({olive_size_mb} Mo vs {raw_size_mb} Mo) avec {olive_mean} ms ({olive_fps} FPS). "
-        f"Cette compacité est idéale pour héberger plusieurs modèles simultanément en mémoire NPU partagée."
+        f"Sur le silicium {device_label} ({chosen_dev}) :\n"
+        f"• Vainqueur mesuré : {actual_winner} avec {latencies[actual_winner]:.1f} ms de latence moyenne.\n"
+        f"• OpenVINO IR Natif : {ir_mean:.1f} ms ({ir_fps:.1f} FPS, compilation {t_comp_ir:.2f}s).\n"
+        f"• Modèle Brut ONNX : {raw_mean:.1f} ms ({raw_fps:.1f} FPS, compilation {t_comp_raw:.2f}s).\n"
+        f"• Modèle Optimisé Olive : {olive_mean:.1f} ms ({olive_fps:.1f} FPS, taille disque -{mem_saved_pct:.1f}%)."
     )
 
     results["insight_en"] = (
-        f"On Intel AI Boost NPU (drawing {n_watts} W):\n"
-        f"• Native OpenVINO IR achieves lowest latency: {ir_mean} ms ({ir_fps} FPS, compile {t_comp_ir}s) via pre-calibrated VPUX micro-kernels.\n"
-        f"• Raw ONNX Model runs at {raw_mean} ms ({raw_fps} FPS, compile {t_comp_raw}s), demonstrating OpenVINO's direct on-the-fly ONNX compilation for NPU.\n"
-        f"• Microsoft Olive Optimized Model cuts memory size by -{mem_saved_pct}% ({olive_size_mb} MB vs {raw_size_mb} MB) with {olive_mean} ms ({olive_fps} FPS). "
-        f"This compact footprint is ideal for co-hosting multiple neural models in shared NPU memory."
+        f"On silicon target {device_label} ({chosen_dev}):\n"
+        f"• Measured Winner: {actual_winner} with {latencies[actual_winner]:.1f} ms average latency.\n"
+        f"• Native OpenVINO IR: {ir_mean:.1f} ms ({ir_fps:.1f} FPS, compile {t_comp_ir:.2f}s).\n"
+        f"• Raw ONNX Model: {raw_mean:.1f} ms ({raw_fps:.1f} FPS, compile {t_comp_raw:.2f}s).\n"
+        f"• Olive Optimized Model: {olive_mean:.1f} ms ({olive_fps:.1f} FPS, disk size -{mem_saved_pct:.1f}%)."
     )
 
     results["protocol"] = "demohub/1.0"

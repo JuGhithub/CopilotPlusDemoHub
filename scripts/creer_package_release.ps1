@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Génère un package autonome (archive ZIP) du Copilot+ Demo Hub prêt pour GitHub Releases ou partage collègues.
     Supporte les architectures win-x64 (Intel Core Ultra / AMD Ryzen AI) et win-arm64 (Qualcomm Snapdragon X).
@@ -50,6 +50,7 @@ $ItemsToCopy = @(
     "Config",
     "Prompts",
     "scripts",
+    "demohub_common",
     "avatar_service.py",
     "eraser_service.py",
     "lang_utils.py",
@@ -64,6 +65,14 @@ $ItemsToCopy = @(
     "transcribe_service.py",
     "requirements.txt",
     "requirements.lock",
+    "MODEL_MANIFEST.json",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "LIMITATIONS.md",
+    "PRIVACY.md",
+    "ARCHITECTURE.md",
+    "TROUBLESHOOTING.md",
+    "SBOM.spdx.json",
     "GUIDE_INSTALLATION.md",
     "INSTALLATION_GUIDE.md",
     "README.md",

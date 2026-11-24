@@ -1016,11 +1016,11 @@ public partial class OliveLabView : UserControl, IDisposable
         if (BtnRunBenchmark != null) BtnRunBenchmark.IsEnabled = false;
         if (TxtRawSlmStream != null) TxtRawSlmStream.Text = "";
         if (TxtOliveSlmStream != null) TxtOliveSlmStream.Text = "";
-        if (TxtRawSlmLat != null) TxtRawSlmLat.Text = isEn ? "⏳ Streaming at ~14.5 tok/s (FP32 baseline)..." : "⏳ Génération à ~14.5 tok/s (Base FP32)...";
-        if (TxtOliveSlmLat != null) TxtOliveSlmLat.Text = isEn ? "⚡ Streaming at ~68.2 tok/s (Olive FP16)..." : "⚡ Génération à ~68.2 tok/s (Olive FP16)...";
+        if (TxtRawSlmLat != null) TxtRawSlmLat.Text = isEn ? "🎬 [Simulation] Streaming at ~14.5 tok/s..." : "🎬 [Simulation] Débit estimé ~14.5 tok/s...";
+        if (TxtOliveSlmLat != null) TxtOliveSlmLat.Text = isEn ? "⚡ [Simulation] Streaming at ~68.2 tok/s..." : "⚡ [Simulation] Débit estimé ~68.2 tok/s...";
         if (LblStatus != null) LblStatus.Text = isEn
-            ? "⏳ Running SLM token generation shootout: Raw Unoptimized FP32 vs Microsoft Olive FP16..."
-            : "⏳ Duel de génération de tokens SLM en cours : Brut FP32 vs Optimisé Olive FP16...";
+            ? "🎬 [Interactive Simulation] Visualizing throughput difference: Baseline FP32 vs Olive FP16..."
+            : "🎬 [Simulation Pédagogique] Visualisation comparative de débit : Base FP32 vs Optimisé Olive FP16...";
 
         string targetText = GetSlmTargetText(_activeSlmPromptType, isEn);
         string[] rawTokens = targetText.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -1032,7 +1032,7 @@ public partial class OliveLabView : UserControl, IDisposable
             txtStream: TxtOliveSlmStream,
             scroller: ScrollerOliveSlm,
             txtStatus: TxtOliveSlmLat,
-            tag: isEn ? "Olive FP16 (NPU)" : "Olive FP16 (NPU)",
+            tag: isEn ? "Olive FP16 (Simulé)" : "Olive FP16 (Simulé)",
             token: token
         );
 
@@ -1042,7 +1042,7 @@ public partial class OliveLabView : UserControl, IDisposable
             txtStream: TxtRawSlmStream,
             scroller: ScrollerRawSlm,
             txtStatus: TxtRawSlmLat,
-            tag: isEn ? "Raw FP32" : "Brut FP32",
+            tag: isEn ? "Raw FP32 (Simulé)" : "Brut FP32 (Simulé)",
             token: token
         );
 
@@ -1053,8 +1053,8 @@ public partial class OliveLabView : UserControl, IDisposable
             if (TxtOliveSlmLat != null)
             {
                 TxtOliveSlmLat.Text = isEn
-                    ? $"✅ COMPLETE: 68.2 tok/s • {rawTokens.Length} Tokens in {(rawTokens.Length / 68.2):F1}s (4.7x Speedup)"
-                    : $"✅ TERMINÉ : 68.2 tok/s • {rawTokens.Length} Tokens en {(rawTokens.Length / 68.2):F1}s (4.7x Plus Rapide)";
+                    ? $"🎬 [Simulation] Olive FP16: ~68.2 tok/s • {rawTokens.Length} mots en {(rawTokens.Length / 68.2):F1}s"
+                    : $"🎬 [Simulation] Olive FP16 : ~68.2 tok/s • {rawTokens.Length} mots en {(rawTokens.Length / 68.2):F1}s";
             }
 
             // Wait for Raw (finishes in ~16s)
@@ -1062,27 +1062,18 @@ public partial class OliveLabView : UserControl, IDisposable
             if (TxtRawSlmLat != null)
             {
                 TxtRawSlmLat.Text = isEn
-                    ? $"✅ COMPLETE: 14.5 tok/s • {rawTokens.Length} Tokens in {(rawTokens.Length / 14.5):F1}s (Baseline)"
-                    : $"✅ TERMINÉ : 14.5 tok/s • {rawTokens.Length} Tokens en {(rawTokens.Length / 14.5):F1}s (Base)";
+                    ? $"🎬 [Simulation] Raw FP32: ~14.5 tok/s • {rawTokens.Length} mots en {(rawTokens.Length / 14.5):F1}s"
+                    : $"🎬 [Simulation] Brut FP32 : ~14.5 tok/s • {rawTokens.Length} mots en {(rawTokens.Length / 14.5):F1}s";
             }
 
             if (LblStatus != null)
             {
                 LblStatus.Text = isEn
-                    ? $"✅ SLM Benchmark shootout complete! Phi-4-mini: 68.2 tok/s (Olive FP16) vs 14.5 tok/s (Raw FP32) = 4.7x Speedup, -74% RAM footprint on NPU."
-                    : $"✅ Duel de Tokens SLM terminé ! Phi-4-mini : 68.2 tok/s (Olive FP16) vs 14.5 tok/s (Brut FP32) = Débit 4.7x supérieur et -74% de RAM sur NPU.";
+                    ? $"🎬 [Simulation Pédagogique Terminée] Profils indicatifs : ~68.2 tok/s (Olive FP16) vs ~14.5 tok/s (Brut FP32). (Non comptabilisé en inférence réelle)."
+                    : $"🎬 [Simulation Pédagogique Terminée] Profils indicatifs : ~68.2 tok/s (Olive FP16) vs ~14.5 tok/s (Brut FP32). (Non comptabilisé en inférence réelle).";
             }
 
-            // Record Telemetry
-            _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
-                demoName: "Olive Lab - SLM Token Duel",
-                requestedSilicon: "NPU",
-                effectiveSilicon: "NPU",
-                siliconDeviceName: "Phi-4-mini (Olive FP16 on NPU)",
-                latencyMs: 14,
-                tokensPerSecond: 68.2,
-                customPowerWatts: 7.5
-            );
+            // NOTE: Non-exécuté / simulation pédagogique - Ne pas polluer la télémétrie réelle.
         }
         catch (OperationCanceledException)
         {

@@ -246,24 +246,22 @@ public partial class FinancialView : UserControl
                 : $"⚡ Silicium local actif ({effective}) : Pré-calcul du contexte (450 tokens)...");
 
             string systemPrompt = isEn
-                ? "You are a senior financial analyst and credit committee secretary. Provide an executive flash credit note in 4 parts:\n" +
-                  "1. Solvency diagnosis (Autonomy, net leverage 2.76x)\n" +
-                  "2. Ratios & WCR strain (+45d export delay, cash 420k€)\n" +
-                  "3. Risk matrix & collateral (Titanium stock pledge, BdF 3+ rating)\n" +
-                  "4. Committee decision (Approve €2.5M overdraft under covenant terms)\n\n" +
+                ? "You are a senior financial analyst and credit committee secretary. Provide an objective executive flash credit note in 4 parts:\n" +
+                  "1. Solvency diagnosis (Autonomy, net leverage)\n" +
+                  "2. Ratios & WCR strain (Working capital requirement, cash position)\n" +
+                  "3. Risk matrix & collateral (Assets pledged, risk rating)\n" +
+                  "4. Committee recommendation (Objective recommendation, critical risk points, required covenants)\n\n" +
                   "Directives: Ultra-concise bullet points, exact figures, direct executive tone. Strictly no introduction or conversational filler.\n\n" +
                   _localizer.Get("Language_ResponseInstruction")
-                : "Vous êtes un analyste financier senior et secrétaire de comité des engagements bancaires. Rédigez une note de synthèse exécutive flash en 4 parties concises :\n" +
-                  "1. Diagnostic de solvabilité (Autonomie, levier net 2,76x)\n" +
-                  "2. Ratios & Tension BFR (+45 jours export, trésorerie 420 k€)\n" +
-                  "3. Matrice de risques & garanties (Stock titane gagé, cotation BdF 3+)\n" +
-                  "4. Décision motivée du comité (Accord facilité 2,5 M€ sous conditions de covenants)\n\n" +
+                : "Vous êtes un analyste financier senior et secrétaire de comité des engagements bancaires. Rédigez une note de synthèse exécutive flash objective en 4 parties concises :\n" +
+                  "1. Diagnostic de solvabilité (Autonomie, levier net)\n" +
+                  "2. Ratios & Tension BFR (Besoin en fonds de roulement, trésorerie)\n" +
+                  "3. Matrice de risques & garanties (Actifs gagés, cotation)\n" +
+                  "4. Recommandation motivée du comité (Avis objectif, points de vigilance critiques, covenants requis)\n\n" +
                   "Directives : Puces ultra-concises, chiffres exacts, style exécutif direct. Aucun verbiage d'introduction.\n\n" +
                   _localizer.Get("Language_ResponseInstruction");
 
-            // Charger l'intégralité du mémorandum financier et des bilans certifiés
-            string direct = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Documents", "Dossier_Credit_Entreprise_849201932.txt");
-            string candidate = direct;
+            string candidate = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Documents", "Dossier_Credit_Entreprise_849201932.txt");
             if (!File.Exists(candidate))
             {
                 string? dir = AppDomain.CurrentDomain.BaseDirectory;
@@ -274,7 +272,11 @@ public partial class FinancialView : UserControl
                     dir = Path.GetDirectoryName(dir);
                 }
             }
-            string fullCreditDossier = File.Exists(candidate) ? File.ReadAllText(candidate) : financialData;
+
+            // Utiliser en priorité le texte saisi/édité par l'utilisateur
+            string fullCreditDossier = !string.IsNullOrWhiteSpace(financialData)
+                ? financialData
+                : (File.Exists(candidate) ? File.ReadAllText(candidate) : "");
 
             string userPrompt = $"DOSSIER DE CRÉDIT & BILANS :\n==================================================\n{fullCreditDossier}\n==================================================\n\nINSTRUCTION DU COMITÉ :\n{instruction}";
 

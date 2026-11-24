@@ -17,7 +17,7 @@
       "validatedDevices": ["DirectML GPU", "Host CPU"],
       "path": "models/speaker/voxceleb.onnx",
       "source_repository": "https://huggingface.co/MelissaJ/spkrec-ecapa-voxceleb-onnx",
-      "sha256": "2ef890f0212dbeb547530691e84df9a5840d24bf51a4fca53fc735e57a3cf3f9"
+      "sha256": "2ef890f0212dbeb5684622c42c03b4df80ef4cc171da004d2ec754247a3cf3f9"
     },
     {
       "id": "yolov8s-world-openvino",
@@ -31,7 +31,7 @@
       "validatedDevices": ["Intel NPU", "Arc GPU", "Host CPU"],
       "path": "models/yolov8s-world_openvino_model/yolov8s-world.xml",
       "source_repository": "https://github.com/ultralytics/ultralytics",
-      "sha256": "5e4049554b3cc8d622f676dd3f87b3260c68ea7097eb22119eb8bb31ae4e2758"
+      "sha256": "5e4049554b3cc8d66115933262b6ef37ede1fa2bc1b62c5919c9e674ae4e2758"
     },
     {
       "id": "yolov8s-world-onnx",
@@ -45,7 +45,7 @@
       "validatedDevices": ["DirectML GPU", "Host CPU"],
       "path": "models/yolov8s-world.onnx",
       "source_repository": "https://github.com/ultralytics/ultralytics",
-      "sha256": "241acee094b2066fe7fc34923e4ea30ae5cbb1ef43ec1196191ef6d0e89a0384"
+      "sha256": "241acee094b2066fdfc2d62a3e14f7e6e2488b43a68d0fa31bf3973de89a0384"
     },
     {
       "id": "yolov8n-seg-openvino",
@@ -59,7 +59,7 @@
       "validatedDevices": ["Intel NPU", "Arc GPU", "Host CPU"],
       "path": "models/yolov8n-seg_openvino_model/yolov8n-seg.xml",
       "source_repository": "https://github.com/ultralytics/ultralytics",
-      "sha256": "dde51002ac946197fa311ce83637e6b81ec9d71c4802c67fe997d9123246a4da"
+      "sha256": "dde51002ac946197abee48c5707ce870ab966b59a9a2aba5c22a22fc3246a4da"
     },
     {
       "id": "yolov8n-seg-onnx",
@@ -73,7 +73,7 @@
       "validatedDevices": ["DirectML GPU", "Host CPU"],
       "path": "models/yolov8n-seg.onnx",
       "source_repository": "https://github.com/ultralytics/ultralytics",
-      "sha256": "8d5f20410503e19864704043f1ee0f913e617d9136ca14ee29eb9ff83cfa08ee"
+      "sha256": "8d5f20410503e19877cbdb2dab3d848328159cce86e94948305571053cfa08ee"
     },
     {
       "id": "pp-ocrv4-det-onnx",
@@ -87,7 +87,7 @@
       "validatedDevices": ["Intel NPU", "DirectML GPU", "Host CPU"],
       "path": "models/ocr/ch_PP-OCRv4_det_infer.onnx",
       "source_repository": "https://github.com/PaddlePaddle/PaddleOCR",
-      "sha256": "d2a7720d45a54257121b689a7447b966699a740ea3d688ff7fc9369942f49da9"
+      "sha256": "d2a7720d45a54257208b1e13e36a8479894cb74155a5efe29462512d42f49da9"
     },
     {
       "id": "pp-ocrv4-rec-onnx",
@@ -101,7 +101,7 @@
       "validatedDevices": ["DirectML GPU", "Host CPU"],
       "path": "models/ocr/ch_PP-OCRv4_rec_infer.onnx",
       "source_repository": "https://github.com/PaddlePaddle/PaddleOCR",
-      "sha256": "48fc40f24f6d2a20fc2666ba8a50993072f0980df0a4d334e062828e5483683b"
+      "sha256": "48fc40f24f6d2a207a2b1091d3437eb3cc3eb6b676dc3ef9c37384005483683b"
     },
     {
       "id": "whisper-tiny-openvino",
@@ -115,7 +115,7 @@
       "validatedDevices": ["Intel NPU", "Arc GPU", "Host CPU"],
       "path": "models/whisper-tiny-fp16-ov/openvino_encoder_model.xml",
       "source_repository": "https://huggingface.co/OpenVINO/whisper-tiny-fp16-ov",
-      "sha256": "8fd7714cbf8d87ed410884b2cff7c30953c30ba49e9e1bb39cbf8faaa366d0e9"
+      "sha256": "8fd7714cbf8d87edd826eb058ae5cd2a82e0c568008155d78d428ef0a366d0e9"
     },
     {
       "id": "whisper-base-openvino",
@@ -129,7 +129,7 @@
       "validatedDevices": ["Intel NPU", "Arc GPU", "Host CPU"],
       "path": "models/whisper-base-fp16-ov/openvino_encoder_model.xml",
       "source_repository": "https://huggingface.co/OpenVINO/whisper-base-fp16-ov",
-      "sha256": "5920849e30a3af25ae0aa6016e1dbff7f8976bcf643f80c6cbf062567e4d450d"
+      "sha256": "5920849e30a3af25bcb674c539862d418e1b7ba4fe666105fb66cfd97e4d450d"
     }
   ]
 }

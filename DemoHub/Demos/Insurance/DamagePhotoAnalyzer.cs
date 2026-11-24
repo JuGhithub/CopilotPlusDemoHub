@@ -103,17 +103,17 @@ public static class DamagePhotoAnalyzer
             Width = w,
             Height = h,
             FileSizeBytes = sz,
-            SeverityScore = 3,
-            AdasAffected = true,
+            SeverityScore = 0,
+            AdasAffected = false,
             IsCustomUpload = true,
             InspectionReportFr =
-                $"- Document photographique analysé localement sur silicium Copilot+ PC ({w}x{h} px, {sz / 1024} Ko).\n" +
-                "- Éléments identifiés : Zones de déformation carrosserie / bouclier d'impact compatibles avec choc de circulation.\n" +
-                "- Contrôle d'intégrité : Fichier conforme, aucune altération numérique détectée. À confronter avec les éléments déclaratifs du dossier SIN-2026-8942.",
+                $"- Métadonnées techniques : Fichier image importé ({w}x{h} px, {sz / 1024} Ko).\n" +
+                "- Évaluation visuelle : Document joint au dossier. Aucune conclusion technique inventée à partir des seules métadonnées du fichier.\n" +
+                "- Recommandation : Examen visuel contradictoire et chiffrage des dommages requis par un expert d'assurance qualifié.",
             InspectionReportEn =
-                $"- Photographic evidence inspected locally on Copilot+ PC silicon ({w}x{h} px, {sz / 1024} KB).\n" +
-                "- Identified elements: Bodywork deformation / bumper impact zones consistent with traffic accident damage.\n" +
-                "- Integrity check: Verified file, no digital alteration detected. Cross-referenced against amicable claim SIN-2026-8942."
+                $"- Technical metadata: Imported image file ({w}x{h} px, {sz / 1024} KB).\n" +
+                "- Visual evaluation: Document attached to claim. No fabricated collision assessment derived from image dimensions alone.\n" +
+                "- Recommendation: Physical inspection and damage appraisal by a certified insurance adjuster required."
         };
     }
 

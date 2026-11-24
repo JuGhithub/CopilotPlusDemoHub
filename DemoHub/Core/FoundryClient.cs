@@ -43,6 +43,21 @@ public sealed class FoundryClient : IDisposable
 
     public string BaseUrl => _currentBaseUrl;
 
+    /// <summary>
+    /// Indique si l'inférence est strictement confinée au poste local (adresse de boucle locale).
+    /// </summary>
+    public bool IsLocalEndpoint
+    {
+        get
+        {
+            if (Uri.TryCreate(_currentBaseUrl, UriKind.Absolute, out var uri))
+            {
+                return uri.IsLoopback || uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase);
+            }
+            return false;
+        }
+    }
+
     public Uri GetEndpointUri(string endpoint)
     {
         string baseUrl = _currentBaseUrl.TrimEnd('/');

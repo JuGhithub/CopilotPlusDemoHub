@@ -1,0 +1,49 @@
+{
+  "incidentId": "INC-2026-P1045",
+  "timestampUtc": "2026-10-06T08:42:15Z",
+  "facility": "Bâtiment B - Pôle Ingénierie & Datacenter",
+  "equipment": {
+    "tag": "UTA-04B",
+    "type": "Unité de Traitement d'Air Double Flux Industrielle",
+    "location": "Local Technique Toiture Terrasse R+4",
+    "commissioningDate": "2021-04-12",
+    "motorPowerKw": 22.0,
+    "nominalAirflowM3h": 12500,
+    "controller": "Automate DDC Schneider Modicon M241"
+  },
+  "alarmEvent": {
+    "code": "P1045",
+    "severity": "HIGH",
+    "label": "Défaut débit d'air critique & Vibration anormale palier turbine",
+    "firstTrigger": "2026-10-06T08:38:02Z",
+    "triggerCountLast24h": 4
+  },
+  "telemetrySensors": {
+    "airflowMeasuredM3h": 8200,
+    "airflowSetpointM3h": 12500,
+    "airflowDeficitPercent": -34.4,
+    "fanVibrationRmsMmS": 7.8,
+    "fanVibrationThresholdWarning": 4.5,
+    "fanVibrationThresholdCritical": 7.1,
+    "motorBearingTempCelsius": 82.4,
+    "motorNominalTempMaxCelsius": 75.0,
+    "differentialPressureFilterPa": 185,
+    "nominalFilterCleanPa": 45,
+    "fanRpm": 1180,
+    "motorCurrentAmperes": 41.2,
+    "motorCurrentNominalAmperes": 38.5
+  },
+  "symptomsObserved": [
+    "Débit d'air anormalement réduit dans les gaines de distribution du Bâtiment B",
+    "Arrêt intermittent du ventilateur centrifuge par déclenchement thermique",
+    "Vibrations mécaniques importantes détectées sur les paliers de transmission",
+    "Échauffement sensible du carter palier turbine"
+  ],
+  "maintenanceHistory": {
+    "lastBearingLubrication": "Il y a 9 mois (Dépassement de la périodicité recommandée de 6 mois)",
+    "lastBeltReplacement": "Il y a 14 mois",
+    "lastFilterChange": "Il y a 3 mois",
+    "accumulatedRunHours": 18450
+  },
+  "safetyInstructions": "Avant ouverture des caissons, consigner le sectionneur Q1 (NF C 18-510) et poser le cale-rotor."
+}

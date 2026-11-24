@@ -357,15 +357,31 @@ public partial class AvatarStudioView : UserControl, IDisposable
                 TxtInferTime.Text = $"⚡ {sec} s";
                 BadgeSpeed.Visibility = Visibility.Visible;
 
-                double watts = completedDevice.Equals("NPU", StringComparison.OrdinalIgnoreCase)
-                    ? 4.5 + (new Random().NextDouble() * 1.5)
-                    : 14.0 + (new Random().NextDouble() * 3.5);
-                TxtWatts.Text = $"🔋 {watts:F1} W";
-                BadgeWatts.Visibility = Visibility.Visible;
+                double liveWatts = 0;
+                try
+                {
+                    var snap = _telemetryService.GetCurrentSnapshot();
+                    if (snap != null && snap.DischargeRateWatts > 1.0)
+                    {
+                        liveWatts = snap.DischargeRateWatts;
+                    }
+                }
+                catch { }
+
+                if (liveWatts > 0)
+                {
+                    TxtWatts.Text = $"🔋 {liveWatts:F1} W (Mesuré)";
+                    BadgeWatts.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    TxtWatts.Text = "🔋 Non mesuré (N/A)";
+                    BadgeWatts.Visibility = Visibility.Visible;
+                }
 
                 string targetName = completedDevice.Equals("NPU", StringComparison.OrdinalIgnoreCase)
-                    ? $"{SiliconDetector.NpuName} (~5W)"
-                    : $"{SiliconDetector.GpuName} (~15W)";
+                    ? SiliconDetector.NpuName
+                    : SiliconDetector.GpuName;
                 LblResultStatus.Text = string.Format(_localizer.Get("Avatar_StatusSuccess"), sec, targetName);
 
                 _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
@@ -374,7 +390,7 @@ public partial class AvatarStudioView : UserControl, IDisposable
                     effectiveSilicon: completedDevice,
                     siliconDeviceName: targetName,
                     latencyMs: inferTimeMs,
-                    customPowerWatts: watts
+                    customPowerWatts: liveWatts > 0 ? liveWatts : null
                 );
             }
             catch (Exception ex)
