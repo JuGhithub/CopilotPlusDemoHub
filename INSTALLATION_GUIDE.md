@@ -127,9 +127,14 @@ python -m venv .venv --system-site-packages
 # 2. Activate virtual environment
 .\.venv\Scripts\Activate.ps1
 
-# 3. Deterministic install using requirements.lock
+# 3. Deterministic install matching PC architecture:
 python -m pip install --upgrade pip
-python -m pip install -r requirements.lock
+
+# For x64 PCs (Intel Core Ultra / AMD Ryzen AI):
+python -m pip install -r requirements-win-x64.lock
+
+# For ARM64 PCs (Qualcomm Snapdragon X Elite / Plus):
+python -m pip install -r requirements-win-arm64.lock
 ```
 
 ---

@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Copilot+ PC Demo Hub - Installation & Configuration Modulaire des Prérequis
 .DESCRIPTION
@@ -121,12 +121,20 @@ if ($RunAll -or $InstallRuntime) {
 
     Write-Host "  Mise à niveau de pip et installation déterministe..." -ForegroundColor Yellow
     & $pyExec -m pip install --upgrade pip --quiet
-    if (Test-Path "$ScriptDir\requirements.lock") {
-        Write-Host "  Installation depuis requirements.lock..." -ForegroundColor DarkGray
-        & $pyExec -m pip install -r "$ScriptDir\requirements.lock" --quiet
+
+    $isArm64 = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq [System.Runtime.InteropServices.Architecture]::Arm64
+    $lockFile = if ($isArm64 -and (Test-Path "$ScriptDir\requirements-win-arm64.lock")) {
+        "$ScriptDir\requirements-win-arm64.lock"
+    } elseif (Test-Path "$ScriptDir\requirements-win-x64.lock") {
+        "$ScriptDir\requirements-win-x64.lock"
+    } elseif (Test-Path "$ScriptDir\requirements.lock") {
+        "$ScriptDir\requirements.lock"
     } else {
-        & $pyExec -m pip install -r "$ScriptDir\requirements.txt" --quiet
+        "$ScriptDir\requirements.txt"
     }
+
+    Write-Host "  Architecture hôte : $(if ($isArm64) { 'ARM64' } else { 'x64' }) -> Dépendances : $(Split-Path $lockFile -Leaf)" -ForegroundColor DarkGray
+    & $pyExec -m pip install -r "$lockFile" --quiet
 
     # Foundry Local CLI
     if (Get-Command foundry -ErrorAction SilentlyContinue) {

@@ -7,14 +7,20 @@
 [![.NET 8](https://img.shields.io/badge/Platform-.NET_8.0_WPF-512BD4?logo=dotnet)](https://dotnet.microsoft.com)
 [![Python 3.12](https://img.shields.io/badge/Backend-Python_3.12_(.venv)-3776AB?logo=python)](https://python.org)
 [![Silicium](https://img.shields.io/badge/Hardware-Intel_%7C_AMD_%7C_Qualcomm-blue)]()
-[![CI Build & Tests](https://img.shields.io/badge/CI-GitHub_Actions_Pass-success)]()
-[![Tests Unitaires](https://img.shields.io/badge/Tests-xUnit_%26_pytest-success)]()
+[![CI Build](https://img.shields.io/badge/CI-passing-brightgreen)](.github/workflows/ci.yml)
+[![Tests .NET](https://img.shields.io/badge/Tests_.NET-18_passed-success)](DemoHub.Tests/)
+[![Tests Python](https://img.shields.io/badge/Tests_Python-19_passed-success)](tests/)
+[![CodeQL](https://img.shields.io/badge/CodeQL-passing-brightgreen)](.github/workflows/codeql.yml)
+[![Audit Sécurité](https://img.shields.io/badge/pip--audit-passing-brightgreen)](requirements.lock)
+[![Intégrité Modèles](https://img.shields.io/badge/Modèles_SHA--256-9%2F9_validés-success)](MODEL_MANIFEST.json)
+[![SBOM](https://img.shields.io/badge/SBOM-SPDX_2.3-blue)](SBOM.spdx.json)
 
-Une suite modulaire de démonstrations techniques d'**Intelligence Artificielle conçue pour fonctionner localement sur PC Copilot+**, après téléchargement initial des modèles et dépendances, avec traçabilité du composant silicium réellement actif :
-- 🔵 **Intel Core Ultra Série 2 (Lunar Lake) & Série 1 (Meteor Lake)** *(Plateforme de référence)* : Inférence optimisée pour le NPU **Intel AI Boost (48 TOPS)** et iGPU Arc 140V (OpenVINO IR natif & DirectML) avec vérification de l'accélérateur actif.
-- 🔴 **AMD Ryzen AI Série 300 (Strix Point)** *(Mode hybride)* : Inférence sur GPU Radeon via DirectML et CPU multithread AVX-512.
-- 🟣 **Qualcomm Snapdragon X Elite / Plus (ARM64)** *(Mode hybride DirectML / binaire win-arm64)* : Inférence sur GPU Adreno via DirectML et CPU ARM64 NEON.
-- ⚪ **Repli Automatique Contrôlé** : Bascule transparente sur GPU DirectX 12 (DirectML) puis CPU multithread avec signalement immédiat dans l'interface et la télémétrie.
+**Copilot+ Demo Hub** est un démonstrateur technique avancé et structuré conçu pour **l'exécution d'IA locale à 100% sur PC Copilot+ sous Windows 11** (après téléchargement initial des modèles et dépendances). Il offre une observabilité complète de l'accélération matérielle, des latences et de l'efficacité énergétique à travers les processeurs neuronaux hétérogènes (NPU, GPU et CPU).
+
+> [!IMPORTANT]
+> **Périmètre du Projet & Transparence** : Ce projet est un démonstrateur d'évaluation technique. Une frontière stricte sépare :
+> - **Les mesures physiques réelles** : Latences d'inférence (P50/P90), puissance de décharge batterie ACPI réelle, et intégrité cryptographique SHA-256 des modèles.
+> - **Les démonstrations pédagogiques** : Scénarios didactiques scénarisés (duels SLM, conformité visuelle des périphériques) clairement étiquetés afin d'éviter toute injection de données fictives dans les journaux de télémétrie.
 
 ---
 
@@ -22,18 +28,18 @@ Une suite modulaire de démonstrations techniques d'**Intelligence Artificielle 
 
 | Plateforme | Statut de Validation | Accélérateur Principal | Runtime Recommandé |
 | :--- | :--- | :--- | :--- |
-| **Intel Core Ultra Série 2** (Lunar Lake 258V/268V/288V) | **Validée & Optimisée** | NPU Intel AI Boost (48 TOPS) + GPU Arc 140V | OpenVINO IR validé sur NPU Intel + DirectML |
+| **Intel Core Ultra Série 2** (Lunar Lake 258V/268V/288V) | **Validée & Optimisée** *(Référence)* | NPU Intel AI Boost (48 TOPS) + GPU Arc 140V | OpenVINO IR validé sur NPU Intel + DirectML |
 | **Intel Core Ultra Série 1** (Meteor Lake 155H/165H) | **Compatible** (sous réserve de pilotes) | NPU Intel AI Boost (11 TOPS) + GPU Arc | OpenVINO IR + DirectML |
 | **Intel Core Ultra 200S / Arrow Lake** | **Compatible CPU/GPU** | GPU Intel Arc / CPU hôte | DirectML + OpenVINO CPU |
 | **AMD Ryzen AI Série 300** (Strix Point) | **Expérimentale** (mode hybride) | GPU AMD Radeon 890M / 880M | ONNX DirectML + Olive FP16 / Fallback CPU |
-| **Qualcomm Snapdragon X** (ARM64) | **Expérimentale** (mode hybride) | GPU Qualcomm Adreno | ONNX DirectML + binaire natif win-arm64 |
+| **Qualcomm Snapdragon X** (ARM64) | **Expérimentale** (mode hybride) | GPU Qualcomm Adreno / NPU Hexagon | ONNX DirectML + binaire natif `win-arm64` |
 | **PC Windows 11 sans NPU** | **Mode dégradé** | GPU DirectX 12 / CPU hôte | Fallback CPU AVX-512 / DirectML |
 
 ---
 
 ## 🏗️ Architecture Silicium & Détection Dynamique
 
-Le **Copilot+ Demo Hub** embarque un composant d'auto-détection matérielle ([`SiliconDetector.cs`](DemoHub/Core/SiliconDetector.cs)) qui analyse le processeur, le GPU et les co-processeurs neuronaux, et commute dynamiquement sur le runtime d'IA adapté :
+Le **Copilot+ Demo Hub** embarque un composant d'auto-détection matérielle ([`SiliconDetector.cs`](DemoHub/Core/SiliconDetector.cs)) qui analyse le processeur, le GPU et les co-processeurs neuronaux pour commuter dynamiquement sur le runtime d'IA adapté :
 
 ```mermaid
 flowchart TD
@@ -68,100 +74,61 @@ flowchart TD
 
 ---
 
-## 🌟 Catalogue des Démonstrations Métiers
+## 🏆 Parcours Phares Validés (Core Validated Showcases)
 
-### 1. 🏢 Assistant Métier & Business (SLM Local Phi-4)
-- **Modèle** : `Phi-4-mini-instruct` (Microsoft Foundry Local & OpenVINO / DirectML).
-- **Accélération** : Inférence optimisée pour le NPU Intel AI Boost sur la plateforme de référence Intel validée. AMD Ryzen AI et Snapdragon X utilisent actuellement des voies hybrides GPU/CPU expérimentales via DirectML ou des runtimes compatibles ; l'exécution native NPU sur ces environnements est en cours de validation.
-- **Pipeline de Raisonnement en 4 étapes** : Décomposition dynamique en temps réel (`1. Analyse contextuelle`, `2. Vérification réglementaire`, `3. Synthèse opérationnelle`, `4. Recommandations`).
-- **Télémétrie en direct** : Débit d'inférence (`tok/s`), compteur de tokens générés et charge du système.
-- **4 Personas Métiers intégrés** : Services Financiers (solvabilité), Opérations Industrielles (CVC prédictif), Ingénierie & R&D (dépannage électromécanique), et Sinistres Automobile (évaluation devis/constat).
+Ces trois parcours utilisateur de bout en bout sont vérifiés, mesurés et exécutés sans raccourcis simulés :
 
----
+### 1. 🏢 Assistant Documentaire Technique & Métier (SLM Local Phi-4)
+- **Moteur d'inférence local** : Propulsé par `Phi-4-mini-instruct` via **Microsoft Foundry Local** CLI ou OpenVINO IR / DirectML. Zéro jeton ou donnée transmis hors du poste.
+- **Pipeline de raisonnement en 4 étapes** : Chaîne de pensée dynamique (`1. Analyse de contexte`, `2. Contrôle réglementaire & risques`, `3. Synthèse opérationnelle`, `4. Recommandations actionnables`).
+- **Télémétrie matérielle en temps réel** : Vitesse de génération réelle (`tok/s`), comptage des jetons et mémoire allouée.
+- **4 Domaines Métier Réels** : Analyse de risque de crédit, Maintenance prédictive CVC, Ingénierie électromécanique, et Expertise de sinistres automobiles.
+- **Streaming asynchrone résilient** : Lecture asynchrone non-bloquante avec détection et signalement explicite des réponses partielles ou interrompues.
 
-### 2. 🪄 Gomme Magique Studio (Segmentation Sémantique Instantanée)
-- **Modèle** : `YOLOv8n-Seg` (OpenVINO IR, ONNX DirectML ou Microsoft Olive FP16).
-- **Accélération** : Inférence sur **NPU Intel AI Boost** ou GPU DirectML.
-- **Architecture Daemon IPC Résident** : Travailleur d'arrière-plan préchargé réduisant la latence de détection de **4 500 ms à 84 ms (accélération x53)**.
-- **Fonctionnalités** : Détection des personnes et objets, masque de segmentation précis au pixel, et inpainting de reconstruction sans altérer l'arrière-plan.
+### 2. 🎙️ Transcription Locale & Diarisation Vocale (Whisper NPU)
+- **Moteur Whisper préchauffé** : `Whisper-Tiny` et `Whisper-Base` (OpenVINO IR) préchargés en mémoire NPU/iGPU pour une réponse instantanée.
+- **Filtre anti-hallucination bilingue (`lang_utils.py`)** : Détection automatique de la langue (FR/EN) et suppression des répétitions acoustiques lors des silences ou bruits de fond.
+- **Biométrie vocale locale chiffrée** : Empreintes neuronales (`VoxCeleb ECAPA-TDNN ONNX`) **chiffrées localement via Windows DPAPI** liées à la session Windows de l'utilisateur.
+- **Synthèse de réunion multi-locuteurs** : Synthèse de réunion générée localement par Phi-4 avec préservation des attributions des locuteurs.
 
----
-
-### 3. 🛡️ Contrôle d'Accès Zero-Trust (Vision par Ordinateur Temps Réel)
-- **Modèle** : `YOLOv8s-World` (OpenVINO IR, ONNX DirectML ou Microsoft Olive FP16).
-- **Accélération** : Exécution sur NPU par défaut avec bascule dynamique GPU/CPU et traçabilité du composant silicium actif.
-- **Anti-Spoofing & Sécurité** : Détection de fraude par présentation d'écran/smartphone devant la caméra et galerie d'échantillons de test.
-- **Matrice de Contrôle 3/3** : Détection simultanée (Tasse ☕, Lunettes 👓, Casque 🎧) pour déverrouiller la console exécutive.
+### 3. 📄 OCR Neuronal & Caviardage Dynamique de Documents Sensibles
+- **Pipeline OCR hybride** : Extraction ultra-rapide du texte avec `PyMuPDF` couplé à `RapidOCR` accéléré sur **NPU** et **GPU DirectML**.
+- **Traitement automatique des PDF numérisés** : Détection automatique des documents scannés ou images sans couche texte native et exécution de l'OCR avant analyse.
+- **Détection dynamique des PII & Caviardage destructif** : Identification combinée (regex + SLM) des données personnelles (IBAN, numéros fiscaux, téléphones, emails, montants financiers). Application de masquages vectoriels permanents et irréversibles directement dans le fichier PDF (sans liste statique de noms fictifs).
 
 ---
 
-### 4. 🎙️ Audio Studio & Locuteurs (STT, Diarisation & Biométrie)
-- **Modèles Whisper NPU Pré-chauffés** : `Whisper-Tiny` et `Whisper-Base` (OpenVINO IR) maintenus chauds en mémoire pour un temps de réponse immédiat.
-- **Bilingue FR / EN & Rattrapage Temps Réel (`lang_utils.py`)** : Détection linguistique automatique et anti-boucle de répétition pour éviter les hallucinations acoustiques.
-- **Traduction Intégrale Assistée** : Carte de traduction générée localement sur NPU (`phi-4-mini-instruct-openvino-npu`) en conservant les étiquettes de locuteurs.
-- **Profils Biométriques Sécurisés** : Réseau neuronal `VoxCeleb ECAPA-TDNN ONNX` extrayant l'empreinte vocale avec **chiffrement local sous Windows DPAPI** (clé de session de l'utilisateur Windows actif).
+## 🎓 Démonstrations Pédagogiques & Scénarios Scénarisés
+
+Ces fonctionnalités sont conçues pour l'illustration didactique et disposent d'un étiquetage explicite dans l'interface :
+
+- **🛡️ Contrôle de Conformité Visuelle (`SecurityAccessView`)** : Vérification de la présence de périphériques webcam (lunettes, casque, badge, anti-spoofing). *Scénario pédagogique — ne protège pas d'accès opérationnel critique.*
+- **🪄 Magic Eraser Studio (`YOLOv8n-Seg`)** : Segmentation sémantique et inpainting en temps réel via un démon résident en arrière-plan (latence de 84 ms).
+- **🎨 Avatar Studio (`LCM DreamShaper v7`)** : Diffusion d'images quantifiée en 8 bits en 4 à 8 étapes (~3s). Mesure de la décharge batterie ACPI réelle ou mention `N/A`.
+- **⚡ Duel Silicium & Laboratoire Microsoft Olive** : Banc comparatif illustrant les gains d'efficacité entre FP32, FP16 et graphes d'opérateurs fusionnés sous Olive.
+- **📊 Console de Télémétrie & Gouvernance IT Locale** : Tableau de bord d'audit d'entreprise affichant les latences matérielles réelles (P50/P90), l'accélérateur actif et les gains énergétiques estimés.
 
 ---
 
-### 5. 📄 PDF Studio, OCR Intelligent & Assistance au Caviardage
-- **Moteur Vectoriel & OCR Hybride** : `PyMuPDF` haute performance combiné à `RapidOCR` avec détection sur **NPU Intel AI Boost & GPU DirectML Arc 140V**.
-- **Analyse Sémantique Locale** : Synthèse exécutive et identification des clauses sensibles via `Phi-4-mini`.
-- **Assistance au Caviardage Documentaire** : Détection assistée par LLM et expressions régulières des entités personnelles (IBAN, NIR, coordonnées, montants) avec caviardage destructif définitif sous aplat noir (validation humaine recommandée avant diffusion).
-
----
-
-### 6. 🎨 Studio Avatar (Génération & Diffusion d'Images)
-- **Modèle** : `LCM DreamShaper v7` quantifié en 8-bit (Latent Consistency Model).
-- **Accélération** : **NPU Copilot+** et **GPU DirectML**.
-- **Performance** : Génération d'images stylisées en 4 à 8 étapes d'inférence (~3 secondes).
-
----
-
-### 7. ⚡ Duel Silicium & Benchmark Énergétique
-- **Télémétrie Estimée** : Évaluation de la consommation énergétique (Watts et Joules estimés), de la fréquence et de la température à partir des compteurs matériels disponibles.
-- **Duel Comparatif Tri-États** : Démonstration comparative de l'efficience énergétique entre modèle natif, modèle ONNX brut et variante optimisée Microsoft Olive.
-
----
-
-### 8. 🧪 Laboratoire d'Optimisation Microsoft Olive & Flotte MCP
-- **Banc d'Essai Comparatif** : Mesure des gains entre modèles FP32 et modèles compilés par Microsoft Olive (FP16 / fusion d'opérateurs).
-- **Multi-Agents MCP** : 3 agents locaux exécutant en parallèle des outils neuronaux via un serveur local Model Context Protocol (MCP) conforme JSON-RPC 2.0.
-
----
-
-### 9. 📊 Console de Gouvernance & Audit Flotte DSI
-- **Supervision & Traçabilité** : Journalisation locale de chaque inférence (modèle exécuté, coprocesseur sollicité, latences mesurées P50/P90, statut de fallback).
-- **Bilan Carbone Estimé** : Estimation des kWh et du CO2 évités par rapport à une déportation en data centers cloud.
-
----
-
-### 10. 🩺 Panorama IA Santé (SLM, NLU & Agent Médical)
-- **Cas Clinique de Démonstration** : Comparaison didactique de 4 approches d'IA sur un scénario d'interaction médicale en local (aucun transfert réseau de données de santé).
-- **Comparatif Didactique** : SLM Standard grand public vs SLM Métier outillé pharmacovigilance vs NLU de contexte vs Agent Médical actif.
-
----
-
-## ⚡ Déploiement & Démarrage
-
-Le projet propose une procédure automatisée avec vérification préalable :
+## ⚡ Déploiement & Démarrage Rapide
 
 ```mermaid
 flowchart LR
-    Clone["1. Cloner le repo Git"] --> Install["2. Installer_Prerequis.ps1"]
+    Clone["1. Cloner le dépôt Git"] --> Install["2. Installer_Prerequis.ps1"]
     Install --> Verify["3. verify_installation.py"]
     Verify --> Run["4. Lancer_DemoHub.ps1"]
 ```
 
 ### Installation Rapide :
 ```powershell
-# Installation automatisée (isole Python dans .venv et installe requirements.lock)
+# Installation automatisée (configure le .venv et sélectionne le lock file de l'architecture)
 .\Installer_Prerequis.ps1
 
-# Lancement de l'application
+# Lancer la démonstration avec accélération matérielle
 .\Lancer_DemoHub.ps1
 ```
 
-Pour les options d'installation modulaire, l'installation manuelle ou la publication Snapdragon X (ARM64), consultez le [Guide d'Installation Complet](GUIDE_INSTALLATION.md).
+Pour les commutateurs modulaires (`-CheckOnly`, `-DownloadModels`, `-BuildApplication`) ou les builds Qualcomm Snapdragon X (ARM64), consultez le [Guide d'Installation](GUIDE_INSTALLATION.md).
 
 ---
 
@@ -169,31 +136,33 @@ Pour les options d'installation modulaire, l'installation manuelle ou la publica
 
 ```text
 ├── DemoHub/                 # Application hôte WPF C# .NET 8 (MVVM, Vues, Contrôleurs)
-├── DemoHub.Tests/           # Suite de tests unitaires xUnit C# (ProcessRunner, télémétrie, silicium)
-├── tests/                   # Suite de tests unitaires Python pytest (DPAPI vault, anti-tamper, langues)
-├── .github/                 # Intégration continue (workflows/ci.yml, dependabot.yml)
-├── Data/                    # Échantillons de test synthétiques et libres de droits (voir DATA_NOTICES.md)
+├── DemoHub.Tests/           # Suite de tests unitaires xUnit C# (ProcessRunner, télémétrie, détection silicium)
+├── tests/                   # Suite de tests Python pytest (coffre DPAPI, anti-altération, filtres linguistiques)
+├── .github/workflows/       # Workflows CI GitHub (ci.yml, codeql.yml, dependabot.yml)
+├── Data/                    # Données de test synthétiques et libres de droits (voir DATA_NOTICES.md)
 ├── Config/ & Prompts/       # Configurations d'inférence et prompts de raisonnement
-├── scripts/                 # Outillage d'automatisation et de diagnostic
-│   ├── download_models.py   # Téléchargement, intégrité SHA-256 et export des modèles d'IA
-│   ├── verify_installation.py # Diagnostic complet (Section 8 smoke tests réels CPU/GPU/NPU/DPAPI)
-│   ├── creer_package_release.ps1 # Empaqueteur multi-architecture (win-x64 / win-arm64)
-│   └── optimize_with_olive.py # Script d'optimisation Microsoft Olive
-├── *.py                     # Micro-services Python spécialisés (Vision, Eraser, Whisper, Speaker, OCR, Avatar)
-├── requirements.lock        # Verrouillage déterministe des 106 paquets Python
-├── requirements.txt         # Dépendances principales du projet
-├── MODEL_MANIFEST.json      # Registre cryptographique SHA-256 et métadonnées des modèles d'IA
-├── SECURITY.md              # Politique de sécurité et reporting de vulnérabilités
-├── THIRD_PARTY_NOTICES.md   # Licences des dépendances et modèles tiers
-├── DATA_NOTICES.md          # Transparence sur le caractère synthétique des jeux d'essai
-├── GUIDE_INSTALLATION.md    # Manuel technique d'installation en Français
-├── INSTALLATION_GUIDE.md    # Technical installation guide in English
-├── README.fr.md             # Documentation en Français
-└── README.md                # Documentation in English
+├── demohub_common/          # Modules Python partagés (devices, evidence, process management, OCR)
+├── scripts/                 # Scripts d'automatisation et de diagnostic
+│   ├── download_models.py   # Téléchargement, vérification SHA-256 et export ONNX
+│   ├── verify_installation.py # Diagnostic et tests d'exécution matériels
+│   ├── creer_package_release.ps1 # Création de packages multi-architectures (win-x64 / win-arm64)
+│   └── optimize_with_olive.py # Optimisation avec Microsoft Olive
+├── requirements.lock        # Verrouillage déterministe des dépendances Python (UTF-8)
+├── requirements-win-x64.lock # Dépendances verrouillées pour Windows x64 (OpenVINO + DirectML)
+├── requirements-win-arm64.lock # Dépendances verrouillées pour Windows ARM64 (ONNX Runtime)
+├── requirements.txt         # Dépendances déclaratives avec sélecteurs de plateforme
+├── MODEL_MANIFEST.json      # Registre cryptographique SHA-256 et métadonnées des modèles
+├── SECURITY.md              # Politique de sécurité et signalement des vulnérabilités
+├── THIRD_PARTY_NOTICES.md   # Licences tierces open source
+├── DATA_NOTICES.md          # Notice de transparence sur les données de démonstration
+├── GUIDE_INSTALLATION.md    # Guide d'installation en français
+├── INSTALLATION_GUIDE.md    # Guide d'installation en anglais
+├── README.fr.md             # Documentation en français
+└── README.md                # Documentation en anglais
 ```
 
 ---
 
-## 🔒 Confidentialité des Données & Responsabilité
+## 🔒 Confidentialité & Déclaration de Gouvernance
 
-Les traitements d'inférence sont conçus pour s'exécuter localement sur l'appareil après l'installation initiale des dépendances et modèles. Aucune donnée utilisateur n'est transmise à des tiers par l'application. Les fonctionnalités d'assistance à la décision et au caviardage sont des aides algorithmiques qui nécessitent une supervision humaine qualifiée.
+Toutes les inférences neuronales sont conçues pour s'exécuter localement sur la machine hôte après l'installation initiale des packages et modèles. Aucune donnée utilisateur ou confidentielle n'est transmise à une infrastructure cloud tierce. Les résultats algorithmiques (aide à la décision, transcription automatique, caviardage assisté) constituent des outils d'aide nécessitant une validation humaine qualifiée.

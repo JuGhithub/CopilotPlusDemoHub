@@ -65,6 +65,8 @@ $ItemsToCopy = @(
     "transcribe_service.py",
     "requirements.txt",
     "requirements.lock",
+    "requirements-win-x64.lock",
+    "requirements-win-arm64.lock",
     "MODEL_MANIFEST.json",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md",
