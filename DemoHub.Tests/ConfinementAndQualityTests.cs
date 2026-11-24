@@ -142,4 +142,19 @@ public class ConfinementAndQualityTests
         Assert.DoesNotContain("TPM 2.0 Sealed", audioBadgeEn);
         Assert.Contains("DPAPI", audioBadgeEn);
     }
+
+    [Fact]
+    public void FinancialView_ComputeDeterministicFinancialRatios_CalculatesCorrectMath()
+    {
+        string sampleText = "Chiffre d'affaires : 20.0M€; EBE : 4.0M€; Dettes financières nettes : 8.0M€;";
+        var (ca, ebe, dette, marge, leverage) = CopilotPlusDemoHub.UI.Views.FinancialView.ComputeDeterministicFinancialRatios(sampleText);
+
+        Assert.Equal(20_000_000.0, ca);
+        Assert.Equal(4_000_000.0, ebe);
+        Assert.Equal(8_000_000.0, dette);
+        Assert.NotNull(marge);
+        Assert.Equal(20.0, marge.Value, 1);
+        Assert.NotNull(leverage);
+        Assert.Equal(2.0, leverage.Value, 2);
+    }
 }

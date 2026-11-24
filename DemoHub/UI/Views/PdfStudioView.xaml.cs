@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Path = System.IO.Path;
 using CopilotPlusDemoHub.Core;
+using CopilotPlusDemoHub.Infrastructure.Python;
 using Microsoft.Win32;
 
 namespace CopilotPlusDemoHub.UI.Views;
@@ -204,66 +205,43 @@ public partial class PdfStudioView : UserControl, IDisposable
 
         string? resultImg = null;
 
-        await Task.Run(() =>
+        try
         {
-            try
-            {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = PythonPathHelper.GetPythonExe(),
-                    Arguments = $"\"{scriptPath}\" --action render --file \"{filePath}\" --out \"{previewPath}\"",
-                    WorkingDirectory = workingDir,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    StandardOutputEncoding = System.Text.Encoding.UTF8
-                };
+            var pyResult = await PythonProcessManager.RunAsync(
+                scriptPath,
+                new[] { "--action", "render", "--file", filePath, "--out", previewPath },
+                workingDirectory: workingDir);
 
-                using var proc = Process.Start(psi);
-                if (proc != null)
+            foreach (var root in pyResult.JsonMessages)
+            {
+                if (root.TryGetProperty("type", out var tp) && tp.GetString() == "render_complete")
                 {
-                    var stderrTask = proc.StandardError.ReadToEndAsync();
-                    string? line;
-                    while ((line = proc.StandardOutput.ReadLine()) != null)
+                    resultImg = root.GetProperty("output_path").GetString();
+                    if (root.TryGetProperty("words", out var wordsElem) && wordsElem.ValueKind == JsonValueKind.Array)
                     {
-                        if (string.IsNullOrWhiteSpace(line)) continue;
-                        try
+                        var list = new List<DocWordInfo>();
+                        foreach (var w in wordsElem.EnumerateArray())
                         {
-                            using var doc = JsonDocument.Parse(line);
-                            var root = doc.RootElement;
-                            if (root.TryGetProperty("type", out var tp) && tp.GetString() == "render_complete")
+                            list.Add(new DocWordInfo
                             {
-                                resultImg = root.GetProperty("output_path").GetString();
-                                if (root.TryGetProperty("words", out var wordsElem) && wordsElem.ValueKind == JsonValueKind.Array)
-                                {
-                                    var list = new List<DocWordInfo>();
-                                    foreach (var w in wordsElem.EnumerateArray())
-                                    {
-                                        list.Add(new DocWordInfo
-                                        {
-                                            Text = w.GetProperty("text").GetString() ?? "",
-                                            X0 = w.GetProperty("x0").GetDouble(),
-                                            Y0 = w.GetProperty("y0").GetDouble(),
-                                            X1 = w.GetProperty("x1").GetDouble(),
-                                            Y1 = w.GetProperty("y1").GetDouble(),
-                                            PtX0 = w.TryGetProperty("pt_x0", out var px0) ? px0.GetDouble() : 0,
-                                            PtY0 = w.TryGetProperty("pt_y0", out var py0) ? py0.GetDouble() : 0,
-                                            PtX1 = w.TryGetProperty("pt_x1", out var px1) ? px1.GetDouble() : 0,
-                                            PtY1 = w.TryGetProperty("pt_y1", out var py1) ? py1.GetDouble() : 0
-                                        });
-                                    }
-                                    _documentWords = list;
-                                }
-                            }
+                                Text = w.GetProperty("text").GetString() ?? "",
+                                X0 = w.GetProperty("x0").GetDouble(),
+                                Y0 = w.GetProperty("y0").GetDouble(),
+                                X1 = w.GetProperty("x1").GetDouble(),
+                                Y1 = w.GetProperty("y1").GetDouble(),
+                                PtX0 = w.TryGetProperty("pt_x0", out var px0) ? px0.GetDouble() : 0,
+                                PtY0 = w.TryGetProperty("pt_y0", out var py0) ? py0.GetDouble() : 0,
+                                PtX1 = w.TryGetProperty("pt_x1", out var px1) ? px1.GetDouble() : 0,
+                                PtY1 = w.TryGetProperty("pt_y1", out var py1) ? py1.GetDouble() : 0
+                            });
                         }
-                        catch { }
+                        _documentWords = list;
                     }
-                    proc.WaitForExit();
+                    break;
                 }
             }
-            catch { }
-        });
+        }
+        catch { }
 
         OverlayBusy.Visibility = Visibility.Collapsed;
 
@@ -433,108 +411,84 @@ public partial class PdfStudioView : UserControl, IDisposable
         string lastErr = string.Empty;
         string effectiveSilicon = device;
 
-        await Task.Run(() =>
+        try
         {
-            try
+            var pyResult = await PythonProcessManager.RunAsync(
+                scriptPath,
+                new[] { "--action", "ocr", "--file", _currentDocPath, "--device", device, "--engine", engine, "--out_overlay", overlayPath },
+                workingDirectory: workingDir);
+
+            foreach (var root in pyResult.JsonMessages)
             {
-                var psi = new ProcessStartInfo
+                if (root.TryGetProperty("type", out var tp))
                 {
-                    FileName = PythonPathHelper.GetPythonExe(),
-                    Arguments = $"\"{scriptPath}\" --action ocr --file \"{_currentDocPath}\" --device \"{device}\" --engine \"{engine}\" --out_overlay \"{overlayPath}\"",
-                    WorkingDirectory = workingDir,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    StandardOutputEncoding = System.Text.Encoding.UTF8
-                };
-
-                using var proc = Process.Start(psi);
-                if (proc != null)
-                {
-                    var stderrTask = proc.StandardError.ReadToEndAsync();
-                    string? line;
-                    while ((line = proc.StandardOutput.ReadLine()) != null)
+                    string type = tp.GetString() ?? "";
+                    if (type == "ocr_complete")
                     {
-                        if (string.IsNullOrWhiteSpace(line)) continue;
-                        try
+                        extractedText = root.GetProperty("full_text").GetString() ?? "";
+                        inferMs = root.GetProperty("infer_time_ms").GetInt32();
+                        lineCount = root.GetProperty("line_count").GetInt32();
+                        wordCount = root.GetProperty("word_count").GetInt32();
+                        resultOverlay = root.GetProperty("overlay_path").GetString() ?? overlayPath;
+                        modelSizeMb = root.TryGetProperty("model_size_mb", out var msz) ? msz.GetDouble() : (engine == "olive" ? 9.8 : 14.9);
+                        ramMb = root.TryGetProperty("ram_mb", out var rmb) ? rmb.GetDouble() : 0.0;
+                        engineLabel = root.TryGetProperty("engine_label", out var elbl) ? (elbl.GetString() ?? "") : "";
+                        effectiveSilicon = root.TryGetProperty("effective_device", out var edev) ? (edev.GetString() ?? device) : device;
+                        if (root.TryGetProperty("evidence", out var evProp))
                         {
-                            using var doc = JsonDocument.Parse(line);
-                            var root = doc.RootElement;
-                            if (root.TryGetProperty("type", out var tp))
-                            {
-                                string type = tp.GetString() ?? "";
-                                if (type == "ocr_complete")
-                                {
-                                    extractedText = root.GetProperty("full_text").GetString() ?? "";
-                                    inferMs = root.GetProperty("infer_time_ms").GetInt32();
-                                    lineCount = root.GetProperty("line_count").GetInt32();
-                                    wordCount = root.GetProperty("word_count").GetInt32();
-                                    resultOverlay = root.GetProperty("overlay_path").GetString() ?? overlayPath;
-                                    modelSizeMb = root.TryGetProperty("model_size_mb", out var msz) ? msz.GetDouble() : (engine == "olive" ? 9.8 : 14.9);
-                                    ramMb = root.TryGetProperty("ram_mb", out var rmb) ? rmb.GetDouble() : 0.0;
-                                    engineLabel = root.TryGetProperty("engine_label", out var elbl) ? (elbl.GetString() ?? "") : "";
-                                    effectiveSilicon = root.TryGetProperty("effective_device", out var edev) ? (edev.GetString() ?? device) : device;
-                                    if (root.TryGetProperty("evidence", out var evProp))
-                                    {
-                                        try { _lastEvidence = System.Text.Json.JsonSerializer.Deserialize<RuntimeEvidence>(evProp.GetRawText()); } catch { }
-                                    }
+                            try { _lastEvidence = System.Text.Json.JsonSerializer.Deserialize<RuntimeEvidence>(evProp.GetRawText()); } catch { }
+                        }
 
-                                    if (root.TryGetProperty("lines", out var linesElem) && linesElem.ValueKind == JsonValueKind.Array)
-                                    {
-                                        var list = new List<DocWordInfo>();
-                                        foreach (var l in linesElem.EnumerateArray())
-                                        {
-                                            string txt = l.GetProperty("text").GetString() ?? "";
-                                            if (l.TryGetProperty("box", out var boxElem) && boxElem.ValueKind == JsonValueKind.Array)
-                                            {
-                                                double minX = double.MaxValue, minY = double.MaxValue, maxX = double.MinValue, maxY = double.MinValue;
-                                                foreach (var pt in boxElem.EnumerateArray())
-                                                {
-                                                    var ptArr = pt.EnumerateArray().ToList();
-                                                    if (ptArr.Count >= 2)
-                                                    {
-                                                        double x = ptArr[0].GetDouble();
-                                                        double y = ptArr[1].GetDouble();
-                                                        if (x < minX) minX = x;
-                                                        if (x > maxX) maxX = x;
-                                                        if (y < minY) minY = y;
-                                                        if (y > maxY) maxY = y;
-                                                    }
-                                                }
-                                                list.Add(new DocWordInfo
-                                                {
-                                                    Text = txt,
-                                                    X0 = minX,
-                                                    Y0 = minY,
-                                                    X1 = maxX,
-                                                    Y1 = maxY,
-                                                    PtX0 = minX / (150.0 / 72.0),
-                                                    PtY0 = minY / (150.0 / 72.0),
-                                                    PtX1 = maxX / (150.0 / 72.0),
-                                                    PtY1 = maxY / (150.0 / 72.0)
-                                                });
-                                            }
-                                        }
-                                        _documentWords = list;
-                                    }
-                                }
-                                else if (type == "error")
+                        if (root.TryGetProperty("lines", out var linesElem) && linesElem.ValueKind == JsonValueKind.Array)
+                        {
+                            var list = new List<DocWordInfo>();
+                            foreach (var l in linesElem.EnumerateArray())
+                            {
+                                string txt = l.GetProperty("text").GetString() ?? "";
+                                if (l.TryGetProperty("box", out var boxElem) && boxElem.ValueKind == JsonValueKind.Array)
                                 {
-                                    lastErr = root.GetProperty("message").GetString() ?? "Erreur d'inférence OCR";
+                                    double minX = double.MaxValue, minY = double.MaxValue, maxX = double.MinValue, maxY = double.MinValue;
+                                    foreach (var pt in boxElem.EnumerateArray())
+                                    {
+                                        var ptArr = pt.EnumerateArray().ToList();
+                                        if (ptArr.Count >= 2)
+                                        {
+                                            double x = ptArr[0].GetDouble();
+                                            double y = ptArr[1].GetDouble();
+                                            if (x < minX) minX = x;
+                                            if (x > maxX) maxX = x;
+                                            if (y < minY) minY = y;
+                                            if (y > maxY) maxY = y;
+                                        }
+                                    }
+                                    list.Add(new DocWordInfo
+                                    {
+                                        Text = txt,
+                                        X0 = minX,
+                                        Y0 = minY,
+                                        X1 = maxX,
+                                        Y1 = maxY,
+                                        PtX0 = minX / (150.0 / 72.0),
+                                        PtY0 = minY / (150.0 / 72.0),
+                                        PtX1 = maxX / (150.0 / 72.0),
+                                        PtY1 = maxY / (150.0 / 72.0)
+                                    });
                                 }
                             }
+                            _documentWords = list;
                         }
-                        catch { }
                     }
-                    proc.WaitForExit();
+                    else if (type == "error")
+                    {
+                        lastErr = root.GetProperty("message").GetString() ?? "Erreur d'inférence OCR";
+                    }
                 }
             }
-            catch (Exception ex)
-            {
-                lastErr = ex.Message;
-            }
-        });
+        }
+        catch (Exception ex)
+        {
+            lastErr = ex.Message;
+        }
 
         OverlayBusy.Visibility = Visibility.Collapsed;
         BtnRunOcr.IsEnabled = true;
@@ -1036,82 +990,81 @@ public partial class PdfStudioView : UserControl, IDisposable
         string lastErr = string.Empty;
         string effectiveSilicon = device;
 
-        await Task.Run(() =>
+        await Task.Run(async () =>
         {
             try
             {
-                var psi = new ProcessStartInfo
+                var argsList = new List<string> { "--action", action, "--file", inputDoc, "--out_pdf", outPdf, "--out_preview", outPreview, "--device", device };
+                if (!string.IsNullOrWhiteSpace(extraArgs))
                 {
-                    FileName = PythonPathHelper.GetPythonExe(),
-                    Arguments = $"\"{scriptPath}\" --action {action} --file \"{inputDoc}\" --out_pdf \"{outPdf}\" --out_preview \"{outPreview}\" --device \"{device}\" {extraArgs}",
-                    WorkingDirectory = workingDir,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    StandardOutputEncoding = System.Text.Encoding.UTF8
-                };
-
-                using var proc = Process.Start(psi);
-                if (proc != null)
-                {
-                    var stderrTask = proc.StandardError.ReadToEndAsync();
-                    string? line;
-                    while ((line = proc.StandardOutput.ReadLine()) != null)
+                    var matches = System.Text.RegularExpressions.Regex.Matches(extraArgs, @"[\""].+?[\""]|[^ ]+");
+                    foreach (System.Text.RegularExpressions.Match m in matches)
                     {
-                        if (string.IsNullOrWhiteSpace(line)) continue;
-                        try
+                        string val = m.Value.Trim('"');
+                        if (!string.IsNullOrEmpty(val))
                         {
-                            using var doc = JsonDocument.Parse(line);
-                            var root = doc.RootElement;
-                            if (root.TryGetProperty("type", out var tp))
-                            {
-                                string type = tp.GetString() ?? "";
-                                if (type.EndsWith("_complete"))
-                                {
-                                    finalPdf = root.GetProperty("output_pdf").GetString() ?? outPdf;
-                                    finalPreview = root.GetProperty("preview_path").GetString() ?? outPreview;
-                                    inferMs = root.GetProperty("infer_time_ms").GetInt32();
-                                    if (root.TryGetProperty("device", out var dProp) && !string.IsNullOrWhiteSpace(dProp.GetString()))
-                                    {
-                                        effectiveSilicon = dProp.GetString()!;
-                                    }
-                                    if (root.TryGetProperty("status", out var stProp) && stProp.GetString() == "partial")
-                                    {
-                                        lastErr = "Avertissement : Certaines pages n'ont pas pu être traitées intégralement.";
-                                    }
+                            argsList.Add(val);
+                        }
+                    }
+                }
 
-                                    // Update word bounding boxes for subsequent mouse clicks/selection
-                                    if (root.TryGetProperty("words", out var wordsElem) && wordsElem.ValueKind == JsonValueKind.Array)
-                                    {
-                                        var list = new List<DocWordInfo>();
-                                        foreach (var w in wordsElem.EnumerateArray())
-                                        {
-                                            list.Add(new DocWordInfo
-                                            {
-                                                Text = w.GetProperty("text").GetString() ?? "",
-                                                X0 = w.GetProperty("x0").GetDouble(),
-                                                Y0 = w.GetProperty("y0").GetDouble(),
-                                                X1 = w.GetProperty("x1").GetDouble(),
-                                                Y1 = w.GetProperty("y1").GetDouble(),
-                                                PtX0 = w.TryGetProperty("pt_x0", out var px0) ? px0.GetDouble() : 0,
-                                                PtY0 = w.TryGetProperty("pt_y0", out var py0) ? py0.GetDouble() : 0,
-                                                PtX1 = w.TryGetProperty("pt_x1", out var px1) ? px1.GetDouble() : 0,
-                                                PtY1 = w.TryGetProperty("pt_y1", out var py1) ? py1.GetDouble() : 0
-                                            });
-                                        }
-                                        _documentWords = list;
-                                    }
-                                }
-                                else if (type == "error")
+                var pyResult = await PythonProcessManager.RunAsync(
+                    scriptPath,
+                    argsList,
+                    workingDirectory: workingDir);
+
+                foreach (var root in pyResult.JsonMessages)
+                {
+                    if (root.TryGetProperty("type", out var tp))
+                    {
+                        string type = tp.GetString() ?? "";
+                        if (type.EndsWith("_complete"))
+                        {
+                            finalPdf = root.GetProperty("output_pdf").GetString() ?? outPdf;
+                            finalPreview = root.GetProperty("preview_path").GetString() ?? outPreview;
+                            inferMs = root.GetProperty("infer_time_ms").GetInt32();
+                            if (root.TryGetProperty("device", out var dProp) && !string.IsNullOrWhiteSpace(dProp.GetString()))
+                            {
+                                effectiveSilicon = dProp.GetString()!;
+                            }
+                            if (root.TryGetProperty("status", out var stProp) && stProp.GetString() == "partial")
+                            {
+                                lastErr = "Avertissement : Certaines pages n'ont pas pu être traitées intégralement.";
+                            }
+                            if (root.TryGetProperty("coverage_mode", out var covProp))
+                            {
+                                string cov = covProp.GetString() ?? "";
+                                int count = root.TryGetProperty("redacted_count", out var rC) ? rC.GetInt32() : 0;
+                                auditName += $" ({count} occultations, {cov})";
+                            }
+
+                            // Update word bounding boxes for subsequent mouse clicks/selection
+                            if (root.TryGetProperty("words", out var wordsElem) && wordsElem.ValueKind == JsonValueKind.Array)
+                            {
+                                var list = new List<DocWordInfo>();
+                                foreach (var w in wordsElem.EnumerateArray())
                                 {
-                                    lastErr = root.GetProperty("message").GetString() ?? "Erreur lors de la modification";
+                                    list.Add(new DocWordInfo
+                                    {
+                                        Text = w.GetProperty("text").GetString() ?? "",
+                                        X0 = w.GetProperty("x0").GetDouble(),
+                                        Y0 = w.GetProperty("y0").GetDouble(),
+                                        X1 = w.GetProperty("x1").GetDouble(),
+                                        Y1 = w.GetProperty("y1").GetDouble(),
+                                        PtX0 = w.TryGetProperty("pt_x0", out var px0) ? px0.GetDouble() : 0,
+                                        PtY0 = w.TryGetProperty("pt_y0", out var py0) ? py0.GetDouble() : 0,
+                                        PtX1 = w.TryGetProperty("pt_x1", out var px1) ? px1.GetDouble() : 0,
+                                        PtY1 = w.TryGetProperty("pt_y1", out var py1) ? py1.GetDouble() : 0
+                                    });
                                 }
+                                _documentWords = list;
                             }
                         }
-                        catch { }
+                        else if (type == "error")
+                        {
+                            lastErr = root.GetProperty("message").GetString() ?? "Erreur lors de la modification";
+                        }
                     }
-                    proc.WaitForExit();
                 }
             }
             catch (Exception ex)

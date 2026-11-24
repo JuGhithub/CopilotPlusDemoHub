@@ -35,8 +35,8 @@ public static class DamagePhotoAnalyzer
             {
                 FilePath = p1,
                 FileName = Path.GetFileName(p1),
-                Title = "Photo 1 : Choc Arrière SUV (Vue d'ensemble)",
-                Description = "Impact arrière direct droit, enfoncement hayon et pare-chocs",
+                Title = "Photo 1 : Choc Arrière SUV (Vue d'ensemble) [Exemple pré-annoté]",
+                Description = "Dossier de référence : Impact arrière direct droit, enfoncement hayon et pare-chocs",
                 Width = w,
                 Height = h,
                 FileSizeBytes = sz,
@@ -62,8 +62,8 @@ public static class DamagePhotoAnalyzer
             {
                 FilePath = p2,
                 FileName = Path.GetFileName(p2),
-                Title = "Photo 2 : Capteur Radar & ADAS (Zoom angle)",
-                Description = "Rupture bouclier thermoplastique, capteur d'angle délogé",
+                Title = "Photo 2 : Capteur Radar & ADAS (Zoom angle) [Exemple pré-annoté]",
+                Description = "Dossier de référence : Rupture bouclier thermoplastique, capteur d'angle délogé",
                 Width = w,
                 Height = h,
                 FileSizeBytes = sz,
@@ -131,12 +131,16 @@ public static class DamagePhotoAnalyzer
             ? (photo.AdasAffected.Value ? (isEn ? "Yes (Sensors & Radar impacted)" : "Oui (Capteurs & Radar concernés)") : (isEn ? "None" : "Non"))
             : (isEn ? "Not assessed (Requires physical technical inspection)" : "Non évalué (Examen contradictoire requis)");
 
+        string originBadge = photo.IsCustomUpload
+            ? (isEn ? "User Imported Photo (Non-assessed external claim asset)" : "Photo importée par l'utilisateur (Pièce externe non pré-évaluée)")
+            : (isEn ? "Pedagogical Benchmark Sample (Pre-annotated reference)" : "Exemple de référence pré-annoté (Dossier pédagogique)");
+
         if (isEn)
         {
             return $@"
 PHOTOGRAPHIC DAMAGE EVIDENCE (INSPECTED LOCALLY)
 ==================================================
-Photo: {photo.Title} ({photo.FileName})
+Photo: {photo.Title} ({photo.FileName}) [{originBadge}]
 Resolution: {photo.Width}x{photo.Height} px | Size: {photo.FileSizeBytes / 1024} KB | Severity Indicator: {severityText}
 ADAS Impact: {adasText}
 
@@ -148,7 +152,7 @@ Visual Inspection Findings:
         return $@"
 PREUVES PHOTOGRAPHIQUES DES DOMMAGES (EXPERTISE LOCALE)
 ==================================================
-Photo : {photo.Title} ({photo.FileName})
+Photo : {photo.Title} ({photo.FileName}) [{originBadge}]
 Résolution : {photo.Width}x{photo.Height} px | Taille : {photo.FileSizeBytes / 1024} Ko | Indice de gravité : {severityText}
 Impact ADAS : {adasText}
 

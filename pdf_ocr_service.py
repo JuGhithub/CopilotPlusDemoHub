@@ -555,10 +555,30 @@ def action_redact(args):
                 log_debug(f"Impossible d'initialiser le moteur OCR pour caviardage: {ex}")
 
             import uuid
+            pages_with_ocr = 0
+            pages_with_native = 0
+            breakdown = {}
+
             for page_idx, page in enumerate(doc):
                 page_text = page.get_text("text")
-                # Traitement OCR pour documents scannés ou pages sans texte natif
-                if not page_text.strip():
+                has_native = bool(page_text.strip())
+                has_images = len(page.get_images()) > 0
+
+                # 1. Caviardage du texte numérique natif
+                if has_native:
+                    pages_with_native += 1
+                    for pattern, label in patterns:
+                        for m in re.finditer(pattern, page_text, re.IGNORECASE):
+                            found_str = m.group(0)
+                            sub_matches = page.search_for(found_str)
+                            for rect in sub_matches:
+                                page.add_redact_annot(rect, fill=(0, 0, 0))
+                                total_redacted += 1
+                                redacted_details.append(label)
+                                breakdown[label] = breakdown.get(label, 0) + 1
+
+                # 2. Caviardage OCR sur pages scannées ou pages mixtes avec images incrustées
+                if not has_native or has_images:
                     temp_scan = os.path.join(os.path.dirname(out_pdf), f"scan_tmp_{uuid.uuid4().hex[:8]}_{page_idx}.png")
                     try:
                         dpi = getattr(args, 'dpi', 150) or 150
@@ -568,6 +588,7 @@ def action_redact(args):
                         if ocr_engine:
                             ocr_res, _ = ocr_engine(temp_scan)
                             if ocr_res:
+                                pages_with_ocr += 1
                                 scale = 72.0 / float(dpi)
                                 for item in ocr_res:
                                     box, text, _ = item
@@ -577,28 +598,18 @@ def action_redact(args):
                                             page.add_redact_annot(rect, fill=(0, 0, 0))
                                             total_redacted += 1
                                             redacted_details.append(f"{label} (OCR)")
+                                            breakdown[f"{label} (OCR)"] = breakdown.get(f"{label} (OCR)", 0) + 1
                         else:
-                            failed_pages.append({"page": page_idx + 1, "error": "Moteur OCR indisponible pour la page numérisée"})
+                            if not has_native:
+                                failed_pages.append({"page": page_idx + 1, "error": "Moteur OCR indisponible pour la page numérisée"})
                     except Exception as page_ex:
-                        failed_pages.append({"page": page_idx + 1, "error": f"Échec OCR sur page numérisée: {str(page_ex)}"})
+                        failed_pages.append({"page": page_idx + 1, "error": f"Échec OCR sur page mixte/numérisée: {str(page_ex)}"})
                     finally:
                         if os.path.exists(temp_scan):
                             try:
                                 os.remove(temp_scan)
                             except Exception:
                                 pass
-                else:
-                    for pattern, label in patterns:
-                        matches = []
-                        for m in re.finditer(pattern, page_text, re.IGNORECASE):
-                            found_str = m.group(0)
-                            sub_matches = page.search_for(found_str)
-                            matches.extend(sub_matches)
-
-                        for rect in matches:
-                            page.add_redact_annot(rect, fill=(0, 0, 0))
-                            total_redacted += 1
-                            redacted_details.append(label)
 
                 try:
                     page.apply_redactions()
@@ -616,15 +627,21 @@ def action_redact(args):
 
         infer_ms = int((time.perf_counter() - t0) * 1000)
 
+        coverage = "Mixte (Texte + OCR)" if (pages_with_native and pages_with_ocr) else ("OCR Scan" if pages_with_ocr else "Texte Natif")
+
         emit({
             "type": "redact_complete",
             "status": "success" if not failed_pages else "partial",
             "failed_pages": failed_pages,
             "total_pages": len(doc),
+            "pages_with_native_text": pages_with_native,
+            "pages_with_ocr": pages_with_ocr,
+            "coverage_mode": coverage,
             "output_pdf": out_pdf,
             "preview_path": out_preview,
             "redacted_count": total_redacted,
             "redacted_items": list(set(redacted_details)),
+            "redacted_breakdown": breakdown,
             "words": words,
             "infer_time_ms": infer_ms,
             "device": effective_device

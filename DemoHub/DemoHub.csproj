@@ -66,6 +66,12 @@
     <None Include="..\olive_mcp_service.py" Link="olive_mcp_service.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="..\demohub_common\**\*.*" Link="demohub_common\%(RecursiveDir)%(Filename)%(Extension)">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\MODEL_MANIFEST.json" Link="MODEL_MANIFEST.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="..\Data\**\*.*" Link="Data\%(RecursiveDir)%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

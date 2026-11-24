@@ -283,7 +283,27 @@ public partial class FinancialView : UserControl
                 ? financialData
                 : (File.Exists(candidate) ? File.ReadAllText(candidate) : "");
 
-            string userPrompt = $"DOSSIER DE CRÉDIT & BILANS :\n==================================================\n{fullCreditDossier}\n==================================================\n\nINSTRUCTION DU COMITÉ :\n{instruction}";
+            bool isSampleMode = fullCreditDossier.Contains("849 201 932") || fullCreditDossier.Contains("849201932");
+            string modeTag = isSampleMode
+                ? (isEn ? "[Sample Dossier Preset]" : "[Mode Exemple Préenregistré]")
+                : (isEn ? "[Custom Dossier Analysis]" : "[Mode Dossier Libre]");
+
+            // Moteur de calcul déterministe C# des ratios financiers fondamentaux
+            var (calcCa, calcEbe, calcDette, calcMarge, calcLev) = ComputeDeterministicFinancialRatios(fullCreditDossier);
+            string deterministicBlock = "";
+            if (calcMarge.HasValue || calcLev.HasValue)
+            {
+                deterministicBlock = isEn
+                    ? "\n\nDETERMINISTIC AUDITED FINANCIAL RATIOS (C# Verified Math Engine):\n"
+                    : "\n\nRATIOS FINANCIERS AUDITÉS (Calcul déterministe certifié C#) :\n";
+                if (calcMarge.HasValue) deterministicBlock += isEn ? $"• Gross EBITDA Margin: {calcMarge.Value:F1}%\n" : $"• Marge brute d'EBE : {calcMarge.Value:F1}%\n";
+                if (calcLev.HasValue) deterministicBlock += isEn ? $"• Net Debt Leverage (Net Debt / EBITDA): {calcLev.Value:F2}x\n" : $"• Levier d'endettement net (Dette Nette / EBE) : {calcLev.Value:F2}x\n";
+                if (calcCa.HasValue) deterministicBlock += isEn ? $"• Audited Revenues: {calcCa.Value / 1_000_000.0:F1} M€\n" : $"• Chiffre d'affaires audité : {calcCa.Value / 1_000_000.0:F1} M€\n";
+                if (calcEbe.HasValue) deterministicBlock += isEn ? $"• Audited EBITDA: {calcEbe.Value / 1_000_000.0:F1} M€\n" : $"• EBE audité : {calcEbe.Value / 1_000_000.0:F1} M€\n";
+                if (calcDette.HasValue) deterministicBlock += isEn ? $"• Net Financial Debt: {calcDette.Value / 1_000_000.0:F1} M€\n" : $"• Dettes financières nettes : {calcDette.Value / 1_000_000.0:F1} M€\n";
+            }
+
+            string userPrompt = $"DOSSIER DE CRÉDIT & BILANS ({modeTag}) :\n==================================================\n{fullCreditDossier}{deterministicBlock}\n==================================================\n\nINSTRUCTION DU COMITÉ :\n{instruction}";
 
             var result = await _foundryClient.AskStreamingAsync(
                 selectedModel,
@@ -351,9 +371,18 @@ public partial class FinancialView : UserControl
                 LblThroughputHeader.Text = isEn ? $"SPEED ({chipTag})" : $"DÉBIT ({chipTag})";
                 LblTokens.Text = $"{result.CompletionTokens} tok";
 
-                SetPipelineStep(4, isEn
-                    ? $"✅ Financial note completed ({result.CompletionTokens} tokens in {result.LatencyMilliseconds / 1000.0:F1}s) • Banking secrecy strictly preserved 🔒"
-                    : $"✅ Note financière terminée avec succès ({result.CompletionTokens} jetons en {result.LatencyMilliseconds / 1000.0:F1}s) • Secret bancaire préservé 🔒");
+                if (result.IsPartial)
+                {
+                    SetPipelineStep(4, isEn
+                        ? $"⚠️ Note partially completed ({result.InterruptionReason ?? "Interrupted"}) • Banking secrecy preserved 🔒"
+                        : $"⚠️ Synthèse partielle ({result.InterruptionReason ?? "Flux interrompu"}) • Secret bancaire préservé 🔒");
+                }
+                else
+                {
+                    SetPipelineStep(4, isEn
+                        ? $"✅ Financial note completed ({result.CompletionTokens} tokens in {result.LatencyMilliseconds / 1000.0:F1}s) • Banking secrecy strictly preserved 🔒"
+                        : $"✅ Note financière terminée avec succès ({result.CompletionTokens} jetons en {result.LatencyMilliseconds / 1000.0:F1}s) • Secret bancaire préservé 🔒");
+                }
             });
 
             _ = EnterpriseTelemetryService.Instance.RecordInferenceAsync(
@@ -422,5 +451,37 @@ public partial class FinancialView : UserControl
             localizer: _localizer,
             icon: "📊"
         );
+    }
+
+    public static (double? ca, double? ebe, double? dette, double? margeEbe, double? leverage) ComputeDeterministicFinancialRatios(string rawText)
+    {
+        double? ca = TryExtractEuroValue(rawText, @"(?:Chiffre d'affaires|CA|Revenues?)\s*[:=]\s*([\d\.,]+)\s*([kM]?)€?", @"([\d\.,]+)\s*([kM]?)€?\s*(?:de CA|de Chiffre)");
+        double? ebe = TryExtractEuroValue(rawText, @"(?:EBE|EBITDA)\s*[:=]\s*([\d\.,]+)\s*([kM]?)€?", @"([\d\.,]+)\s*([kM]?)€?\s*(?:d'EBE|d'EBITDA)");
+        double? dette = TryExtractEuroValue(rawText, @"(?:Dettes? financières nettes?|Dette nette|Debt)\s*[:=]\s*([\d\.,]+)\s*([kM]?)€?", @"([\d\.,]+)\s*([kM]?)€?\s*(?:de dette)");
+
+        double? marge = (ca.HasValue && ca.Value > 0 && ebe.HasValue) ? (ebe.Value / ca.Value) * 100.0 : null;
+        double? lev = (ebe.HasValue && ebe.Value > 0 && dette.HasValue) ? (dette.Value / ebe.Value) : null;
+
+        return (ca, ebe, dette, marge, lev);
+    }
+
+    private static double? TryExtractEuroValue(string text, params string[] regexPatterns)
+    {
+        foreach (var pat in regexPatterns)
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(text, pat, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                string valStr = match.Groups[1].Value.Replace(',', '.');
+                if (double.TryParse(valStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double val))
+                {
+                    string unit = match.Groups.Count > 2 ? match.Groups[2].Value.ToUpperInvariant() : "";
+                    if (unit == "K") val *= 1_000.0;
+                    else if (unit == "M") val *= 1_000_000.0;
+                    return val;
+                }
+            }
+        }
+        return null;
     }
 }

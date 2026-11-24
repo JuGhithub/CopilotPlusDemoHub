@@ -112,8 +112,11 @@ if ($RunAll -or $InstallRuntime) {
     $venvPy = "$venvDir\Scripts\python.exe"
 
     if (-not (Test-Path $venvPy)) {
-        Write-Host "  Création de l'environnement virtuel (.venv)..." -ForegroundColor Yellow
-        & python -m venv "$venvDir" --system-site-packages
+        Write-Host "  Création de l'environnement virtuel (.venv hermétique)..." -ForegroundColor Yellow
+        & python -m venv "$venvDir"
+        if ($LASTEXITCODE -ne 0) {
+            throw "Échec de création du venv Python avec code $LASTEXITCODE"
+        }
     }
 
     $pyExec = if (Test-Path $venvPy) { $venvPy } else { "python" }
@@ -135,6 +138,9 @@ if ($RunAll -or $InstallRuntime) {
 
     Write-Host "  Architecture hôte : $(if ($isArm64) { 'ARM64' } else { 'x64' }) -> Dépendances : $(Split-Path $lockFile -Leaf)" -ForegroundColor DarkGray
     & $pyExec -m pip install -r "$lockFile" --quiet
+    if ($LASTEXITCODE -ne 0) {
+        throw "L'installation des dépendances Python depuis $(Split-Path $lockFile -Leaf) a échoué (code de sortie $LASTEXITCODE)."
+    }
 
     # Foundry Local CLI
     if (Get-Command foundry -ErrorAction SilentlyContinue) {

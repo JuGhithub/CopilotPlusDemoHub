@@ -130,18 +130,29 @@ Write-Host "[3/3] Lancement de l'application Copilot+ Demo Hub..." -ForegroundCo
 $isArm64 = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq [System.Runtime.InteropServices.Architecture]::Arm64
 $archFolder = if ($isArm64) { "arm64" } else { "x64" }
 
-$candidates = @(
-    @{ Path = "$ScriptDir\DemoHub\bin\Release\net8.0-windows10.0.18362\DemoHub.exe"; Label = "Version Release haute performance" },
-    @{ Path = "$ScriptDir\DemoHub\bin\Release\net8.0-windows10.0.18362\$archFolder\DemoHub.exe"; Label = "Version Release $archFolder" },
-    @{ Path = "$ScriptDir\bin\Publish\$archFolder\DemoHub.exe"; Label = "Version autonome $archFolder" },
-    @{ Path = "$ScriptDir\bin\Publish\x64\DemoHub.exe"; Label = "Version autonome x64" },
-    @{ Path = "$ScriptDir\DemoHub\bin\Debug\net8.0-windows10.0.18362\DemoHub.exe"; Label = "Version Debug" }
-)
+# Définition ordonnée par priorité architecturale stricte
+$candidates = if ($isArm64) {
+    @(
+        @{ Path = "$ScriptDir\bin\Publish\arm64\DemoHub.exe"; Label = "Version autonome ARM64 native (Publish)"; Priority = 1 },
+        @{ Path = "$ScriptDir\DemoHub\bin\Release\net8.0-windows10.0.18362\arm64\DemoHub.exe"; Label = "Version Release ARM64 native"; Priority = 2 },
+        @{ Path = "$ScriptDir\DemoHub\bin\Release\net8.0-windows10.0.18362\DemoHub.exe"; Label = "Version Release standard AnyCPU/x64"; Priority = 3 },
+        @{ Path = "$ScriptDir\bin\Publish\x64\DemoHub.exe"; Label = "Version autonome x64 (émulée)"; Priority = 4 },
+        @{ Path = "$ScriptDir\DemoHub\bin\Debug\net8.0-windows10.0.18362\DemoHub.exe"; Label = "Version Debug"; Priority = 5 }
+    )
+} else {
+    @(
+        @{ Path = "$ScriptDir\bin\Publish\x64\DemoHub.exe"; Label = "Version autonome x64 optimisée (Publish)"; Priority = 1 },
+        @{ Path = "$ScriptDir\DemoHub\bin\Release\net8.0-windows10.0.18362\DemoHub.exe"; Label = "Version Release haute performance"; Priority = 2 },
+        @{ Path = "$ScriptDir\DemoHub\bin\Release\net8.0-windows10.0.18362\x64\DemoHub.exe"; Label = "Version Release x64"; Priority = 3 },
+        @{ Path = "$ScriptDir\DemoHub\bin\Debug\net8.0-windows10.0.18362\DemoHub.exe"; Label = "Version Debug"; Priority = 4 }
+    )
+}
 
-$existing = $candidates | Where-Object { Test-Path $_.Path } | Sort-Object { (Get-Item $_.Path).LastWriteTime } -Descending
+# Forcer le résultat en tableau PowerShell @(...) et trier par priorité architecturale puis récence
+$existing = @($candidates | Where-Object { Test-Path $_.Path } | Sort-Object -Property Priority, { (Get-Item $_.Path).LastWriteTime } -Descending)
 
 $launched = $false
-if ($existing -and $existing.Count -gt 0) {
+if ($existing.Count -gt 0) {
     $c = $existing[0]
     Write-Host "      Lancement de la $($c.Label)..." -ForegroundColor Green
     Start-Process -FilePath $c.Path -WorkingDirectory $ScriptDir
@@ -149,7 +160,7 @@ if ($existing -and $existing.Count -gt 0) {
 }
 
 if (-not $launched) {
-    Write-Host "      Aucun binaire pré-compilé trouvé. Compilation et exécution à chaud..." -ForegroundColor Yellow
+    Write-Warning "Aucun binaire pré-compilé trouvé pour l'architecture $archFolder. Repli sur 'dotnet run' (compilation à chaud)..."
     & dotnet run --project "$ScriptDir\DemoHub\DemoHub.csproj" -c Release
 }
 
