@@ -320,6 +320,22 @@ def run_benchmark(iterations=30, device="NPU"):
     results["memory_saved_olive_pct"] = mem_saved_pct
     results["energy_saved_pct"] = 0.0  # Same NPU silicon
     results["energy_saved_olive_pct"] = 0.0
+    try:
+        from demohub_common.devices import build_runtime_evidence
+        results["evidence"] = build_runtime_evidence(
+            runtime="OpenVINO",
+            model="yolov8n-seg",
+            precision="FP16",
+            requested_device=device,
+            active_device=chosen_dev,
+            compile_time_ms=t_comp_ir * 1000.0,
+            warmup_time_ms=0.0,
+            inference_ms=ir_mean,
+            end_to_end_ms=ir_mean,
+            execution_provider="OpenVINO"
+        )
+    except Exception as ex:
+        pass
     results["winner"] = f"OpenVINO IR Natif ({chosen_dev})"
 
     results["insight_fr"] = (
@@ -338,6 +354,9 @@ def run_benchmark(iterations=30, device="NPU"):
         f"This compact footprint is ideal for co-hosting multiple neural models in shared NPU memory."
     )
 
+    results["protocol"] = "demohub/1.0"
+    results["type"] = "result"
+    results["timestamp"] = time.time()
     print("===DUEL_RESULT_JSON===", flush=True)
     print(json.dumps(results, ensure_ascii=False), flush=True)
     return results

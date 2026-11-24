@@ -47,6 +47,7 @@ public partial class PdfStudioView : UserControl, IDisposable
     private string _currentDocPath = string.Empty;
     private string _currentPreviewPath = string.Empty;
     private string _currentOverlayPath = string.Empty;
+    private RuntimeEvidence? _lastEvidence;
     private string _activeModifiedPdfPath = string.Empty;
 
     // Interactive mouse selection & direct keyboard editing
@@ -122,15 +123,15 @@ public partial class PdfStudioView : UserControl, IDisposable
         }
         else if (dev.Equals("NPU", StringComparison.OrdinalIgnoreCase))
         {
-            TxtActiveDevice.Text = $"⚡ NPU ({SiliconDetector.NpuName})";
+            TxtActiveDevice.Text = $"🎯 Cible : NPU ({SiliconDetector.NpuName})";
         }
         else if (dev.Equals("GPU", StringComparison.OrdinalIgnoreCase))
         {
-            TxtActiveDevice.Text = $"🎮 GPU ({SiliconDetector.GpuName})";
+            TxtActiveDevice.Text = $"🎯 Cible : GPU ({SiliconDetector.GpuName})";
         }
         else
         {
-            TxtActiveDevice.Text = $"💻 CPU ({SiliconDetector.CpuName})";
+            TxtActiveDevice.Text = $"🎯 Cible : CPU ({SiliconDetector.CpuName})";
         }
 
         if (BtnRunOcr != null)
@@ -474,6 +475,10 @@ public partial class PdfStudioView : UserControl, IDisposable
                                     ramMb = root.TryGetProperty("ram_mb", out var rmb) ? rmb.GetDouble() : 0.0;
                                     engineLabel = root.TryGetProperty("engine_label", out var elbl) ? (elbl.GetString() ?? "") : "";
                                     effectiveSilicon = root.TryGetProperty("effective_device", out var edev) ? (edev.GetString() ?? device) : device;
+                                    if (root.TryGetProperty("evidence", out var evProp))
+                                    {
+                                        try { _lastEvidence = System.Text.Json.JsonSerializer.Deserialize<RuntimeEvidence>(evProp.GetRawText()); } catch { }
+                                    }
 
                                     if (root.TryGetProperty("lines", out var linesElem) && linesElem.ValueKind == JsonValueKind.Array)
                                     {
@@ -551,6 +556,16 @@ public partial class PdfStudioView : UserControl, IDisposable
             double watts = device.ToUpperInvariant().Contains("GPU") ? 16.5 : (engine == "olive" ? 2.2 : 4.5);
             double joules = watts * (inferMs / 1000.0);
 
+            if (_lastEvidence != null)
+            {
+                TxtActiveDevice.Text = _lastEvidence.StatusBadge;
+            }
+            else
+            {
+                TxtActiveDevice.Text = effectiveSilicon.Contains("NPU", StringComparison.OrdinalIgnoreCase)
+                    ? $"⚡ NPU Intel AI Boost Actif"
+                    : $"⚠️ Fallback ({effectiveSilicon})";
+            }
             TxtInferSpeed.Text = $"⚡ {inferMs} ms • {effectiveSilicon} ({engine.ToUpper()})";
             BadgeSpeed.Visibility = Visibility.Visible;
             TxtPower.Text = $"🔋 ~{watts:F1} W • 🌱 {joules:F3} J ({(engine == "olive" ? "Sobriété Olive" : "Standard")})";

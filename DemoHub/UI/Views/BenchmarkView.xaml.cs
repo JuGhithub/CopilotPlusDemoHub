@@ -629,10 +629,22 @@ public partial class BenchmarkView : UserControl, IDisposable
                 ? (root.GetProperty("insight_en").GetString() ?? "")
                 : (root.GetProperty("insight_fr").GetString() ?? "");
 
+            RuntimeEvidence? benchmarkEvidence = null;
+            if (root.TryGetProperty("evidence", out var evProp))
+            {
+                try { benchmarkEvidence = System.Text.Json.JsonSerializer.Deserialize<RuntimeEvidence>(evProp.GetRawText()); } catch { }
+            }
+
             AppendLog("==========================================================");
             AppendLog(isEn 
                 ? $"🏆 NPU SILICIUM DUEL: OPENVINO IR vs RAW ONNX vs OLIVE ({SiliconDetector.NpuName})" 
                 : $"🏆 RÉSULTATS DU DUEL SILICIUM NPU ({SiliconDetector.NpuName}) :");
+            if (benchmarkEvidence != null)
+            {
+                AppendLog(isEn
+                    ? $"   [Hardware Evidence: {benchmarkEvidence.StatusBadge} • Provider: {benchmarkEvidence.ExecutionProvider} • Fallback: {benchmarkEvidence.FallbackUsed}]"
+                    : $"   [Preuve Matérielle : {benchmarkEvidence.StatusBadge} • Fournisseur : {benchmarkEvidence.ExecutionProvider} • Repli : {benchmarkEvidence.FallbackUsed}]");
+            }
             AppendLog("==========================================================");
             AppendLog(isEn ? $"🔹 1. OPENVINO IR NATIVE ({ov.GetProperty("target").GetString()}):" : $"🔹 1. OPENVINO IR NATIF ({ov.GetProperty("target").GetString()}):");
             AppendLog($"   • {(isEn ? "Model size" : "Poids du modèle")}    : {ov_size:F2} MB (OpenVINO IR .xml)");

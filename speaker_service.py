@@ -894,6 +894,7 @@ def main():
     if args.action == "list":
         profiles = mgr.list_profiles()
         print(json.dumps({
+            "protocol": "demohub/1.0",
             "type": "profiles_list",
             "is_tpm_active": True,
             "security_provider": "Windows DPAPI (TPM 2.0 / Microsoft Pluton)",
@@ -907,6 +908,7 @@ def main():
         try:
             prof = mgr.register_from_audio_file(args.file, args.start, args.end, args.name)
             print(json.dumps({
+                "protocol": "demohub/1.0",
                 "type": "profile_saved",
                 "name": prof["name"],
                 "color": prof["color"],
@@ -924,6 +926,7 @@ def main():
         try:
             prof = mgr.enroll_from_mic(name=args.name, duration_sec=args.duration, color=args.color)
             print(json.dumps({
+                "protocol": "demohub/1.0",
                 "type": "profile_saved",
                 "name": prof["name"],
                 "color": prof["color"],
@@ -951,6 +954,7 @@ def main():
 
             prof = mgr.register_profile(args.name, vec, args.color)
             print(json.dumps({
+                "protocol": "demohub/1.0",
                 "type": "profile_saved",
                 "name": prof["name"],
                 "color": prof["color"],

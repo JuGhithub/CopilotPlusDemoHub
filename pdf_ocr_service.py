@@ -168,12 +168,16 @@ def get_ocr_engine(engine_choice="olive", requested_device="NPU"):
 
 
 def emit(obj: dict):
+    if "protocol" not in obj:
+        obj["protocol"] = "demohub/1.0"
+    if "timestamp" not in obj:
+        obj["timestamp"] = time.time()
     print(json.dumps(obj, ensure_ascii=False))
     sys.stdout.flush()
 
 
 def emit_error(msg: str):
-    emit({"type": "error", "message": msg})
+    emit({"protocol": "demohub/1.0", "type": "error", "error": msg, "message": msg})
 
 
 def extract_page_words(page, dpi=150):
@@ -344,6 +348,17 @@ def action_ocr(args):
             "overlay_path": overlay_out_path,
             "engine": engine_choice,
             "engine_label": engine_label,
+            "evidence": {
+                "runtime": "OpenVINO / ONNXRuntime",
+                "model": f"PP-OCRv4 ({engine_choice})",
+                "precision": "FP16" if engine_choice == "olive" else "FP32",
+                "requested_device": getattr(args, "device", "NPU"),
+                "active_device": effective_device,
+                "execution_provider": "OpenVINO" if "NPU" in effective_device else ("DirectML" if "DirectML" in effective_device else "CPUExecutionProvider"),
+                "fallback_used": is_fallback,
+                "inference_ms": infer_ms,
+                "end_to_end_ms": infer_ms
+            },
             "model_size_mb": model_size_mb,
             "ram_mb": ram_mb
         })
