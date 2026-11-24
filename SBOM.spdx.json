@@ -1,0 +1,144 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "CopilotPlusDemoHub-SBOM",
+  "documentNamespace": "https://github.com/JuGhithub/CopilotPlusDemoHub/sbom/1.0.0",
+  "creationInfo": {
+    "creators": [
+      "Organization: CopilotPlusDemoHub",
+      "Tool: Antigravity-SPDX-Generator-1.0"
+    ],
+    "created": "2026-11-24T09:00:00Z"
+  },
+  "packages": [
+    {
+      "name": "CopilotPlusDemoHub",
+      "SPDXID": "SPDXRef-Package-CopilotPlusDemoHub",
+      "versionInfo": "1.0.0",
+      "downloadLocation": "https://github.com/JuGhithub/CopilotPlusDemoHub",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright (c) 2026 Julien",
+      "description": "Multi-OEM Copilot+ PC Technical Evaluation and Showcase Hub"
+    },
+    {
+      "name": "dotnet-sdk",
+      "SPDXID": "SPDXRef-Package-DotnetSDK",
+      "versionInfo": "8.0",
+      "downloadLocation": "https://dotnet.microsoft.com",
+      "licenseConcluded": "MIT",
+      "supplier": "Organization: Microsoft Corporation"
+    },
+    {
+      "name": "openvino",
+      "SPDXID": "SPDXRef-Package-OpenVINO",
+      "versionInfo": "2026.3.1",
+      "downloadLocation": "https://pypi.org/project/openvino/",
+      "licenseConcluded": "Apache-2.0",
+      "supplier": "Organization: Intel Corporation"
+    },
+    {
+      "name": "onnxruntime-directml",
+      "SPDXID": "SPDXRef-Package-ONNXRuntimeDirectML",
+      "versionInfo": "1.20.0",
+      "downloadLocation": "https://pypi.org/project/onnxruntime-directml/",
+      "licenseConcluded": "MIT",
+      "supplier": "Organization: Microsoft Corporation"
+    },
+    {
+      "name": "olive-ai",
+      "SPDXID": "SPDXRef-Package-OliveAI",
+      "versionInfo": "0.13.0",
+      "downloadLocation": "https://pypi.org/project/olive-ai/",
+      "licenseConcluded": "MIT",
+      "supplier": "Organization: Microsoft Corporation"
+    },
+    {
+      "name": "torch",
+      "SPDXID": "SPDXRef-Package-PyTorch",
+      "versionInfo": "2.14.0",
+      "downloadLocation": "https://pytorch.org",
+      "licenseConcluded": "BSD-3-Clause",
+      "supplier": "Organization: PyTorch Foundation"
+    },
+    {
+      "name": "ultralytics",
+      "SPDXID": "SPDXRef-Package-Ultralytics",
+      "versionInfo": "8.4.153",
+      "downloadLocation": "https://pypi.org/project/ultralytics/",
+      "licenseConcluded": "AGPL-3.0-only",
+      "supplier": "Organization: Ultralytics Inc."
+    },
+    {
+      "name": "pymupdf",
+      "SPDXID": "SPDXRef-Package-PyMuPDF",
+      "versionInfo": "1.28.2",
+      "downloadLocation": "https://pypi.org/project/PyMuPDF/",
+      "licenseConcluded": "AGPL-3.0-only",
+      "supplier": "Organization: Artifex Software Inc."
+    },
+    {
+      "name": "rapidocr-onnxruntime",
+      "SPDXID": "SPDXRef-Package-RapidOCR",
+      "versionInfo": "1.4.3",
+      "downloadLocation": "https://pypi.org/project/rapidocr-onnxruntime/",
+      "licenseConcluded": "Apache-2.0",
+      "supplier": "Person: RapidAI Authors"
+    },
+    {
+      "name": "soundfile",
+      "SPDXID": "SPDXRef-Package-SoundFile",
+      "versionInfo": "0.14.0",
+      "downloadLocation": "https://pypi.org/project/soundfile/",
+      "licenseConcluded": "BSD-3-Clause",
+      "supplier": "Person: Bastian Bechtold"
+    },
+    {
+      "name": "sounddevice",
+      "SPDXID": "SPDXRef-Package-SoundDevice",
+      "versionInfo": "0.5.6",
+      "downloadLocation": "https://pypi.org/project/sounddevice/",
+      "licenseConcluded": "MIT",
+      "supplier": "Person: Matthias Geier"
+    },
+    {
+      "name": "pillow",
+      "SPDXID": "SPDXRef-Package-Pillow",
+      "versionInfo": "12.3.0",
+      "downloadLocation": "https://pypi.org/project/pillow/",
+      "licenseConcluded": "HPND",
+      "supplier": "Organization: Python Imaging Library Authors"
+    },
+    {
+      "name": "numpy",
+      "SPDXID": "SPDXRef-Package-NumPy",
+      "versionInfo": "2.5.3",
+      "downloadLocation": "https://numpy.org",
+      "licenseConcluded": "BSD-3-Clause",
+      "supplier": "Organization: NumPy Developers"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-CopilotPlusDemoHub"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-CopilotPlusDemoHub",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-DotnetSDK"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-CopilotPlusDemoHub",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-OpenVINO"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-CopilotPlusDemoHub",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-ONNXRuntimeDirectML"
+    }
+  ]
+}

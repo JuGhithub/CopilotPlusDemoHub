@@ -40,3 +40,9 @@ jobs:
 
     - name: Run Python Service Tests (pytest)
       run: pytest tests/ -v
+
+    - name: Run Dependency Security Audit (pip-audit)
+      run: |
+        python -m pip install pip-audit
+        python -m pip_audit -r requirements.lock --desc on
+      continue-on-error: true
