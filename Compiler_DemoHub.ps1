@@ -72,6 +72,9 @@ switch ($Mode) {
     }
     "3" {
         Write-Host "Publication autonome Release [x64]..." -ForegroundColor Yellow
+        if (Test-Path "$ScriptDir\bin\Publish\x64") {
+            Remove-Item -Recurse -Force "$ScriptDir\bin\Publish\x64"
+        }
         & dotnet publish "$ScriptDir\DemoHub\DemoHub.csproj" -c Release -r win-x64 --no-self-contained -o "$ScriptDir\bin\Publish\x64"
         if ($LASTEXITCODE -eq 0) {
             Write-Host ""

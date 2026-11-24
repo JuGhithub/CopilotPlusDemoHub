@@ -131,22 +131,21 @@ $isArm64 = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -
 $archFolder = if ($isArm64) { "arm64" } else { "x64" }
 
 $candidates = @(
+    @{ Path = "$ScriptDir\DemoHub\bin\Release\net8.0-windows10.0.18362\DemoHub.exe"; Label = "Version Release haute performance" },
+    @{ Path = "$ScriptDir\DemoHub\bin\Release\net8.0-windows10.0.18362\$archFolder\DemoHub.exe"; Label = "Version Release $archFolder" },
     @{ Path = "$ScriptDir\bin\Publish\$archFolder\DemoHub.exe"; Label = "Version autonome $archFolder" },
     @{ Path = "$ScriptDir\bin\Publish\x64\DemoHub.exe"; Label = "Version autonome x64" },
-    @{ Path = "$ScriptDir\bin\Publish\arm64\DemoHub.exe"; Label = "Version autonome arm64" },
-    @{ Path = "$ScriptDir\DemoHub\bin\Release\net8.0-windows10.0.18362\$archFolder\DemoHub.exe"; Label = "Version Release $archFolder" },
-    @{ Path = "$ScriptDir\DemoHub\bin\Release\net8.0-windows10.0.18362\DemoHub.exe"; Label = "Version Release haute performance" },
     @{ Path = "$ScriptDir\DemoHub\bin\Debug\net8.0-windows10.0.18362\DemoHub.exe"; Label = "Version Debug" }
 )
 
+$existing = $candidates | Where-Object { Test-Path $_.Path } | Sort-Object { (Get-Item $_.Path).LastWriteTime } -Descending
+
 $launched = $false
-foreach ($c in $candidates) {
-    if (Test-Path $c.Path) {
-        Write-Host "      Lancement de la $($c.Label)..." -ForegroundColor Green
-        Start-Process -FilePath $c.Path -WorkingDirectory (Split-Path -Parent $c.Path)
-        $launched = $true
-        break
-    }
+if ($existing -and $existing.Count -gt 0) {
+    $c = $existing[0]
+    Write-Host "      Lancement de la $($c.Label)..." -ForegroundColor Green
+    Start-Process -FilePath $c.Path -WorkingDirectory $ScriptDir
+    $launched = $true
 }
 
 if (-not $launched) {
