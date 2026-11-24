@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "project": "CopilotPlusDemoHub",
+  "version": "1.0.0",
+  "models": [
+    {
+      "name": "VoxCeleb ECAPA-TDNN",
+      "purpose": "Biométrie vocale locuteur et diarisation",
+      "format": "ONNX",
+      "precision": "FP32",
+      "path": "models/speaker/voxceleb.onnx",
+      "source_repository": "https://huggingface.co/MelissaJ/spkrec-ecapa-voxceleb-onnx",
+      "sha256": "2ef890f0212dbeb547530691e84df9a5840d24bf51a4fca53fc735e57a3cf3f9"
+    },
+    {
+      "name": "YOLOv8s-World (OpenVINO IR)",
+      "purpose": "Vision par ordinateur Zero-Trust temps réel",
+      "format": "OpenVINO IR (XML+BIN)",
+      "precision": "FP16",
+      "path": "models/yolov8s-world_openvino_model/yolov8s-world.xml",
+      "source_repository": "https://github.com/ultralytics/ultralytics",
+      "sha256": "5e4049554b3cc8d622f676dd3f87b3260c68ea7097eb22119eb8bb31ae4e2758"
+    },
+    {
+      "name": "YOLOv8s-World (ONNX)",
+      "purpose": "Vision par ordinateur DirectML / Olive",
+      "format": "ONNX",
+      "precision": "FP32",
+      "path": "models/yolov8s-world.onnx",
+      "source_repository": "https://github.com/ultralytics/ultralytics",
+      "sha256": "241acee094b2066fe7fc34923e4ea30ae5cbb1ef43ec1196191ef6d0e89a0384"
+    },
+    {
+      "name": "YOLOv8n-Seg (OpenVINO IR)",
+      "purpose": "Segmentation spatiale pour gomme magique",
+      "format": "OpenVINO IR (XML+BIN)",
+      "precision": "FP16",
+      "path": "models/yolov8n-seg_openvino_model/yolov8n-seg.xml",
+      "source_repository": "https://github.com/ultralytics/ultralytics",
+      "sha256": "dde51002ac946197fa311ce83637e6b81ec9d71c4802c67fe997d9123246a4da"
+    },
+    {
+      "name": "YOLOv8n-Seg (ONNX)",
+      "purpose": "Segmentation DirectML / Olive",
+      "format": "ONNX",
+      "precision": "FP32",
+      "path": "models/yolov8n-seg.onnx",
+      "source_repository": "https://github.com/ultralytics/ultralytics",
+      "sha256": "8d5f20410503e19864704043f1ee0f913e617d9136ca14ee29eb9ff83cfa08ee"
+    },
+    {
+      "name": "PP-OCRv4 Détection (ONNX)",
+      "purpose": "Localisation des zones textuelles dans documents scannés",
+      "format": "ONNX",
+      "precision": "FP32",
+      "path": "models/ocr/ch_PP-OCRv4_det_infer.onnx",
+      "source_repository": "https://github.com/PaddlePaddle/PaddleOCR",
+      "sha256": "d2a7720d45a54257121b689a7447b966699a740ea3d688ff7fc9369942f49da9"
+    },
+    {
+      "name": "PP-OCRv4 Reconnaissance (ONNX)",
+      "purpose": "Transcription optique des caractères",
+      "format": "ONNX",
+      "precision": "FP32",
+      "path": "models/ocr/ch_PP-OCRv4_rec_infer.onnx",
+      "source_repository": "https://github.com/PaddlePaddle/PaddleOCR",
+      "sha256": "48fc40f24f6d2a20fc2666ba8a50993072f0980df0a4d334e062828e5483683b"
+    },
+    {
+      "name": "Whisper Tiny (OpenVINO IR)",
+      "purpose": "Transcription Speech-to-Text ultra-rapide",
+      "format": "OpenVINO IR (XML+BIN)",
+      "precision": "FP16",
+      "path": "models/whisper-tiny-fp16-ov/openvino_encoder_model.xml",
+      "source_repository": "https://huggingface.co/OpenVINO/whisper-tiny-fp16-ov",
+      "sha256": "8fd7714cbf8d87ed410884b2cff7c30953c30ba49e9e1bb39cbf8faaa366d0e9"
+    },
+    {
+      "name": "Whisper Base (OpenVINO IR)",
+      "purpose": "Transcription Speech-to-Text haute précision",
+      "format": "OpenVINO IR (XML+BIN)",
+      "precision": "FP16",
+      "path": "models/whisper-base-fp16-ov/openvino_encoder_model.xml",
+      "source_repository": "https://huggingface.co/OpenVINO/whisper-base-fp16-ov",
+      "sha256": "5920849e30a3af25ae0aa6016e1dbff7f8976bcf643f80c6cbf062567e4d450d"
+    }
+  ]
+}
